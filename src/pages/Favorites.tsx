@@ -12,7 +12,7 @@ import {
   Heart, 
   ShoppingBag, 
   Trash2, 
-  Grid3x3, 
+  LayoutGrid, 
   List, 
   ArrowRight,
   Search
@@ -206,7 +206,7 @@ export default function Favorites() {
                   }`}
                   title="Сітка"
                 >
-                  <Grid3x3 className="h-5 w-5" />
+                  <LayoutGrid className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}

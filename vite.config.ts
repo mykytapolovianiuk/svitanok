@@ -5,6 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: "/",
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -19,26 +20,10 @@ export default defineConfig({
       }
     }
   },
-  // Fix for Vercel dev - exclude HTML from module processing
-  assetsInclude: ['**/*.html'],
   build: {
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
-      },
-      // Manual chunking to optimize bundle sizes
-      output: {
-        manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['lucide-react', 'swiper'],
-          'state-vendor': ['zustand', '@tanstack/react-query'],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'analytics-vendor': ['@sentry/react', '@sentry/tracing'],
-        },
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]'
       },
     },
     // Optimize for production
@@ -52,8 +37,6 @@ export default defineConfig({
     },
     // Report build size
     reportCompressedSize: true,
-    // Chunk size warnings limit (in kbs)
-    chunkSizeWarningLimit: 1000,
   },
   // Ensure TypeScript errors don't block the build
   esbuild: {
