@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+// @ts-ignore
 import 'swiper/css';
+// @ts-ignore
 import 'swiper/css/pagination';
+// @ts-ignore
 import 'swiper/css/navigation';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '@/components/catalog/ProductCard';
@@ -50,22 +53,35 @@ export default function ProductShowcase() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('products').select('*').eq('in_stock', true);
+      let data: Product[] | null = [];
+      let error = null;
 
-      if (activeTab === 'new') {
-        query = query.order('created_at', { ascending: false }).limit(8);
+      if (activeTab === 'bestsellers') {
+        // Fetch bestsellers based on order count
+        const { data: bestsellersData, error: bestsellersError } = await supabase
+          .rpc('get_bestsellers')
+          .limit(8);
+        
+        data = bestsellersData || [];
+        error = bestsellersError;
       } else {
-        query = query.limit(8);
+        // Fetch new arrivals based on creation date
+        const { data: newData, error: newError } = await supabase
+          .from('products')
+          .select('id, name, slug, price, old_price, images, attributes, description')
+          .eq('in_stock', true)
+          .order('created_at', { ascending: false })
+          .limit(8);
+          
+        data = newData || [];
+        error = newError;
       }
-      
-      query = query.select('id, name, slug, price, old_price, images, attributes, description');
-
-      const { data, error } = await query;
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts(data as Product[]);
     } catch (error) {
       console.error('Помилка завантаження товарів:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
