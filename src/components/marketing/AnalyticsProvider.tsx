@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { initAnalytics, trackPageView } from '@/lib/analytics';
 import { usePageTracking, useScrollDepth } from '@/hooks/useAnalytics';
+import { Analytics } from '@vercel/analytics/react';
 
 declare global {
   interface Window {
@@ -55,5 +56,5 @@ export default function AnalyticsProvider() {
     }
   }, []);
   
-  return null;
+  return <Analytics />;
 }
