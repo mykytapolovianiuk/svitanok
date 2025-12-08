@@ -1,0 +1,35 @@
+# robots.txt для Svitanok
+# Оптимізовано для українських пошукових систем
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /account
+Disallow: /auth
+
+# Дозволити індексацію продуктів та каталогу
+Allow: /catalog
+Allow: /product/
+Allow: /category/
+
+# Українські пошукові системи
+User-agent: Yandex
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Crawl-delay: 1
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Crawl-delay: 0
+
+# Sitemap
+Sitemap: https://svitanok.com/sitemap.xml
+
+
+
