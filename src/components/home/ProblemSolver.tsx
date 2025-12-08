@@ -96,7 +96,7 @@ export default function ProblemSolver() {
             </h2>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 border border-black px-4 py-2 hover:bg-black hover:text-white transition-colors"
+              className="flex items-center gap-2 border border-black px-4 py-2 hover:bg-black hover:text-white transition-colors hidden md:flex"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               <span className="text-sm uppercase tracking-[1px]">Виберіть проблему</span>
@@ -105,8 +105,8 @@ export default function ProblemSolver() {
           </div>
         </div>
         
-        {/* Problems Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        {/* Problems Grid - Responsive for desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-6 md:mb-8">
           {skinProblems.map((problem) => {
             const isSelected = selectedProblem === problem.id;
             return (
@@ -139,6 +139,23 @@ export default function ProblemSolver() {
               </button>
             );
           })}
+        </div>
+
+        {/* Mobile Dropdown */}
+        <div className="md:hidden mb-6">
+          <select
+            value={selectedProblem || ''}
+            onChange={(e) => setSelectedProblem(e.target.value || null)}
+            className="w-full border border-black bg-white py-3 px-4 focus:outline-none focus:ring-2 focus:ring-black"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            <option value="">Виберіть проблему</option>
+            {skinProblems.map((problem) => (
+              <option key={problem.id} value={problem.id}>
+                {problem.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Footer with Product Type Dropdown and Button */}
