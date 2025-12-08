@@ -1,7 +1,10 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
+// @ts-expect-error
 import 'swiper/css';
+// @ts-expect-error
 import 'swiper/css/navigation';
+// @ts-expect-error
 import 'swiper/css/pagination';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
@@ -181,8 +184,8 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
           >
             ЩО МИ РЕКОМЕНДУЄМО З ЦИМ...
           </h2>
-          <div className="grid grid-cols-2 gap-4">
-            {[...Array(2)].map((_, i) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
               <div key={i} className="bg-gray-100 aspect-[3/4] animate-pulse" />
             ))}
           </div>
@@ -205,35 +208,47 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
           ЩО МИ РЕКОМЕНДУЄМО З ЦИМ...
         </h2>
         
-        <Swiper
-          modules={[Navigation, Pagination]}
-          spaceBetween={20}
-          slidesPerView={2}
-          breakpoints={{
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 20,
-            },
-            1024: {
-              slidesPerView: 2,
-              spaceBetween: 24,
-            },
-          }}
-          pagination={{
-            clickable: true,
-            bulletClass: 'swiper-pagination-bullet !bg-black',
-            bulletActiveClass: 'swiper-pagination-bullet-active !bg-black',
-          }}
-          navigation={true}
-          loop={products.length > 2}
-          className="recommended-products-swiper"
-        >
+        {/* Desktop Grid View - Hidden on mobile */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
           {products.map((product) => (
-            <SwiperSlide key={product.id}>
+            <div key={product.id} className="h-full">
               <RecommendedProductCard product={product} />
-            </SwiperSlide>
+            </div>
           ))}
-        </Swiper>
+        </div>
+        
+        {/* Mobile Slider View - Hidden on desktop */}
+        <div className="md:hidden">
+          <Swiper
+            modules={[Navigation, Pagination]}
+            spaceBetween={20}
+            slidesPerView={2}
+            breakpoints={{
+              640: {
+                slidesPerView: 2,
+                spaceBetween: 20,
+              },
+              1024: {
+                slidesPerView: 2,
+                spaceBetween: 24,
+              },
+            }}
+            pagination={{
+              clickable: true,
+              bulletClass: 'swiper-pagination-bullet !bg-black',
+              bulletActiveClass: 'swiper-pagination-bullet-active !bg-black',
+            }}
+            navigation={true}
+            loop={products.length > 2}
+            className="recommended-products-swiper"
+          >
+            {products.map((product) => (
+              <SwiperSlide key={product.id}>
+                <RecommendedProductCard product={product} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       </div>
     </section>
   );

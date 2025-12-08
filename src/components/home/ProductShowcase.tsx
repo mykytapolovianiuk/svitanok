@@ -53,17 +53,34 @@ export default function ProductShowcase() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let data: Product[] | null = [];
-      let error = null;
+      let data: Product[] = [];
 
       if (activeTab === 'bestsellers') {
         // Fetch bestsellers based on order count
-        const { data: bestsellersData, error: bestsellersError } = await supabase
-          .rpc('get_bestsellers')
-          .limit(8);
-        
-        data = bestsellersData || [];
-        error = bestsellersError;
+        // First try to use the RPC function, fall back to regular query if it doesn't exist
+        try {
+          const { data: bestsellersData, error: bestsellersError } = await supabase
+            .rpc('get_bestsellers')
+            .limit(8);
+          
+          if (!bestsellersError && bestsellersData) {
+            data = bestsellersData;
+          } else {
+            throw new Error('RPC function not available');
+          }
+        } catch (rpcError) {
+          // Fallback to regular query ordered by a popularity metric or just recent purchases
+          console.warn('Using fallback query for bestsellers');
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('products')
+            .select('id, name, slug, price, old_price, images, attributes, description')
+            .eq('in_stock', true)
+            .order('created_at', { ascending: false }) // Temporary fallback
+            .limit(8);
+          
+          if (fallbackError) throw fallbackError;
+          data = fallbackData || [];
+        }
       } else {
         // Fetch new arrivals based on creation date
         const { data: newData, error: newError } = await supabase
@@ -73,12 +90,11 @@ export default function ProductShowcase() {
           .order('created_at', { ascending: false })
           .limit(8);
           
+        if (newError) throw newError;
         data = newData || [];
-        error = newError;
       }
 
-      if (error) throw error;
-      setProducts(data as Product[]);
+      setProducts(data);
     } catch (error) {
       console.error('Помилка завантаження товарів:', error);
       setProducts([]);
