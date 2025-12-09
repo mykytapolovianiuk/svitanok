@@ -1,16 +1,17 @@
 import { useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 export default function OrderSuccess() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { orderId, totalAmount } = location.state || {};
 
   // If no order data, redirect to home
   useEffect(() => {
     if (!orderId) {
-      window.location.href = '/';
+      navigate('/');
     }
-  }, [orderId]);
+  }, [orderId, navigate]);
 
   if (!orderId) {
     return null;

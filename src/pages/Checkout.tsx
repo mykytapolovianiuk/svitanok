@@ -20,7 +20,10 @@ import Spinner from '@/components/ui/Spinner';
 const checkoutSchema = z.object({
   firstName: z.string().min(1, "Введіть ім'я"),
   lastName: z.string().min(1, 'Введіть прізвище'),
-  phone: z.string().min(10, 'Введіть коректний номер телефону'),
+  phone: z.string().min(10, 'Введіть коректний номер телефону').refine(
+    (val) => val.startsWith('380'),
+    { message: 'Номер телефону має починатися з 380' }
+  ),
   email: z.string().email('Невірний формат email').or(z.literal('')),
   deliveryMethod: z.enum(['nova-poshta', 'courier', 'ukrposhta']),
   city: z.string().min(1, 'Оберіть місто'),

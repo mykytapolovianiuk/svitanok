@@ -73,6 +73,7 @@ export default function ProductCard({
         quantity: 1,
       });
       
+      // Show success message only for cart addition, not for favorites
       toast.success('Товар додано до кошика!');
     } finally {
       // Small delay for better UX
@@ -83,11 +84,19 @@ export default function ProductCard({
   // Перемикач для обраного статусу товару
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const wasFavorite = isFavorite(id);
     toggleFavorite(id);
     
     // Track favorite action
     trackFavorite(wasFavorite ? 'remove' : 'add', id);
+    
+    // Show appropriate message based on action
+    if (wasFavorite) {
+      toast.success('Товар видалено з обраних');
+    } else {
+      toast.success('Товар додано до обраних');
+    }
   };
   
   // Track product selection when clicking on product card

@@ -5,7 +5,6 @@ import DiscountBanner from '@/components/common/DiscountBanner';
 import ProblemSolver from '@/components/home/ProblemSolver';
 import ProductShowcase from '@/components/home/ProductShowcase';
 import AboutSection from '@/components/home/AboutSection';
-import BenefitsSlider from '@/components/home/BenefitsSlider';
 import SEOHead from '@/components/seo/SEOHead';
 import { OrganizationStructuredData } from '@/components/seo/StructuredData';
 
@@ -46,9 +45,8 @@ export default function Home() {
       {/* About Brand Section */}
       <AboutSection />
 
-      {/* Benefits Slider */}
-      <BenefitsSlider />
-
+      {/* Benefits Slider - REMOVED as per requirements */}
+      
       {/* Discount Banner (only for non-authenticated users) */}
       <DiscountBanner />
     </div>
