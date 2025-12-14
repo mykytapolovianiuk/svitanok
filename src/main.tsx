@@ -32,6 +32,7 @@ const fetchUserProfile = async (userId: string) => {
 // Initialize session and setup auth listener
 const initializeApp = async () => {
   const setIsLoading = useUserStore.getState().setIsLoading;
+  const setSession = useUserStore.getState().setSession;
   
   try {
     // Set loading state
@@ -45,7 +46,6 @@ const initializeApp = async () => {
       const profile = await fetchUserProfile(session.user.id);
       
       // Set session in store
-      const setSession = useUserStore.getState().setSession;
       setSession({
         user: {
           id: session.user.id,
@@ -53,13 +53,24 @@ const initializeApp = async () => {
         },
         profile,
       });
+      
+      // Set Sentry user context
+      setSentryUser({
+        id: session.user.id,
+        email: session.user.email || '',
+        role: profile?.role
+      });
     } else {
-      // Clear loading state if no session
-      setIsLoading(false);
+      // Clear session in store if no session
+      setSession(null);
     }
+    
+    // Always clear loading state after initialization
+    setIsLoading(false);
   } catch (error) {
     // Error logging handled by Sentry in production
-    // Clear loading state on error
+    // Clear session and loading state on error
+    setSession(null);
     setIsLoading(false);
   }
 };
@@ -74,14 +85,17 @@ const setupAuthListener = () => {
   }
   
   const setIsLoading = useUserStore.getState().setIsLoading;
+  const setSession = useUserStore.getState().setSession;
+  const clearSession = useUserStore.getState().clearSession;
   
   supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth state changed:', event, session?.user.id); // Debug log
+    
     if (session) {
       // Fetch user profile
       const profile = await fetchUserProfile(session.user.id);
       
       // Set session in store
-      const setSession = useUserStore.getState().setSession;
       setSession({
         user: {
           id: session.user.id,
@@ -89,9 +103,15 @@ const setupAuthListener = () => {
         },
         profile,
       });
+      
+      // Set Sentry user context
+      setSentryUser({
+        id: session.user.id,
+        email: session.user.email || '',
+        role: profile?.role
+      });
     } else {
       // Clear session in store
-      const clearSession = useUserStore.getState().clearSession;
       clearSession();
       
       // Clear Sentry user context
@@ -112,12 +132,13 @@ const setupAuthListener = () => {
 // Initialize app and setup listener
 initializeApp().then(() => {
   setupAuthListener();
+  
+  // Render the app only after initialization
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </React.StrictMode>,
+  )
 });
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>,
-)

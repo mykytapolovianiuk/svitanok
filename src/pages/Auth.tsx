@@ -38,18 +38,10 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      // Set session persistence based on "Remember Me" checkbox
-      if (rememberMe) {
-        // Persistent session (longer expiration)
-        await supabase.auth.setSession({
-          access_token: '',
-          refresh_token: '',
-        });
-      } else {
-        // Session expires when browser closes
-        // This is the default behavior
-      }
-
+      // Note: Supabase automatically handles session persistence based on browser settings
+      // The "Remember Me" functionality is handled by the browser's session storage vs local storage
+      // We don't need to manually set the session here
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password,
