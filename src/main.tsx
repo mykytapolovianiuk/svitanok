@@ -38,12 +38,25 @@ const initializeApp = async () => {
     // Set loading state
     setIsLoading(true);
     
+    // Debug: Log localStorage before getting session
+    if (import.meta.env.DEV) {
+      console.log('LocalStorage before getSession:', {...localStorage});
+    }
+    
     // Get current session
     const { data: { session } } = await supabase.auth.getSession();
+    
+    if (import.meta.env.DEV) {
+      console.log('Supabase session from getSession:', session);
+    }
     
     if (session) {
       // Fetch user profile
       const profile = await fetchUserProfile(session.user.id);
+      
+      if (import.meta.env.DEV) {
+        console.log('User profile:', profile);
+      }
       
       // Set session in store
       setSession({
@@ -68,6 +81,7 @@ const initializeApp = async () => {
     // Always clear loading state after initialization
     setIsLoading(false);
   } catch (error) {
+    console.error('Error initializing app:', error);
     // Error logging handled by Sentry in production
     // Clear session and loading state on error
     setSession(null);

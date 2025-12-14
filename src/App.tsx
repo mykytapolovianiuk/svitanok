@@ -11,6 +11,11 @@ import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 
+// Import Session Debugger only in development
+const SessionDebugger = import.meta.env.DEV ? 
+  React.lazy(() => import('./components/debug/SessionDebugger')) : 
+  null;
+
 // Direct imports for all pages (revert to direct imports for proper build)
 import Home from './pages/Home';
 import Catalog from './pages/Catalog';
@@ -70,6 +75,11 @@ function App() {
           <ScrollToTop />
           <CartDrawer />
           <Toaster position="top-right" />
+          {import.meta.env.DEV && SessionDebugger && (
+            <Suspense fallback={null}>
+              <SessionDebugger />
+            </Suspense>
+          )}
           <Routes>
           {/* Checkout route without header/footer */}
           <Route path="/checkout" element={
