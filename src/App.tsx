@@ -1,6 +1,5 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ScrollToTop from './components/common/ScrollToTop';
@@ -10,13 +9,9 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
+import AuthProvider from './components/auth/AuthProvider';
 
-// Import Session Debugger only in development
-const SessionDebugger = import.meta.env.DEV ? 
-  React.lazy(() => import('./components/debug/SessionDebugger')) : 
-  null;
-
-// Direct imports for all pages (revert to direct imports for proper build)
+// Direct imports for all pages
 import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import ProductPage from './pages/ProductPage';
@@ -48,13 +43,6 @@ import AdminReviews from './pages/admin/Reviews';
 import AdminCustomers from './pages/admin/Customers';
 import AdminSettings from './pages/admin/Settings';
 
-// Loading component for Suspense
-const LoadingComponent = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-  </div>
-);
-
 // Simple layout without header/footer for checkout
 const CheckoutLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen bg-white">
@@ -68,18 +56,13 @@ const CheckoutLayout = ({ children }: { children: React.ReactNode }) => (
  */
 function App() {
   return (
-    <HelmetProvider>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
           <AnalyticsProvider />
           <ScrollToTop />
           <CartDrawer />
           <Toaster position="top-right" />
-          {import.meta.env.DEV && SessionDebugger && (
-            <Suspense fallback={null}>
-              <SessionDebugger />
-            </Suspense>
-          )}
           <Routes>
           {/* Checkout route without header/footer */}
           <Route path="/checkout" element={
@@ -141,9 +124,9 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-        </QueryClientProvider>
-      </ErrorBoundary>
-    </HelmetProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
