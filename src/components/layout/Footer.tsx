@@ -117,6 +117,24 @@ export default function Footer() {
                   Q&A
                 </Link>
               </li>
+              <li>
+                <Link 
+                  to="/delivery" 
+                  className="text-text-main hover:opacity-70 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Оплата і доставка
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/returns" 
+                  className="text-text-main hover:opacity-70 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Обмін та повернення
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -214,6 +214,20 @@ export default function Header() {
               >
                 FAQ
               </Link>
+              <Link 
+                to="/delivery" 
+                className="text-text-main hover:opacity-70 transition text-sm xl:text-base"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Доставка
+              </Link>
+              <Link 
+                to="/returns" 
+                className="text-text-main hover:opacity-70 transition text-sm xl:text-base"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Обмін та повернення
+              </Link>
             </nav>
 
             {/* Right Side Icons */}
@@ -449,6 +463,26 @@ export default function Header() {
                     onClick={closeMobileMenu}
                   >
                     FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/delivery" 
+                    className="block text-2xl font-medium text-text-main py-2"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    onClick={closeMobileMenu}
+                  >
+                    Доставка
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    to="/returns" 
+                    className="block text-2xl font-medium text-text-main py-2"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    onClick={closeMobileMenu}
+                  >
+                    Обмін та повернення
                   </Link>
                 </li>
                 <li>

@@ -29,6 +29,7 @@ import About from './pages/About';
 import Contacts from './pages/Contacts';
 import FAQ from './pages/FAQ';
 import Delivery from './pages/Delivery';
+import Returns from './pages/Returns';
 import AutumnCare from './pages/AutumnCare';
 import SkincareRegimen from './pages/SkincareRegimen';
 import Privacy from './pages/Privacy';
@@ -107,6 +108,7 @@ function App() {
               <Route path="contacts" element={<Contacts />} />
               <Route path="faq" element={<FAQ />} />
               <Route path="delivery" element={<Delivery />} />
+              <Route path="returns" element={<Returns />} />
               <Route path="autumn-care" element={<AutumnCare />} />
               <Route path="skincare-regimen" element={<SkincareRegimen />} />
               <Route path="privacy" element={<Privacy />} />

@@ -100,7 +100,6 @@ export default function ProblemSolver() {
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               <span className="text-sm uppercase tracking-[1px]">Виберіть проблему</span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
           </div>
         </div>
@@ -119,7 +118,7 @@ export default function ProblemSolver() {
                   <img
                     src={problem.image}
                     alt={problem.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 mix-blend-multiply"
                     loading="lazy"
                   />
                   {isSelected && (
