@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '../../types';
+import { useUserStore } from '@/features/auth/useUserStore';
 
 interface ProfileFormProps {
   profile: Profile;
@@ -8,9 +9,10 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
+  const { session } = useUserStore();
   const [formData, setFormData] = useState({
     full_name: profile.full_name || '',
-    phone: profile.phone || '',
+    phone: profile.phone || session?.user?.phone || '', // Use phone from auth session as fallback
     address: profile.address || ''
   });
   const [saving, setSaving] = useState(false);

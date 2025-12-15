@@ -101,6 +101,7 @@ export interface UserSession {
   user: {
     id: string;
     email: string;
+    phone?: string; // Add phone field
   };
   profile: Profile | null;
 }

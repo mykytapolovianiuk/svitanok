@@ -28,20 +28,24 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
               if (error) throw error;
               
               // Update Zustand store with user and profile
+              // CRITICAL FIX: Get phone from Auth, not just Profile
               setSession({
                 user: {
                   id: session.user.id,
                   email: session.user.email || '',
+                  phone: session.user.phone || '', // <-- CRITICAL FIX: Get phone from Auth
                 },
                 profile: data || null,
               });
             } catch (profileError) {
               console.error('Error fetching user profile:', profileError);
               // Update Zustand store with user only
+              // CRITICAL FIX: Get phone from Auth, not just Profile
               setSession({
                 user: {
                   id: session.user.id,
                   email: session.user.email || '',
+                  phone: session.user.phone || '', // <-- CRITICAL FIX: Get phone from Auth
                 },
                 profile: null,
               });
