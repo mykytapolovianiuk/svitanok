@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useUserStore } from '@/features/auth/useUserStore';
-import { fetchUserProfile } from '@/features/auth/sessionManager';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -26,18 +25,37 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         
         if (session) {
           // Fetch user profile
-          const profile = await fetchUserProfile(session.user.id);
-          
-          if (!isMounted) return;
-          
-          // Update Zustand store
-          setSession({
-            user: {
-              id: session.user.id,
-              email: session.user.email || '',
-            },
-            profile,
-          });
+          try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (error) throw error;
+            
+            if (!isMounted) return;
+            
+            // Update Zustand store
+            setSession({
+              user: {
+                id: session.user.id,
+                email: session.user.email || '',
+              },
+              profile: data || null,
+            });
+          } catch (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            if (isMounted) {
+              setSession({
+                user: {
+                  id: session.user.id,
+                  email: session.user.email || '',
+                },
+                profile: null,
+              });
+            }
+          }
         } else {
           // Clear session in store
           setSession(null);
