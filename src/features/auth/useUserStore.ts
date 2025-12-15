@@ -8,6 +8,7 @@ interface UserStore {
   setSession: (session: UserSession | null) => void;
   setIsLoading: (loading: boolean) => void;
   isAdmin: () => boolean;
+  isAuthenticated: () => boolean;
   clearSession: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -27,6 +28,11 @@ export const useUserStore = create<UserStore>((set, get) => ({
   isAdmin: () => {
     const session = get().session;
     return session?.profile?.role === 'admin';
+  },
+
+  isAuthenticated: () => {
+    const session = get().session;
+    return !!session;
   },
 
   clearSession: () => {

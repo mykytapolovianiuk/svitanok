@@ -12,19 +12,6 @@ if (!supabaseAnonKey) {
   throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable')
 }
 
-// Custom fetch with timeout
-const customFetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-  
-  return fetch(input, {
-    ...init,
-    signal: controller.signal
-  }).finally(() => {
-    clearTimeout(timeoutId);
-  });
-};
-
 // Determine cookie settings based on environment
 const isProduction = import.meta.env.PROD;
 const siteUrl = import.meta.env.VITE_SITE_URL || 'http://localhost:5173';
@@ -40,7 +27,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     ...(isProduction && siteUrl ? {
       cookieOptions: {
         name: 'sb-auth-token',
-        lifetime: 60 * 60 * 24 * 365, // 1 year
+        lifetime: 60 * 60 * 24 * 7, // 7 days
         domain: siteUrl.replace('https://', '').replace('http://', '').split('/')[0],
         sameSite: 'Lax',
         secure: siteUrl.startsWith('https'),
@@ -50,7 +37,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   global: {
     headers: {
       'x-application-name': 'svitanok-app'
-    },
-    fetch: customFetch
+    }
   }
 })

@@ -2,23 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useUserStore } from '@/features/auth/useUserStore';
-
-// Function to fetch user profile
-const fetchUserProfile = async (userId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
-    return null;
-  }
-};
+import { fetchUserProfile } from '@/features/auth/sessionManager';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -27,16 +11,24 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   // Sync auth state on route changes
   useEffect(() => {
+    let isMounted = true;
+    
     const syncAuthState = async () => {
       try {
+        if (!isMounted) return;
+        
         setIsLoading(true);
         
         // Get current session from Supabase
         const { data: { session } } = await supabase.auth.getSession();
         
+        if (!isMounted) return;
+        
         if (session) {
           // Fetch user profile
           const profile = await fetchUserProfile(session.user.id);
+          
+          if (!isMounted) return;
           
           // Update Zustand store
           setSession({
@@ -52,13 +44,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         }
       } catch (error) {
         console.error('Error syncing auth state:', error);
-        setSession(null);
+        if (isMounted) {
+          setSession(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     syncAuthState();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [location.pathname]); // Re-run on route changes
 
   return <>{children}</>;
