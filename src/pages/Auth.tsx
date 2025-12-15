@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ export default function Auth() {
   const [agreeMarketing, setAgreeMarketing] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Login form
   const [loginData, setLoginData] = useState({
@@ -182,6 +183,11 @@ export default function Auth() {
                 </label>
                 <button
                   type="button"
+                  onClick={() => {
+                    alert('Будь ласка, зв\'яжіться з підтримкою для відновлення пароля');
+                    // Or implement Supabase password reset functionality
+                    // supabase.auth.resetPasswordForEmail(email)
+                  }}
                   className="text-xs text-gray-600 hover:text-black underline uppercase tracking-[0.5px]"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
@@ -326,11 +332,11 @@ export default function Auth() {
                   />
                   <span className="text-gray-700 leading-relaxed" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                     Я погоджуюся з{' '}
-                    <a href="/terms-of-service" className="underline hover:text-black">
+                    <a href="/terms" className="underline hover:text-black">
                       Умови користування послугами
                     </a>{' '}
                     та{' '}
-                    <a href="/privacy-policy" className="underline hover:text-black">
+                    <a href="/privacy" className="underline hover:text-black">
                       Політика конфіденційності
                     </a>
                   </span>
@@ -353,8 +359,8 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Discount Banner */}
-      <DiscountBanner />
+      {/* Discount Banner - Hide on Auth page */}
+      {location.pathname !== '/auth' && <DiscountBanner />}
     </div>
   );
 }

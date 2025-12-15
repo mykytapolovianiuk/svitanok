@@ -291,285 +291,293 @@ export default function ProductPage() {
       )}
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs />
-
-      {/* Product Detail - 3 Column Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Thumbnails Column - Hidden on mobile, shown on desktop */}
-        <div className="hidden lg:flex flex-col gap-3">
-          {product.images.map((image, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedImage(index)}
-              className={`flex-shrink-0 w-20 h-20 border-2 transition-colors ${
-                selectedImage === index ? 'border-black' : 'border-gray-200 hover:border-gray-400'
-              }`}
-            >
-              <img
-                src={image || '/placeholder-product.jpg'}
-                alt={`${product.name} ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
-        </div>
-
-        {/* Main Image Column */}
-        <div className="relative">
-          <div 
-            className="bg-[#F5F5F5] aspect-square flex items-center justify-center relative group cursor-zoom-in"
-            onClick={() => setIsLightboxOpen(true)}
-          >
-            <ImageZoom
-              src={product.images[selectedImage] || '/placeholder-product.jpg'}
-              alt={product.name}
-              className="w-full h-full"
-            />
-            {/* Lightbox Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLightboxOpen(true);
-              }}
-              className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow opacity-0 group-hover:opacity-100 z-20"
-              aria-label="Відкрити в повноекранному режимі"
-            >
-              <Maximize2 size={18} className="text-gray-700" />
-            </button>
-          </div>
-          {/* Wishlist Badge */}
-          <button
-            onClick={handleToggleFavorite}
-            className="absolute top-4 right-4 w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow z-10"
-            aria-label={isFavorite ? 'Видалити з обраних' : 'Додати до обраних'}
-          >
-            <Heart
-              size={18}
-              className={isFavorite ? 'fill-red-500 stroke-red-500' : 'stroke-gray-400'}
-            />
-          </button>
-          
-          {/* Mobile Image Thumbnails */}
-          {product.images.length > 1 && (
-            <div className="lg:hidden flex gap-2 mt-4 justify-center">
-              {product.images.map((image, index) => (
+        
+        {/* Product Detail - Restructured Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+          {/* Description Column - Left */}
+          <div className="lg:col-span-3">
+            <div className="space-y-4">
+              {/* Description Accordion */}
+              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
                 <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`w-16 h-16 border-2 transition-colors ${
-                    selectedImage === index ? 'border-black' : 'border-gray-200'
-                  }`}
+                  onClick={() => toggleAccordion('description')}
+                  className="w-full p-5 text-left flex justify-between items-center"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  <img
-                    src={image || '/placeholder-product.jpg'}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <span className="font-medium uppercase tracking-wider">Опис</span>
+                  <span>{activeAccordion === 'description' ? '⊖' : '⊕'}</span>
                 </button>
-              ))}
+                {activeAccordion === 'description' && (
+                  <div className="p-5 pt-0">
+                    <div
+                      className="prose max-w-none text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Attributes Accordion */}
+              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
+                <button
+                  onClick={() => toggleAccordion('attributes')}
+                  className="w-full p-5 text-left flex justify-between items-center"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  <span className="font-medium uppercase tracking-wider">Характеристики</span>
+                  <span>{activeAccordion === 'attributes' ? '⊖' : '⊕'}</span>
+                </button>
+                {activeAccordion === 'attributes' && (
+                  <div className="p-5 pt-0">
+                    <div className="border border-gray-200 rounded-lg">
+                      {Object.entries(filteredAttributes).map(([key, value]) => (
+                        <div 
+                          key={key} 
+                          className="grid grid-cols-2 gap-4 p-4 border-b border-gray-200 last:border-b-0"
+                          style={{ fontFamily: 'Montserrat, sans-serif' }}
+                        >
+                          <span className="font-medium">{key}:</span>
+                          <span>{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* Product Info Column */}
-        <div>
-          <h1
-            className="text-2xl font-light mb-4 uppercase tracking-[2px]"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            {product.name}
-          </h1>
-
-          {/* Rating */}
-          {reviewStats && reviewStats.totalReviews > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg 
-                    key={star} 
-                    className={`w-5 h-5 ${
-                      star <= Math.round(reviewStats.averageRating)
-                        ? 'fill-current text-yellow-400'
-                        : 'fill-none text-gray-300'
-                    }`} 
-                    viewBox="0 0 24 24"
+          </div>
+          
+          {/* Main Image Column - Center */}
+          <div className="lg:col-span-6">
+            <div className="relative">
+              <div 
+                className="bg-[#F5F5F5] aspect-square flex items-center justify-center relative group cursor-zoom-in"
+                onClick={() => setIsLightboxOpen(true)}
+              >
+                <ImageZoom
+                  src={product.images[selectedImage] || '/placeholder-product.jpg'}
+                  alt={product.name}
+                  className="w-full h-full"
+                />
+                {/* Lightbox Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLightboxOpen(true);
+                  }}
+                  className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow opacity-0 group-hover:opacity-100 z-20"
+                  aria-label="Відкрити в повноекранному режимі"
+                >
+                  <Maximize2 size={18} className="text-gray-700" />
+                </button>
+              </div>
+              {/* Wishlist Badge */}
+              <button
+                onClick={handleToggleFavorite}
+                className="absolute top-4 right-4 w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow z-10"
+                aria-label={isFavorite ? 'Видалити з обраних' : 'Додати до обраних'}
+              >
+                <Heart
+                  size={18}
+                  className={isFavorite ? 'fill-red-500 stroke-red-500' : 'stroke-gray-400'}
+                />
+              </button>
+              
+              {/* Mobile Image Thumbnails */}
+              {product.images.length > 1 && (
+                <div className="lg:hidden flex gap-2 mt-4 justify-center">
+                  {product.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-16 h-16 border-2 transition-colors ${
+                        selectedImage === index ? 'border-black' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={image || '/placeholder-product.jpg'}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Desktop Image Thumbnails */}
+            {product.images.length > 1 && (
+              <div className="hidden lg:grid grid-cols-5 gap-3 mt-4">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`aspect-square border-2 transition-colors ${
+                      selectedImage === index ? 'border-black' : 'border-gray-200 hover:border-gray-400'
+                    }`}
                   >
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                  </svg>
+                    <img
+                      src={image || '/placeholder-product.jpg'}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 ))}
               </div>
-              <span className="text-sm text-gray-600">
-                {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews} {reviewStats.totalReviews === 1 ? 'відгук' : reviewStats.totalReviews < 5 ? 'відгуки' : 'відгуків'})
-              </span>
-            </div>
-          )}
-
-          {/* Price */}
-          <div className="flex items-center gap-4 mb-4">
-            <span
-              className="text-3xl font-light"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              {product.price.toFixed(2)} ₴
-            </span>
-            {product.old_price && (
-              <>
-                <span
-                  className="text-xl text-gray-400 line-through"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {product.old_price.toFixed(2)} ₴
-                </span>
-                <span className="px-2 py-1 bg-black text-white text-xs font-medium uppercase tracking-[1px]">
-                  -{discountPercentage}%
-                </span>
-              </>
             )}
           </div>
-
-          {/* Stock Indicator */}
-          <div className="mb-6">
-            <StockIndicator inStock={product.in_stock} />
-          </div>
-
-          {/* Actions */}
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
-              <div className="flex items-center border border-gray-300 w-full sm:w-auto justify-center sm:justify-start">
-                <button
-                  onClick={() => handleQuantityChange(quantity - 1)}
-                  className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                  disabled={quantity <= 1}
-                >
-                  <Minus size={16} />
-                </button>
-                <span 
-                  className="px-4 md:px-6 py-2 text-sm md:text-base font-medium min-w-[50px] text-center" 
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => handleQuantityChange(quantity + 1)}
-                  className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                  disabled={quantity >= 99}
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-
-              <button
-                onClick={handleAddToCart}
-                disabled={!product.in_stock || isAddingToCart}
-                className="flex-1 border border-black py-3 md:py-4 text-center hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-[1px] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          
+          {/* Product Info Column - Right */}
+          <div className="lg:col-span-3">
+            <div>
+              <h1
+                className="text-2xl font-light mb-4 uppercase tracking-[2px]"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                {isAddingToCart && <Spinner size="sm" />}
-                {isAddingToCart ? 'Додавання...' : 'КУПИТИ'}
-              </button>
-            </div>
+                {product.name}
+              </h1>
 
-            {/* Quick Order Button */}
-            <button
-              onClick={() => setIsQuickOrderOpen(true)}
-              className="w-full py-3 md:py-4 bg-black text-white text-center hover:opacity-90 transition-opacity uppercase tracking-[1px] text-sm font-medium"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Купити в 1 клік
-            </button>
-          </div>
-
-          {/* Accordions */}
-          <div className="space-y-4">
-            {/* Description Accordion */}
-            <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
-              <button
-                onClick={() => toggleAccordion('description')}
-                className="w-full p-5 text-left flex justify-between items-center"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                <span className="font-medium uppercase tracking-wider">Опис</span>
-                <span>{activeAccordion === 'description' ? '⊖' : '⊕'}</span>
-              </button>
-              {activeAccordion === 'description' && (
-                <div className="p-5 pt-0">
-                  <div
-                    className="prose max-w-none text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Attributes Accordion */}
-            <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
-              <button
-                onClick={() => toggleAccordion('attributes')}
-                className="w-full p-5 text-left flex justify-between items-center"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                <span className="font-medium uppercase tracking-wider">Характеристики</span>
-                <span>{activeAccordion === 'attributes' ? '⊖' : '⊕'}</span>
-              </button>
-              {activeAccordion === 'attributes' && (
-                <div className="p-5 pt-0">
-                  <div className="border border-gray-200 rounded-lg">
-                    {Object.entries(filteredAttributes).map(([key, value]) => (
-                      <div 
-                        key={key} 
-                        className="grid grid-cols-2 gap-4 p-4 border-b border-gray-200 last:border-b-0"
-                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+              {/* Rating */}
+              {reviewStats && reviewStats.totalReviews > 0 && (
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg 
+                        key={star} 
+                        className={`w-5 h-5 ${
+                          star <= Math.round(reviewStats.averageRating)
+                            ? 'fill-current text-yellow-400'
+                            : 'fill-none text-gray-300'
+                        }`} 
+                        viewBox="0 0 24 24"
                       >
-                        <span className="font-medium">{key}:</span>
-                        <span>{String(value)}</span>
-                      </div>
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                      </svg>
                     ))}
                   </div>
+                  <span className="text-sm text-gray-600">
+                    {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews} {reviewStats.totalReviews === 1 ? 'відгук' : reviewStats.totalReviews < 5 ? 'відгуки' : 'відгуків'})
+                  </span>
                 </div>
               )}
+
+              {/* Price */}
+              <div className="flex items-center gap-4 mb-4">
+                <span
+                  className="text-3xl font-light"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {product.price.toFixed(2)} ₴
+                </span>
+                {product.old_price && (
+                  <>
+                    <span
+                      className="text-xl text-gray-400 line-through"
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      {product.old_price.toFixed(2)} ₴
+                    </span>
+                    <span className="px-2 py-1 bg-black text-white text-xs font-medium uppercase tracking-[1px]">
+                      -{discountPercentage}%
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Stock Indicator */}
+              <div className="mb-6">
+                <StockIndicator inStock={product.in_stock} />
+              </div>
+
+              {/* Actions */}
+              <div className="mb-8">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
+                  <div className="flex items-center border border-gray-300 w-full sm:w-auto justify-center sm:justify-start">
+                    <button
+                      onClick={() => handleQuantityChange(quantity - 1)}
+                      className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      disabled={quantity <= 1}
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <span 
+                      className="px-4 md:px-6 py-2 text-sm md:text-base font-medium min-w-[50px] text-center" 
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      disabled={quantity >= 99}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!product.in_stock || isAddingToCart}
+                    className="flex-1 border border-black py-3 md:py-4 text-center hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-[1px] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {isAddingToCart && <Spinner size="sm" />}
+                    {isAddingToCart ? 'Додавання...' : 'КУПИТИ'}
+                  </button>
+                </div>
+
+                {/* Quick Order Button */}
+                <button
+                  onClick={() => setIsQuickOrderOpen(true)}
+                  className="w-full py-3 md:py-4 bg-black text-white text-center hover:opacity-90 transition-opacity uppercase tracking-[1px] text-sm font-medium"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Купити в 1 клік
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Frequently Bought Together */}
-      {product && <FrequentlyBoughtTogether productId={product.id} />}
+        {/* Frequently Bought Together */}
+        {product && <FrequentlyBoughtTogether productId={product.id} />}
 
-      {/* Recommendations Section */}
-      <RecommendedProducts 
-        products={recommendedProducts} 
-        loading={recommendationsLoading}
-      />
-
-      {/* Product Reviews */}
-      <div className="mt-12">
-        <ProductReviews productId={product.id.toString()} />
-      </div>
-
-      {/* Quick Order Modal */}
-      {product && (
-        <QuickOrderModal
-          isOpen={isQuickOrderOpen}
-          onClose={() => setIsQuickOrderOpen(false)}
-          product={{
-            id: product.id,
-            name: product.name,
-            price: product.price
-          }}
+        {/* Recommendations Section */}
+        <RecommendedProducts 
+          products={recommendedProducts} 
+          loading={recommendationsLoading}
         />
-      )}
 
-      {/* Image Lightbox */}
-      {product && (
-        <ImageLightbox
-          isOpen={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
-          images={product.images}
-          currentIndex={selectedImage}
-          onIndexChange={setSelectedImage}
-          productName={product.name}
-        />
-      )}
+        {/* Product Reviews */}
+        <div className="mt-12">
+          <ProductReviews productId={product.id.toString()} />
+        </div>
+
+        {/* Quick Order Modal */}
+        {product && (
+          <QuickOrderModal
+            isOpen={isQuickOrderOpen}
+            onClose={() => setIsQuickOrderOpen(false)}
+            product={{
+              id: product.id,
+              name: product.name,
+              price: product.price
+            }}
+          />
+        )}
+
+        {/* Image Lightbox */}
+        {product && (
+          <ImageLightbox
+            isOpen={isLightboxOpen}
+            onClose={() => setIsLightboxOpen(false)}
+            images={product.images}
+            currentIndex={selectedImage}
+            onIndexChange={setSelectedImage}
+            productName={product.name}
+          />
+        )}
       </div>
     </>
   );

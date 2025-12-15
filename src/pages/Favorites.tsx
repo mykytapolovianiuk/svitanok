@@ -36,7 +36,7 @@ export default function Favorites() {
   const { session } = useUserStore();
   const { addItem } = useCartStore();
   const { favoriteIds, toggleFavorite, loading: favoritesLoading } = useFavorites();
-  const userId = session?.user.id;
+  const userId = session?.user?.id;
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -48,7 +48,7 @@ export default function Favorites() {
   const { data: favorites = [], isLoading: productsLoading } = useQuery({
     queryKey: ['favorites-products', userId, productIds],
     queryFn: async () => {
-      if (!userId || productIds.length === 0) return [];
+      if (productIds.length === 0) return [];
       
       const { data: productsData, error: productsError } = await supabase
         .from('products')
@@ -59,7 +59,7 @@ export default function Favorites() {
       
       return (productsData || []) as DbProduct[];
     },
-    enabled: !!userId && !favoritesLoading && productIds.length > 0,
+    enabled: !favoritesLoading && productIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: [],
@@ -123,30 +123,8 @@ export default function Favorites() {
     }
   };
 
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-8 sm:p-12 text-center">
-            <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              Увійдіть в акаунт
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Будь ласка, увійдіть в акаунт для перегляду списку бажань
-            </p>
-            <Link
-              to="/auth"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 transition-colors"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Увійти
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Remove the redirect for non-authenticated users and show favorites for all users
+  // The useFavorites hook already handles local storage for non-authenticated users
 
   return (
     <div className="min-h-screen bg-[#FFF2E1] py-6 sm:py-8">

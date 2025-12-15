@@ -95,7 +95,7 @@ export default function ProductCard({
     if (wasFavorite) {
       toast.success('Товар видалено з обраних');
     } else {
-      toast.success('Товар додано до обраних');
+      toast.success('Товар додано в улюблені');
     }
   };
   

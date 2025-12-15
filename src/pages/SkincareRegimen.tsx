@@ -118,21 +118,21 @@ export default function SkincareRegimen() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="text-center p-4 border border-gray-200">
                 <h4 className="font-semibold mb-2 text-sm uppercase">Ексфоліація</h4>
-                <p className="text-xs text-gray-600 font-light">
+                <p className="text-xs text-gray-700 font-light">
                   1-2 рази на тиждень для видалення мертвих клітин
                 </p>
               </div>
               
               <div className="text-center p-4 border border-gray-200">
                 <h4 className="font-semibold mb-2 text-sm uppercase">Маски</h4>
-                <p className="text-xs text-gray-600 font-light">
+                <p className="text-xs text-gray-700 font-light">
                   1-2 рази на тиждень для інтенсивного догляду
                 </p>
               </div>
               
               <div className="text-center p-4 border border-gray-200">
                 <h4 className="font-semibold mb-2 text-sm uppercase">SPF захист</h4>
-                <p className="text-xs text-gray-600 font-light">
+                <p className="text-xs text-gray-700 font-light">
                   Щодня, навіть в похмурі дні
                 </p>
               </div>

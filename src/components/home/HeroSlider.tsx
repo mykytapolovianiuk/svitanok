@@ -183,8 +183,30 @@ function BannerSlide({ slide }: { slide: BannerSlide }) {
   useBannerImpression(`hero-${slide.id}`, slide.title, 'hero', true);
   
   const handleBannerClick = () => {
-    trackBannerClick(`hero-${slide.id}`, slide.title, 'hero', '/catalog');
-    window.location.href = '/catalog';
+    let targetUrl = '/catalog';
+    
+    switch(slide.id) {
+      case '1':
+        targetUrl = '/catalog?category=sets';
+        break;
+      case '2':
+        targetUrl = '/catalog?category=skincare';
+        break;
+      case '3':
+        targetUrl = '/favorites';
+        break;
+      case '4':
+        targetUrl = '/catalog';
+        break;
+      case '5':
+        targetUrl = '/catalog';
+        break;
+      default:
+        targetUrl = '/catalog';
+    }
+    
+    trackBannerClick(`hero-${slide.id}`, slide.title, 'hero', targetUrl);
+    window.location.href = targetUrl;
   };
   
   return (

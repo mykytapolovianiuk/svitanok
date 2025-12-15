@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
@@ -16,16 +16,23 @@ interface QuickOrderModalProps {
 
 export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrderModalProps) {
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+380');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Ensure phone starts with +380
+  useEffect(() => {
+    if (!phone.startsWith('+380')) {
+      setPhone('+380');
+    }
+  }, [phone]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim() || !phone.trim()) {
-      toast.error('Будь ласка, заповніть всі поля');
+    if (!name.trim() || !phone.trim() || phone.length < 12) {
+      toast.error('Будь ласка, заповніть всі поля коректно');
       return;
     }
     
@@ -66,7 +73,7 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
       
       toast.success('Замовлення успішно оформлено! Очікуйте дзвінка.');
       setName('');
-      setPhone('');
+      setPhone('+380');
       onClose();
     } catch (error) {
       console.error('Quick order error:', error);
@@ -154,7 +161,14 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
                 type="tel"
                 id="quick-order-phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  let value = e.target.value;
+                  // Ensure it starts with +380
+                  if (!value.startsWith('+380')) {
+                    value = '+380' + value.replace(/\D/g, '').substring(3);
+                  }
+                  setPhone(value);
+                }}
                 className="w-full bg-transparent border-b border-gray-300 py-2 px-0 focus:outline-none focus:border-b-2 focus:border-black placeholder-gray-500"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
                 placeholder="+380XXXXXXXXX"

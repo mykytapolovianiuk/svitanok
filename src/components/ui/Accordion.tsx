@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface AccordionItem {
   id: string;
@@ -12,15 +12,29 @@ interface AccordionProps {
 
 export default function Accordion({ items }: AccordionProps) {
   const [openItemId, setOpenItemId] = useState<string | null>(null);
+  const accordionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const toggleItem = (id: string) => {
-    setOpenItemId(openItemId === id ? null : id);
+    const newOpenState = openItemId === id ? null : id;
+    setOpenItemId(newOpenState);
+    
+    // Auto-scroll to the accordion header when opened
+    if (newOpenState && accordionRefs.current[id]) {
+      accordionRefs.current[id]?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
   };
 
   return (
     <div className="border-t border-gray-200">
       {items.map((item) => (
-        <div key={item.id} className="border-b border-gray-200">
+        <div 
+          key={item.id} 
+          className="border-b border-gray-200"
+          ref={(el) => (accordionRefs.current[item.id] = el)}
+        >
           <button
             className="flex justify-between items-center w-full py-4 text-left font-medium hover:text-gray-600 transition-colors"
             onClick={() => toggleItem(item.id)}

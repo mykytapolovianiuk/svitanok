@@ -6,6 +6,7 @@ import { useUserStore } from '../../features/auth/useUserStore';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface SearchProduct {
   id: number;
@@ -29,6 +30,10 @@ export default function Header() {
   const totalItems = useCartTotalItems();
   const { session } = useUserStore();
   const { fetchSettings } = useSiteSettings();
+  const { favoriteIds } = useFavorites();
+  
+  // Calculate favorites count
+  const favoritesCount = favoriteIds ? favoriteIds.size : 0;
 
   // Search products query
   const { data: searchResults = [], isLoading: isSearchLoading } = useQuery<SearchProduct[]>({
@@ -250,6 +255,11 @@ export default function Header() {
                   aria-label="Обране"
                 >
                   <Heart size={20} />
+                  {favoritesCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {favoritesCount}
+                    </span>
+                  )}
                   {totalItems > 0 && (
                     <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                       {totalItems}
