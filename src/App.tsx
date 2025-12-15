@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ScrollToTop from './components/common/ScrollToTop';
@@ -59,71 +60,73 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AnalyticsProvider />
-          <ScrollToTop />
-          <CartDrawer />
-          <Toaster position="top-right" />
-          <Routes>
-          {/* Checkout route without header/footer */}
-          <Route path="/checkout" element={
-            <CheckoutLayout>
-              <Checkout />
-            </CheckoutLayout>
-          } />
-          
-          {/* Admin routes without header/footer */}
-          <Route
-            path="admin"
-            element={
-              <ProtectedRoute requireAdmin>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Admin />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="promocodes" element={<AdminPromoCodes />} />
-            <Route path="reviews" element={<AdminReviews />} />
-            <Route path="customers" element={<AdminCustomers />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
-          
-          {/* All other routes with normal layout */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="catalog" element={<Catalog />} />
-            <Route path="catalog/:category" element={<Catalog />} />
-            <Route path="product/:slug" element={<ProductPage />} />
-            <Route path="cart" element={<Cart />} />
-            <Route path="order-success" element={<OrderSuccess />} />
-            <Route path="payment/:orderId" element={<PaymentPage />} />
-            <Route path="checkout/success" element={<CheckoutSuccess />} />
-            <Route path="auth" element={<Auth />} />
-            <Route path="favorites" element={<Favorites />} />
-            <Route path="about" element={<About />} />
-            <Route path="contacts" element={<Contacts />} />
-            <Route path="faq" element={<FAQ />} />
-            <Route path="delivery" element={<Delivery />} />
-            <Route path="autumn-care" element={<AutumnCare />} />
-            <Route path="skincare-regimen" element={<SkincareRegimen />} />
-            <Route path="privacy" element={<Privacy />} />
-            <Route path="terms" element={<Terms />} />
+          <HelmetProvider>
+            <AnalyticsProvider />
+            <ScrollToTop />
+            <CartDrawer />
+            <Toaster position="top-right" />
+            <Routes>
+            {/* Checkout route without header/footer */}
+            <Route path="/checkout" element={
+              <CheckoutLayout>
+                <Checkout />
+              </CheckoutLayout>
+            } />
             
-            {/* Protected Routes */}
+            {/* Admin routes without header/footer */}
             <Route
-              path="account"
+              path="admin"
               element={
-                <ProtectedRoute>
-                  <Account />
+                <ProtectedRoute requireAdmin>
+                  <AdminLayout />
                 </ProtectedRoute>
               }
-            />
+            >
+              <Route index element={<Admin />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="promocodes" element={<AdminPromoCodes />} />
+              <Route path="reviews" element={<AdminReviews />} />
+              <Route path="customers" element={<AdminCustomers />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
             
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
+            {/* All other routes with normal layout */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="catalog" element={<Catalog />} />
+              <Route path="catalog/:category" element={<Catalog />} />
+              <Route path="product/:slug" element={<ProductPage />} />
+              <Route path="cart" element={<Cart />} />
+              <Route path="order-success" element={<OrderSuccess />} />
+              <Route path="payment/:orderId" element={<PaymentPage />} />
+              <Route path="checkout/success" element={<CheckoutSuccess />} />
+              <Route path="auth" element={<Auth />} />
+              <Route path="favorites" element={<Favorites />} />
+              <Route path="about" element={<About />} />
+              <Route path="contacts" element={<Contacts />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="delivery" element={<Delivery />} />
+              <Route path="autumn-care" element={<AutumnCare />} />
+              <Route path="skincare-regimen" element={<SkincareRegimen />} />
+              <Route path="privacy" element={<Privacy />} />
+              <Route path="terms" element={<Terms />} />
+              
+              {/* Protected Routes */}
+              <Route
+                path="account"
+                element={
+                  <ProtectedRoute>
+                    <Account />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+          </HelmetProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
