@@ -7,6 +7,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const location = useLocation();
   const setSession = useUserStore.getState().setSession;
   const setIsLoading = useUserStore.getState().setIsLoading;
+  const setIsInitialized = useUserStore.getState().setIsInitialized; // Added for race condition fix
 
   // Sync auth state on route changes
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       } finally {
         if (isMounted) {
           setIsLoading(false);
+          setIsInitialized(true); // Added for race condition fix
         }
       }
     };

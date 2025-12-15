@@ -7,10 +7,11 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { session, isLoading } = useUserStore();
+  const { session, isLoading, isInitialized } = useUserStore();
   
   // Show loading spinner while checking auth state
-  if (isLoading) {
+  // Wait for initialization to complete before checking user status
+  if (!isInitialized || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -22,11 +23,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   if (!session) {
     return <Navigate to="/auth" replace />;
   }
-
+  
   // Redirect to home if admin access required but user is not admin
   if (requireAdmin && session.profile?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
-
+  
   return <>{children}</>;
 }

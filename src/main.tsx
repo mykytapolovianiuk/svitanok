@@ -33,6 +33,7 @@ const fetchUserProfile = async (userId: string) => {
 const initializeApp = async () => {
   const setIsLoading = useUserStore.getState().setIsLoading;
   const setSession = useUserStore.getState().setSession;
+  const setIsInitialized = useUserStore.getState().setIsInitialized; // Added for race condition fix
   
   try {
     // Set loading state
@@ -67,12 +68,14 @@ const initializeApp = async () => {
     
     // Always clear loading state after initialization
     setIsLoading(false);
+    setIsInitialized(true); // Added for race condition fix
   } catch (error) {
     console.error('Error initializing app:', error);
     // Error logging handled by Sentry in production
     // Clear session and loading state on error
     setSession(null);
     setIsLoading(false);
+    setIsInitialized(true); // Added for race condition fix
   }
 };
 
