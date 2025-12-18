@@ -157,53 +157,59 @@ async function importCategories(parsedCategories) {
       
       categoriesToInsert.push(categoryData);
       console.log(`Added category to insertion list`);
-      
-      // Add a small delay to avoid overwhelming the database
-      await delay(10);
     } catch (error) {
       console.error(`Error preparing category ${category.externalId}: ${error.message}`);
     }
   }
   console.log(`Prepared ${categoriesToInsert.length} categories for insertion`);
   
-  // Process categories one by one to better handle conflicts
-  console.log('Processing categories...');
-  for (const categoryData of categoriesToInsert) {
-    try {
-      console.log(`Processing category: ${categoryData.external_id}`);
-      
-      let data, error;
-      
-      // Use upsert with proper conflict resolution
-      console.log(`Upserting category ${categoryData.external_id}`);
-      const { data: upsertedData, error: upsertError } = await supabase
-        .from('categories')
-        .upsert(categoryData, {
-          onConflict: 'external_id',
-          returning: 'representation'
-        })
-        .select();
-      
-      // Add a small delay to avoid overwhelming the database
-      await delay(10);
-      
-      if (upsertError) {
-        console.error(`Error upserting category ${categoryData.external_id}:`, upsertError.message);
-        console.error(`Category data:`, JSON.stringify(categoryData, null, 2));
-        // Continue with other categories instead of failing completely
-        continue;
-      } else if (upsertedData && upsertedData.length > 0) {
-        const category = upsertedData[0];
-        const originalCategory = parsedCategories.find(c => c.externalId === category.external_id);
-        if (originalCategory) {
-          categoryMapping[originalCategory.externalId] = category.id;
-          console.log(`Successfully processed category ${category.external_id} with ID ${category.id}`);
+  // Process categories in smaller batches to avoid overwhelming the database
+  console.log('Processing categories in batches...');
+  const batchSize = 10;
+  for (let i = 0; i < categoriesToInsert.length; i += batchSize) {
+    const batch = categoriesToInsert.slice(i, i + batchSize);
+    console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(categoriesToInsert.length/batchSize)} (${batch.length} categories)`);
+    
+    // Process each category in the batch
+    for (const categoryData of batch) {
+      try {
+        console.log(`Processing category: ${categoryData.external_id}`);
+        
+        // Use upsert with proper conflict resolution
+        console.log(`Upserting category ${categoryData.external_id}`);
+        const { data: upsertedData, error: upsertError } = await supabase
+          .from('categories')
+          .upsert(categoryData, {
+            onConflict: 'external_id',
+            returning: 'representation'
+          })
+          .select();
+        
+        if (upsertError) {
+          console.error(`Error upserting category ${categoryData.external_id}:`, upsertError.message);
+          console.error(`Category data:`, JSON.stringify(categoryData, null, 2));
+          // Continue with other categories instead of failing completely
+          continue;
+        } else if (upsertedData && upsertedData.length > 0) {
+          const category = upsertedData[0];
+          const originalCategory = parsedCategories.find(c => c.externalId === category.external_id);
+          if (originalCategory) {
+            categoryMapping[originalCategory.externalId] = category.id;
+            console.log(`Successfully processed category ${category.external_id} with ID ${category.id}`);
+          }
         }
+        
+        // Add a small delay to avoid overwhelming the database
+        await delay(50);
+      } catch (error) {
+        console.error(`Error processing category ${categoryData.external_id}:`, error.message);
+        // Continue with other categories
       }
-    } catch (error) {
-      console.error(`Error processing category ${categoryData.external_id}:`, error.message);
-      // Continue with other categories
     }
+    
+    // Add a longer delay between batches
+    console.log(`Finished batch, waiting before next batch...`);
+    await delay(500);
   }
   
   console.log(`Successfully processed categories`);
@@ -212,8 +218,16 @@ async function importCategories(parsedCategories) {
   console.log('Updating category parent relationships...');
   let updatedCount = 0;
   
-  for (const category of parsedCategories) {
-    if (category.parentExternalId && categoryMapping[category.parentExternalId]) {
+  // Process parent relationships in batches too
+  const parentUpdates = parsedCategories.filter(category => 
+    category.parentExternalId && categoryMapping[category.parentExternalId]);
+  
+  console.log(`Processing ${parentUpdates.length} parent relationships in batches...`);
+  for (let i = 0; i < parentUpdates.length; i += batchSize) {
+    const batch = parentUpdates.slice(i, i + batchSize);
+    console.log(`Processing parent batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(parentUpdates.length/batchSize)} (${batch.length} relationships)`);
+    
+    for (const category of batch) {
       try {
         console.log(`Updating parent for category ${category.externalId}`);
         const { error: updateError } = await supabase
@@ -221,19 +235,23 @@ async function importCategories(parsedCategories) {
           .update({ parent_id: categoryMapping[category.parentExternalId] })
           .eq('external_id', category.externalId);
         
-        // Add a small delay to avoid overwhelming the database
-        await delay(10);
-        
         if (updateError) {
           console.error(`Error updating parent for category ${category.externalId}: ${updateError.message}`);
         } else {
           updatedCount++;
           console.log(`Successfully updated parent for category ${category.externalId}`);
         }
+        
+        // Add a small delay to avoid overwhelming the database
+        await delay(50);
       } catch (error) {
         console.error(`Error updating parent for category ${category.externalId}: ${error.message}`);
       }
     }
+    
+    // Add a longer delay between batches
+    console.log(`Finished parent batch, waiting before next batch...`);
+    await delay(500);
   }
   
   console.log(`Successfully updated ${updatedCount} category parent relationships`);
