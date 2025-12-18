@@ -35,6 +35,11 @@ if (!supabaseUrl || !supabaseServiceKey) {
 // Create Supabase client with service role key for full access
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Add a small delay function to avoid overwhelming the database
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Utility function to transliterate Cyrillic to Latin
 function transliterate(text) {
   const cyrillicToLatin = {
@@ -91,6 +96,9 @@ async function ensureUniqueSlug(baseSlug, tableName, fieldName = 'slug') {
     counter++;
     console.log(`Slug exists, trying: ${slug}`);
     
+    // Add a small delay to avoid overwhelming the database
+    await delay(10);
+    
     // Prevent infinite loop
     if (counter > 1000) {
       console.warn(`Could not generate unique slug for ${baseSlug}, returning with counter`);
@@ -108,6 +116,9 @@ async function ensureUniqueCategorySlug(baseSlug, externalId) {
     .select('id, slug')
     .eq('external_id', externalId)
     .single();
+  
+  // Add a small delay to avoid overwhelming the database
+  await delay(10);
   
   if (fetchError) {
     console.log(`Category ${externalId} not found in database, generating unique slug`);
@@ -146,6 +157,9 @@ async function importCategories(parsedCategories) {
       
       categoriesToInsert.push(categoryData);
       console.log(`Added category to insertion list`);
+      
+      // Add a small delay to avoid overwhelming the database
+      await delay(10);
     } catch (error) {
       console.error(`Error preparing category ${category.externalId}: ${error.message}`);
     }
@@ -163,6 +177,9 @@ async function importCategories(parsedCategories) {
         .select('id')
         .eq('external_id', categoryData.external_id)
         .single();
+      
+      // Add a small delay to avoid overwhelming the database
+      await delay(10);
       
       if (fetchError) {
         console.log(`Category ${categoryData.external_id} not found, will insert`);
@@ -185,6 +202,9 @@ async function importCategories(parsedCategories) {
           .eq('external_id', categoryData.external_id)
           .select();
         
+        // Add a small delay to avoid overwhelming the database
+        await delay(10);
+        
         data = updatedData;
         error = updateError;
       } else {
@@ -194,6 +214,9 @@ async function importCategories(parsedCategories) {
           .from('categories')
           .insert(categoryData)
           .select();
+        
+        // Add a small delay to avoid overwhelming the database
+        await delay(10);
         
         data = insertedData;
         error = insertError;
@@ -228,6 +251,9 @@ async function importCategories(parsedCategories) {
           .from('categories')
           .update({ parent_id: categoryMapping[category.parentExternalId] })
           .eq('external_id', category.externalId);
+        
+        // Add a small delay to avoid overwhelming the database
+        await delay(10);
         
         if (updateError) {
           console.error(`Error updating parent for category ${category.externalId}: ${updateError.message}`);
