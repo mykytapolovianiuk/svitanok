@@ -28,10 +28,9 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast.success('Ви вийшли з системи');
-      navigate('/');
+      // Instead of signing out completely, just navigate to profile page
+      toast.success('Вихід з адмінки');
+      navigate('/account');
     } catch (error: any) {
       toast.error('Помилка виходу: ' + error.message);
     }
@@ -91,7 +90,7 @@ export default function AdminLayout() {
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   <LogOut className="mr-3 h-5 w-5" />
-                  Вийти
+                  Вийти з адмінки
                 </button>
               </div>
             </div>
@@ -139,7 +138,7 @@ export default function AdminLayout() {
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
                 <LogOut className="mr-3 h-5 w-5" />
-                Вийти
+                Вийти з адмінки
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram } from 'lucide-react';
+import { Instagram } from 'lucide-react';
 import { useSiteSetting } from '@/hooks/useSiteSettings';
 
 export default function Footer() {
@@ -22,15 +22,6 @@ export default function Footer() {
             </h3>
             <div className="flex gap-3 md:gap-4 mt-3 md:mt-4">
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-text-main hover:opacity-70 transition"
-                aria-label="Facebook"
-              >
-                <Facebook size={20} className="md:w-6 md:h-6" />
-              </a>
-              <a
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -42,13 +33,13 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Товари */}
+          {/* Column 2: Категорії */}
           <div className="col-span-1">
             <h4 
               className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              Товари
+              Категорії
             </h4>
             <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
               <li>
@@ -57,7 +48,7 @@ export default function Footer() {
                   className="text-text-main hover:opacity-70 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Inner Care
+                  Догляд для тіла
                 </Link>
               </li>
               <li>
@@ -66,7 +57,7 @@ export default function Footer() {
                   className="text-text-main hover:opacity-70 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Skin Care
+                  Догляд для обличчя
                 </Link>
               </li>
               <li>
@@ -75,7 +66,7 @@ export default function Footer() {
                   className="text-text-main hover:opacity-70 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Scalp Care
+                  Догляд для волосся
                 </Link>
               </li>
             </ul>
@@ -92,20 +83,11 @@ export default function Footer() {
             <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
               <li>
                 <Link 
-                  to="/news" 
+                  to="/delivery" 
                   className="text-text-main hover:opacity-70 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  News
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/vision" 
-                  className="text-text-main hover:opacity-70 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Vision
+                  Доставка
                 </Link>
               </li>
               <li>
@@ -114,16 +96,7 @@ export default function Footer() {
                   className="text-text-main hover:opacity-70 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Q&A
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/delivery" 
-                  className="text-text-main hover:opacity-70 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Оплата і доставка
+                  Питання та відповіді
                 </Link>
               </li>
               <li>
@@ -162,7 +135,7 @@ export default function Footer() {
         <div className="border-t border-gray-400 mt-6 md:mt-8 pt-4 md:pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 text-xs md:text-sm text-text-main">
             <p style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              CEIN. 2019 KINS All rights reserved
+              © 2025 SVITANOK. Всі права захищені.
             </p>
             <div className="flex flex-wrap justify-center gap-2 md:gap-4 lg:gap-6">
               <Link 

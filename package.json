@@ -13,7 +13,9 @@
     "coverage": "vitest run --coverage",
     "analyze": "npm run build && npx vite-bundle-visualizer",
     "import-feed": "node src/scripts/importFeed.cjs",
-    "test-category": "node src/scripts/testCategory.cjs"
+    "test-category": "node src/scripts/testCategory.cjs",
+    "test-categories-table": "node src/scripts/testCategoriesTable.cjs",
+    "test-products-table": "node src/scripts/testProductsTable.cjs"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",

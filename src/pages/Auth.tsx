@@ -165,7 +165,7 @@ export default function Auth() {
                 </button>
               </div>
 
-              {/* Запам'ятати мене та Забули пароль */}
+              {/* Запам'ятати мене */}
               <div className="flex items-center justify-between pt-2">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -181,18 +181,6 @@ export default function Auth() {
                     Запам'ятати мене
                   </span>
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    alert('Будь ласка, зв\'яжіться з підтримкою для відновлення пароля');
-                    // Or implement Supabase password reset functionality
-                    // supabase.auth.resetPasswordForEmail(email)
-                  }}
-                  className="text-xs text-gray-600 hover:text-black underline uppercase tracking-[0.5px]"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Забули пароль?
-                </button>
               </div>
 
               {/* Кнопка входу */}

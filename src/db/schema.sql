@@ -11,6 +11,7 @@ CREATE TABLE products (
   images TEXT[],
   attributes JSONB,
   in_stock BOOLEAN DEFAULT TRUE,
+  is_bestseller BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 

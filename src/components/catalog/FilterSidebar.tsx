@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 interface FilterSidebarProps {
   selectedBrands: string[];
@@ -39,30 +39,100 @@ export default function FilterSidebar({
   const [problems, setProblems] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Check if brand cache is older than 1 day and trigger refresh in background
   useEffect(() => {
+    const checkCacheAge = () => {
+      const cacheTimestamp = localStorage.getItem('svitanok_brands_cache_timestamp');
+      if (cacheTimestamp) {
+        const age = Date.now() - parseInt(cacheTimestamp);
+        // If cache is older than 1 day (86400000 ms), refresh in background
+        if (age > 86400000) {
+          handleRefreshBrands();
+        }
+      }
+    };
+    
+    // Check cache age when component mounts
+    checkCacheAge();
+    
+    // Also fetch initial filter data
     fetchFilterData();
+    
+    // Check cache age every 6 hours
+    const interval = setInterval(checkCacheAge, 21600000); // 6 hours
+    
+    return () => clearInterval(interval);
   }, []);
 
   const fetchFilterData = async () => {
     try {
-      setLoading(true);
+      // Fetch unique brands from products with caching
+      let brandsData: string[] = [];
       
-      // Fetch unique brands from products
-      const { data: brandData, error: brandError } = await supabase
-        .from('products')
-        .select('attributes')
-        .not('attributes', 'is', null);
+      // Check if we have cached brand data (less than 1 hour old)
+      const cachedBrands = localStorage.getItem('svitanok_brands_cache');
+      const cacheTimestamp = localStorage.getItem('svitanok_brands_cache_timestamp');
+      const cacheValid = cachedBrands && cacheTimestamp && 
+        (Date.now() - parseInt(cacheTimestamp)) < 3600000; // 1 hour
       
-      if (!brandError && brandData) {
-        const uniqueBrands = new Set<string>();
-        brandData.forEach(product => {
-          const brand = product.attributes?.Виробник || product.attributes?.Brand;
-          if (brand) {
-            uniqueBrands.add(brand);
+      if (cacheValid) {
+        brandsData = JSON.parse(cachedBrands);
+        // If we have cached data, don't show loading spinner
+        setLoading(false);
+      } else {
+        // Only show loading spinner when fetching from database
+        setLoading(true);
+        
+        // Fetch brands from database
+        const { data: brandData, error: brandError } = await supabase
+          .from('products')
+          .select('attributes')
+          .not('attributes', 'is', null);
+        
+        if (brandError) {
+          console.error('Error fetching brand data:', brandError);
+        }
+        
+        if (brandData) {
+          const uniqueBrands = new Set<string>();
+          brandData.forEach((product: any) => {
+            // Debug log to see what attributes look like
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Product attributes:', product.attributes);
+            }
+            
+            // Try multiple possible brand keys
+            const brand = product.attributes?.Виробник || 
+                         product.attributes?.Brand || 
+                         product.attributes?.brand || 
+                         product.attributes?.vendor || 
+                         product.attributes?.Виробитель ||
+                         product.attributes?.Manufacturer;
+            
+            if (brand && typeof brand === 'string' && brand.trim()) {
+              uniqueBrands.add(brand.trim());
+            } else if (brand && Array.isArray(brand) && brand.length > 0) {
+              // Handle case where brand might be an array
+              const firstBrand = brand[0];
+              if (firstBrand && typeof firstBrand === 'string' && firstBrand.trim()) {
+                uniqueBrands.add(firstBrand.trim());
+              }
+            }
+          });
+          brandsData = Array.from(uniqueBrands).sort();
+          
+          // Cache the results
+          localStorage.setItem('svitanok_brands_cache', JSON.stringify(brandsData));
+          localStorage.setItem('svitanok_brands_cache_timestamp', Date.now().toString());
+          
+          // Debug log to see what brands were extracted
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Extracted brands:', brandsData);
           }
-        });
-        setBrands(Array.from(uniqueBrands).sort());
+        }
       }
+      
+      setBrands(brandsData);
       
       // Fetch categories
       const { data: categoryData, error: categoryError } = await supabase
@@ -71,7 +141,7 @@ export default function FilterSidebar({
         .order('name');
       
       if (!categoryError && categoryData) {
-        setCategories(categoryData.map(cat => cat.name));
+        setCategories(categoryData.map((cat: any) => cat.name));
       }
       
       // Fetch unique problems from products
@@ -82,7 +152,7 @@ export default function FilterSidebar({
       
       if (!problemError && problemData) {
         const uniqueProblems = new Set<string>();
-        problemData.forEach(product => {
+        problemData.forEach((product: any) => {
           // Check multiple keys for problems
           const problemKeys = ['Проблема шкіри', 'Значення_Проблеми', 'Назва_Проблеми', 'Призначення'];
           problemKeys.forEach(key => {
@@ -91,7 +161,8 @@ export default function FilterSidebar({
               if (typeof problemValue === 'string') {
                 // Handle pipe-separated values
                 if (problemValue.includes('|')) {
-                  problemValue.split('|').forEach(p => {
+                  const parts = problemValue.split('|');
+                  parts.forEach(p => {
                     if (p.trim()) uniqueProblems.add(p.trim());
                   });
                 } else {
@@ -106,7 +177,62 @@ export default function FilterSidebar({
     } catch (error) {
       console.error('Error fetching filter data:', error);
     } finally {
-      setLoading(false);
+      // Only hide loading if we were actually loading
+      if (loading) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleRefreshBrands = async () => {
+    try {
+      // Don't show loading spinner for background refresh
+      
+      // Clear cache
+      localStorage.removeItem('svitanok_brands_cache');
+      localStorage.removeItem('svitanok_brands_cache_timestamp');
+      
+      // Fetch fresh brands from database
+      const { data: brandData, error: brandError } = await supabase
+        .from('products')
+        .select('attributes')
+        .not('attributes', 'is', null);
+      
+      if (brandError) {
+        console.error('Error refreshing brand data:', brandError);
+      }
+      
+      if (brandData) {
+        const uniqueBrands = new Set<string>();
+        brandData.forEach((product: any) => {
+          // Try multiple possible brand keys
+          const brand = product.attributes?.Виробник || 
+                       product.attributes?.Brand || 
+                       product.attributes?.brand || 
+                       product.attributes?.vendor || 
+                       product.attributes?.Виробитель ||
+                       product.attributes?.Manufacturer;
+          
+          if (brand && typeof brand === 'string' && brand.trim()) {
+            uniqueBrands.add(brand.trim());
+          } else if (brand && Array.isArray(brand) && brand.length > 0) {
+            // Handle case where brand might be an array
+            const firstBrand = brand[0];
+            if (firstBrand && typeof firstBrand === 'string' && firstBrand.trim()) {
+              uniqueBrands.add(firstBrand.trim());
+            }
+          }
+        });
+        const brandsData = Array.from(uniqueBrands).sort();
+        
+        // Update cache
+        localStorage.setItem('svitanok_brands_cache', JSON.stringify(brandsData));
+        localStorage.setItem('svitanok_brands_cache_timestamp', Date.now().toString());
+        
+        setBrands(brandsData);
+      }
+    } catch (error) {
+      console.error('Error refreshing brand data:', error);
     }
   };
 
@@ -350,6 +476,14 @@ export default function FilterSidebar({
           ОЧИСТИТИ ФІЛЬТРИ
         </button>
       )}
+            
+      {/* Refresh Brands Button - Hidden but accessible for debugging */}
+      <button
+        onClick={handleRefreshBrands}
+        className="hidden"
+        aria-label="Refresh brands"
+        id="refresh-brands-button"
+      />
     </div>
   );
 }

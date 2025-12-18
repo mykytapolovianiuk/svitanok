@@ -20,10 +20,7 @@ import Spinner from '@/components/ui/Spinner';
 const checkoutSchema = z.object({
   firstName: z.string().min(1, "Введіть ім'я"),
   lastName: z.string().min(1, 'Введіть прізвище'),
-  phone: z.string().min(10, 'Введіть коректний номер телефону').refine(
-    (val) => val.startsWith('380'),
-    { message: 'Номер телефону має починатися з 380' }
-  ),
+  phone: z.string().min(12, 'Введіть коректний номер телефону').startsWith('380', { message: 'Номер телефону має починатися з 380' }),
   email: z.string().email('Невірний формат email').or(z.literal('')),
   deliveryMethod: z.enum(['nova-poshta', 'courier', 'ukrposhta']),
   city: z.string().min(1, 'Оберіть місто'),
@@ -148,6 +145,49 @@ export default function Checkout() {
 
   const deliveryMethod = watch('deliveryMethod');
   const paymentMethod = watch('paymentMethod');
+
+  // Format phone number with 380 prefix
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'phone') {
+        const phoneValue = value.phone || '';
+        // Remove all non-digit characters
+        const digitsOnly = phoneValue.replace(/\D/g, '');
+        
+        // If it's empty, just update
+        if (digitsOnly === '') {
+          setValue('phone', '', { shouldValidate: true });
+          return;
+        }
+        
+        // If it starts with 0, remove the 0 and prepend 380
+        if (digitsOnly.startsWith('0')) {
+          const formattedPhone = '380' + digitsOnly.substring(1);
+          // Only update if the value has changed to prevent infinite loop
+          if (formattedPhone !== phoneValue) {
+            setValue('phone', formattedPhone, { shouldValidate: true });
+          }
+        }
+        // If it doesn't start with 380, prepend 380
+        else if (!digitsOnly.startsWith('380')) {
+          const formattedPhone = '380' + digitsOnly;
+          // Only update if the value has changed to prevent infinite loop
+          if (formattedPhone !== phoneValue) {
+            setValue('phone', formattedPhone, { shouldValidate: true });
+          }
+        }
+        // If it already starts with 380, ensure it's properly formatted
+        else if (digitsOnly.startsWith('380')) {
+          // Only update if the value has changed to prevent infinite loop
+          if (digitsOnly !== phoneValue) {
+            setValue('phone', digitsOnly, { shouldValidate: true });
+          }
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
 
   useEffect(() => {
     if (items.length > 0) {

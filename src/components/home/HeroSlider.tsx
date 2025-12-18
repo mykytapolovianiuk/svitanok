@@ -134,7 +134,7 @@ export default function HeroSlider() {
       </Swiper>
 
       {/* Controls - Bottom Left */}
-      <div className="absolute bottom-8 left-8 z-10 flex items-center gap-4">
+      <div className="absolute bottom-8 left-4 md:bottom-12 md:left-8 z-10 flex items-center gap-4">
         {/* Navigation Arrows */}
         <button
           onClick={goPrev}

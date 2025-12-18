@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 import { exportProductsToCSV } from '../../utils/exportToCSV';
 import { TableSkeleton } from '../../components/ui/SkeletonLoader';
 import FeedImporter from '../../components/admin/FeedImporter';
+import AttributeEditor from '../../components/admin/AttributeEditor';
 
 interface ProductFormData {
   name: string;
@@ -30,6 +31,7 @@ interface ProductFormData {
   price: number;
   old_price: number | null;
   in_stock: boolean;
+  is_bestseller?: boolean;
   images: string[];
   attributes: Record<string, any>;
 }
@@ -51,10 +53,11 @@ export default function Products() {
     price: 0,
     old_price: null,
     in_stock: true,
+    is_bestseller: false,
     images: [],
     attributes: {},
   });
-  const [attributesJson, setAttributesJson] = useState('{}');
+  // attributesJson is no longer needed as we use AttributeEditor component
   const [imagesInput, setImagesInput] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -72,7 +75,7 @@ export default function Products() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, is_bestseller')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -113,10 +116,10 @@ export default function Products() {
       price: 0,
       old_price: null,
       in_stock: true,
+      is_bestseller: false,
       images: [],
       attributes: {},
     });
-    setAttributesJson('{}');
     setImagesInput('');
     setIsModalOpen(true);
   };
@@ -132,10 +135,10 @@ export default function Products() {
       price: product.price,
       old_price: product.old_price || null,
       in_stock: product.in_stock,
+      is_bestseller: product.is_bestseller || false,
       images: product.images || [],
       attributes: product.attributes || {},
     });
-    setAttributesJson(JSON.stringify(product.attributes || {}, null, 2));
     setImagesInput((product.images || []).join('\n'));
     setIsModalOpen(true);
   };
@@ -151,15 +154,6 @@ export default function Products() {
       }
       if (formData.price <= 0) {
         toast.error('Ціна повинна бути більше 0');
-        return;
-      }
-
-      // Parse attributes JSON
-      let attributes = {};
-      try {
-        attributes = attributesJson ? JSON.parse(attributesJson) : {};
-      } catch (e) {
-        toast.error('Невірний формат JSON для атрибутів');
         return;
       }
 
@@ -186,8 +180,9 @@ export default function Products() {
         price: formData.price,
         old_price: formData.old_price && formData.old_price > 0 ? formData.old_price : null,
         in_stock: formData.in_stock,
+        is_bestseller: formData.is_bestseller || false,
         images: images,
-        attributes: attributes,
+        attributes: formData.attributes,
       };
 
       if (isAdding) {
@@ -580,6 +575,44 @@ export default function Products() {
                     </span>
                   </label>
                 </div>
+                
+                <div className="md:col-span-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={(editingProduct as any)?.is_bestseller || false}
+                      onChange={async (e) => {
+                        if (editingProduct) {
+                          // Update the bestseller status in the database
+                          try {
+                            const { error } = await supabase
+                              .from('products')
+                              .update({ is_bestseller: e.target.checked })
+                              .eq('id', editingProduct.id);
+                            
+                            if (error) throw error;
+                            
+                            // Update the local state
+                            setProducts(products.map(p => 
+                              p.id === editingProduct.id 
+                                ? { ...p, is_bestseller: e.target.checked } 
+                                : p
+                            ));
+                            
+                            toast.success('Статус хіта продажу оновлено');
+                          } catch (error) {
+                            console.error('Error updating bestseller status:', error);
+                            toast.error('Помилка оновлення статусу хіта продажу');
+                          }
+                        }
+                      }}
+                      className="rounded border-gray-300 text-gray-900 shadow-sm focus:border-gray-300 focus:ring focus:ring-gray-200 focus:ring-opacity-50"
+                    />
+                    <span className="ml-2 text-sm text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      Хіт продажу
+                    </span>
+                  </label>
+                </div>
               </div>
 
               {/* Description */}
@@ -613,19 +646,15 @@ export default function Products() {
 
               {/* Attributes */}
               <div>
-                <label htmlFor="attributes" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                  Атрибути (JSON)
+                <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  Атрибути
                 </label>
-                <textarea
-                  id="attributes"
-                  rows={8}
-                  value={attributesJson}
-                  onChange={(e) => setAttributesJson(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent font-mono text-sm"
-                  placeholder='{"category": "Крем", "problem": "Суха шкіра", "ingredient": "Гіалуронова кислота"}'
+                <AttributeEditor 
+                  value={formData.attributes || {}}
+                  onChange={(attributes) => setFormData({...formData, attributes})}
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Використовуйте JSON формат для зберігання додаткових атрибутів товару
+                  Додайте атрибути товару для кращого пошуку та фільтрації
                 </p>
               </div>
             </div>

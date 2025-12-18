@@ -17,15 +17,21 @@ interface Product {
   slug: string;
   price: number;
   old_price: number | null;
-  images: string[];
+  images: string[] | null;
   attributes: Record<string, any>;
   description: string;
+  is_bestseller?: boolean;
 }
 
 // Component for products with real rating
 function ProductCardWithRating({ product }: { product: Product }) {
   const { data: reviewStats } = useProductReviews(product.id);
   const rating = reviewStats?.averageRating || 0;
+  
+  // Safely handle images array
+  const imageUrl = product.images && product.images.length > 0 
+    ? product.images[0] 
+    : '/placeholder-product.jpg';
   
   return (
     <ProductCard
@@ -34,7 +40,7 @@ function ProductCardWithRating({ product }: { product: Product }) {
       slug={product.slug}
       price={product.price}
       oldPrice={product.old_price}
-      image={product.images[0] || ''}
+      image={imageUrl}
       rating={rating}
       description={product.description}
     />
@@ -56,36 +62,21 @@ export default function ProductShowcase() {
       let data: Product[] = [];
 
       if (activeTab === 'bestsellers') {
-        // Fetch bestsellers based on order count
-        // First try to use the RPC function, fall back to regular query if it doesn't exist
-        try {
-          const { data: bestsellersData, error: bestsellersError } = await supabase
-            .rpc('get_bestsellers')
-            .limit(8);
-          
-          if (!bestsellersError && bestsellersData) {
-            data = bestsellersData;
-          } else {
-            throw new Error('RPC function not available');
-          }
-        } catch (rpcError) {
-          // Fallback to regular query ordered by a popularity metric or just recent purchases
-          console.warn('Using fallback query for bestsellers');
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('products')
-            .select('id, name, slug, price, old_price, images, attributes, description')
-            .eq('in_stock', true)
-            .order('created_at', { ascending: false }) // Temporary fallback
-            .limit(8);
-          
-          if (fallbackError) throw fallbackError;
-          data = fallbackData || [];
-        }
+        // Fetch manually selected bestsellers
+        const { data: bestsellersData, error: bestsellersError } = await supabase
+          .from('products')
+          .select('id, name, slug, price, old_price, images, attributes, description, is_bestseller')
+          .eq('in_stock', true)
+          .eq('is_bestseller', true)
+          .limit(8);
+        
+        if (bestsellersError) throw bestsellersError;
+        data = bestsellersData || [];
       } else {
         // Fetch new arrivals based on creation date
         const { data: newData, error: newError } = await supabase
           .from('products')
-          .select('id, name, slug, price, old_price, images, attributes, description')
+          .select('id, name, slug, price, old_price, images, attributes, description, is_bestseller')
           .eq('in_stock', true)
           .order('created_at', { ascending: false })
           .limit(8);
@@ -165,15 +156,20 @@ export default function ProductShowcase() {
               bulletClass: 'swiper-pagination-bullet !bg-black',
               bulletActiveClass: 'swiper-pagination-bullet-active !bg-black',
             }}
-            navigation={true}
+            navigation={{
+              nextEl: '.product-showcase-swiper .swiper-button-next',
+              prevEl: '.product-showcase-swiper .swiper-button-prev',
+            }}
             loop={products.length > 4}
-            className="product-showcase-swiper"
+            className="product-showcase-swiper relative pb-12"
           >
             {products.map((product) => (
               <SwiperSlide key={product.id}>
                 <ProductCardWithRating product={product} />
               </SwiperSlide>
             ))}
+            <div className="swiper-button-next !text-black !w-10 !h-10 after:!text-lg after:!font-bold !hidden md:!block !top-[calc(100%-60px)] !-right-8 !bg-white !rounded-full !shadow-lg !border !border-gray-200"></div>
+            <div className="swiper-button-prev !text-black !w-10 !h-10 after:!text-lg after:!font-bold !hidden md:!block !top-[calc(100%-60px)] !-left-8 !bg-white !rounded-full !shadow-lg !border !border-gray-200"></div>
           </Swiper>
         )}
       </div>

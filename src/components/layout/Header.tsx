@@ -270,7 +270,7 @@ export default function Header() {
 
               {/* User Icon */}
               <Link 
-                to="/auth" 
+                to={session ? "/account" : "/auth"} 
                 className="text-text-main hover:opacity-70 transition"
                 aria-label="Профіль"
               >
@@ -515,12 +515,12 @@ export default function Header() {
             
             <div className="mt-8 pt-6 border-t border-gray-200">
               <Link 
-                to="/auth" 
+                to={session ? "/account" : "/auth"} 
                 className="block w-full text-center py-3 border border-black text-black font-medium uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
                 onClick={closeMobileMenu}
               >
-                {session ? 'Вийти' : 'Увійти'}
+                {session ? 'Профіль' : 'Увійти'}
               </Link>
             </div>
           </div>

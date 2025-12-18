@@ -114,12 +114,13 @@ export default function ProblemSolver() {
                 onClick={() => handleProblemSelect(problem.id)}
                 className="bg-white rounded-none border border-black overflow-hidden hover:shadow-lg transition-all duration-300 group relative"
               >
-                <div className="relative aspect-square overflow-hidden bg-gray-100">
+                <div className="relative aspect-square overflow-hidden bg-gray-100 flex items-center justify-center">
                   <img
                     src={problem.image}
                     alt={problem.name}
-                    className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-300 mix-blend-multiply"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 mix-blend-multiply object-position-center"
                     loading="lazy"
+                    style={{ objectPosition: 'center', minWidth: '100%', minHeight: '100%' }}
                   />
                   {isSelected && (
                     <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">

@@ -315,7 +315,7 @@ export default function Catalog() {
                     slug={product.slug}
                     price={product.price}
                     oldPrice={product.old_price}
-                    image={product.images[0] || ''}
+                    image={product.images && product.images.length > 0 ? product.images[0] : '/placeholder-product.jpg'}
                     rating={4}
                     description={product.description}
                   />

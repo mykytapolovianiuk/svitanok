@@ -21,6 +21,7 @@ export interface Product {
   images: string[];
   attributes: Record<string, any> | null;
   in_stock: boolean;
+  is_bestseller?: boolean;
   created_at: string;
 }
 

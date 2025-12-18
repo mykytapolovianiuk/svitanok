@@ -8,7 +8,7 @@ interface Product {
   slug: string;
   price: number;
   old_price: number | null;
-  images: string[];
+  images: string[] | null;
   attributes: Record<string, any>;
   description: string;
   in_stock: boolean;
@@ -101,10 +101,11 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
       }
 
       // Database-level filtering for JSONB attributes
-      // Brand filter - check multiple keys
+      // Brand filter - check multiple keys with exact match for better performance
       if (stableBrands.length > 0) {
+        // Use exact match instead of ilike for better performance when possible
         const brandConditions = stableBrands.map(brand => 
-          `attributes->>Виробник.ilike.%${brand}%,attributes->>Brand.ilike.%${brand}%`
+          `attributes->>Виробник.eq.${brand},attributes->>Brand.eq.${brand}`
         ).join(',');
         query = query.or(brandConditions);
       }
