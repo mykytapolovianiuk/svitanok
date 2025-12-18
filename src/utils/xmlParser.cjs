@@ -2,6 +2,9 @@
  * Parse YML (XML) format product data
  */
 
+// Use xmldom for Node.js environment
+const { DOMParser } = require('xmldom');
+
 /**
  * Parse YML (XML) content into structured data
  * @param xmlContent - Raw XML string
