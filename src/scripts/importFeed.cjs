@@ -64,10 +64,12 @@ function generateSlug(text) {
 
 // Ensure slug uniqueness
 async function ensureUniqueSlug(baseSlug, tableName, fieldName = 'slug') {
+  console.log(`Ensuring unique slug: ${baseSlug} in table: ${tableName}, field: ${fieldName}`);
   let slug = baseSlug;
   let counter = 1;
   
   while (true) {
+    console.log(`Checking if slug exists: ${slug}`);
     const { data, error } = await supabase
       .from(tableName)
       .select('id')
@@ -80,12 +82,14 @@ async function ensureUniqueSlug(baseSlug, tableName, fieldName = 'slug') {
     }
     
     if (!data || data.length === 0) {
+      console.log(`Slug is unique: ${slug}`);
       return slug; // Slug is unique
     }
     
     // If slug exists, append counter
     slug = `${baseSlug}-${counter}`;
     counter++;
+    console.log(`Slug exists, trying: ${slug}`);
     
     // Prevent infinite loop
     if (counter > 1000) {
