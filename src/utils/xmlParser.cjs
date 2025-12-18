@@ -4,6 +4,7 @@
 
 // Use xmldom for Node.js environment
 const { DOMParser } = require('xmldom');
+const xpath = require('xpath');
 
 /**
  * Parse YML (XML) content into structured data
@@ -21,7 +22,7 @@ function parseYML(xmlContent) {
     const xmlDoc = parser.parseFromString(cleanContent, 'text/xml');
 
     // Check for parsing errors
-    const parserError = xmlDoc.querySelector('parsererror');
+    const parserError = xmlDoc.getElementsByTagName('parsererror')[0];
     if (parserError) {
       console.error('XML Parser Error detail:', parserError.textContent);
       // Try to extract the error message for clarity
@@ -46,18 +47,18 @@ function parseYML(xmlContent) {
  */
 function parseCategories(xmlDoc) {
   const categories = [];
-  const categoryElements = xmlDoc.querySelectorAll('yml_catalog shop categories category');
+  const categoryNodes = xpath.select('//yml_catalog/shop/categories/category', xmlDoc);
   
-  categoryElements.forEach(categoryElement => {
-    const externalId = categoryElement.getAttribute('id');
-    const name = categoryElement.textContent?.trim() || '';
+  categoryNodes.forEach(categoryNode => {
+    const externalId = categoryNode.getAttribute('id');
+    const name = categoryNode.textContent?.trim() || '';
     
     if (!externalId) {
       console.warn('Category without ID found, skipping');
       return;
     }
     
-    const parentExternalId = categoryElement.getAttribute('parentId') || undefined;
+    const parentExternalId = categoryNode.getAttribute('parentId') || undefined;
     
     categories.push({
       externalId,
@@ -76,35 +77,35 @@ function parseCategories(xmlDoc) {
  */
 function parseProducts(xmlDoc) {
   const products = [];
-  const offerElements = xmlDoc.querySelectorAll('yml_catalog shop offers offer');
+  const offerNodes = xpath.select('//yml_catalog/shop/offers/offer', xmlDoc);
   
-  offerElements.forEach(offerElement => {
+  offerNodes.forEach(offerNode => {
     try {
-      const externalId = offerElement.getAttribute('id');
+      const externalId = offerNode.getAttribute('id');
       if (!externalId) {
         console.warn('Product without ID found, skipping');
         return;
       }
       
       // Extract basic product information
-      const name = getTextContent(offerElement, 'name');
-      const price = parseFloat(getTextContent(offerElement, 'price') || '0');
-      const oldPriceText = getTextContent(offerElement, 'oldprice');
+      const name = getTextContent(offerNode, 'name');
+      const price = parseFloat(getTextContent(offerNode, 'price') || '0');
+      const oldPriceText = getTextContent(offerNode, 'oldprice');
       const oldPrice = oldPriceText ? parseFloat(oldPriceText) : undefined;
-      const currency = getTextContent(offerElement, 'currencyId') || 'UAH';
-      const description = getTextContent(offerElement, 'description') || '';
-      const categoryId = getTextContent(offerElement, 'categoryId') || '';
+      const currency = getTextContent(offerNode, 'currencyId') || 'UAH';
+      const description = getTextContent(offerNode, 'description') || '';
+      const categoryId = getTextContent(offerNode, 'categoryId') || '';
       
       // Extract vendor information
-      const vendor = getTextContent(offerElement, 'vendor');
-      const vendorCode = getTextContent(offerElement, 'vendorCode');
-      const countryOfOrigin = getTextContent(offerElement, 'country_of_origin');
+      const vendor = getTextContent(offerNode, 'vendor');
+      const vendorCode = getTextContent(offerNode, 'vendorCode');
+      const countryOfOrigin = getTextContent(offerNode, 'country_of_origin');
       
       // Extract images
       const images = [];
-      const pictureElements = offerElement.querySelectorAll('picture');
-      pictureElements.forEach(picElement => {
-        const imageUrl = picElement.textContent?.trim();
+      const pictureNodes = xpath.select('./picture', offerNode);
+      pictureNodes.forEach(picNode => {
+        const imageUrl = picNode.textContent?.trim();
         if (imageUrl) {
           images.push(imageUrl);
         }
@@ -112,11 +113,11 @@ function parseProducts(xmlDoc) {
       
       // Extract attributes from param tags
       const attributes = {};
-      const paramElements = offerElement.querySelectorAll('param');
-      paramElements.forEach(paramElement => {
-        const paramName = paramElement.getAttribute('name');
-        const paramUnit = paramElement.getAttribute('unit');
-        const paramValue = paramElement.textContent?.trim() || '';
+      const paramNodes = xpath.select('./param', offerNode);
+      paramNodes.forEach(paramNode => {
+        const paramName = paramNode.getAttribute('name');
+        const paramUnit = paramNode.getAttribute('unit');
+        const paramValue = paramNode.textContent?.trim() || '';
         
         if (paramName) {
           // Construct value with unit if available
@@ -160,8 +161,11 @@ function parseProducts(xmlDoc) {
  * @returns Text content or empty string
  */
 function getTextContent(parentElement, tagName) {
-  const element = parentElement.querySelector(tagName);
-  return element ? element.textContent?.trim() || '' : '';
+  const nodes = xpath.select(`./${tagName}`, parentElement);
+  if (nodes && nodes.length > 0) {
+    return nodes[0].textContent?.trim() || '';
+  }
+  return '';
 }
 
 module.exports = { parseYML };
