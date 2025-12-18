@@ -203,14 +203,14 @@ export default function Header() {
                 className="text-text-main hover:opacity-70 transition text-sm xl:text-base"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                Режим догляду за шкірою
+                Бʼюті поради
               </Link>
               <Link 
                 to="/autumn-care" 
                 className="text-text-main hover:opacity-70 transition text-sm xl:text-base"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                Догляд восени
+                Догляд взимку
               </Link>
               <Link 
                 to="/faq" 
@@ -258,11 +258,6 @@ export default function Header() {
                   {favoritesCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                       {favoritesCount}
-                    </span>
-                  )}
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                      {totalItems}
                     </span>
                   )}
                 </Link>
@@ -452,7 +447,7 @@ export default function Header() {
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                     onClick={closeMobileMenu}
                   >
-                    Режим догляду за шкірою
+                    Бʼюті поради
                   </Link>
                 </li>
                 <li>
@@ -462,7 +457,7 @@ export default function Header() {
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                     onClick={closeMobileMenu}
                   >
-                    Догляд восени
+                    Догляд взимку
                   </Link>
                 </li>
                 <li>

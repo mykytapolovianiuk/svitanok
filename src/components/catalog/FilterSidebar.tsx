@@ -103,6 +103,35 @@ export default function FilterSidebar({
         ФІЛЬТРУВАТИ ЗА
       </h2>
 
+      {/* Brands Filter */}
+      <div className="pb-4">
+        <button
+          onClick={() => setBrandsOpen(!brandsOpen)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            БРЕНД
+          </span>
+          {brandsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {brandsOpen && (
+          <div className="mt-3 space-y-2">
+            {BRANDS.map((brand) => (
+              <CustomCheckbox
+                key={brand}
+                checked={selectedBrands.includes(brand)}
+                onChange={() => handleBrandToggle(brand)}
+                label={brand}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Categories Filter */}
       <div className="pb-4">
         <button
@@ -155,35 +184,6 @@ export default function FilterSidebar({
                 checked={selectedProblems.includes(problem)}
                 onChange={() => handleProblemToggle(problem)}
                 label={problem}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Brands Filter */}
-      <div className="pb-4">
-        <button
-          onClick={() => setBrandsOpen(!brandsOpen)}
-          className="flex items-center justify-between w-full py-2"
-        >
-          <span
-            className="text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            БРЕНД
-          </span>
-          {brandsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {brandsOpen && (
-          <div className="mt-3 space-y-2">
-            {BRANDS.map((brand) => (
-              <CustomCheckbox
-                key={brand}
-                checked={selectedBrands.includes(brand)}
-                onChange={() => handleBrandToggle(brand)}
-                label={brand}
               />
             ))}
           </div>
