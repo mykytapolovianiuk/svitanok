@@ -90,6 +90,24 @@ async function ensureUniqueSlug(baseSlug: string, tableName: string, fieldName: 
   }
 }
 
+// Enhanced version that also checks for existing records with same external_id
+async function ensureUniqueCategorySlug(baseSlug: string, externalId: string): Promise<string> {
+  // First check if a category with this external_id already exists
+  const { data: existingCategory, error: fetchError } = await supabase
+    .from('categories')
+    .select('id, slug')
+    .eq('external_id', externalId)
+    .single();
+  
+  if (fetchError) {
+    // Category doesn't exist, generate a unique slug
+    return await ensureUniqueSlug(baseSlug, 'categories');
+  }
+  
+  // Category exists, return its current slug
+  return existingCategory.slug;
+}
+
 interface CategoryMapping {
   [externalId: string]: string; // externalId -> internal UUID
 }
@@ -104,7 +122,7 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
   for (const category of parsedCategories) {
     try {
       const baseSlug = generateSlug(category.name);
-      const uniqueSlug = await ensureUniqueSlug(baseSlug, 'categories');
+      const uniqueSlug = await ensureUniqueCategorySlug(baseSlug, category.externalId);
       
       const categoryData = {
         external_id: category.externalId,
@@ -119,32 +137,33 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
     }
   }
   
-  // Bulk insert categories
-  if (categoriesToInsert.length > 0) {
-    const { data, error } = await supabase
-      .from('categories')
-      .upsert(categoriesToInsert, {
-        onConflict: 'external_id'
-      })
-      .select();
-    
-    if (error) {
-      console.error('Error inserting categories:', error.message);
-      throw error;
-    }
-    
-    // Create mapping from external_id to internal UUID
-    if (data) {
-      for (const category of data) {
+  // Process categories one by one to better handle conflicts
+  for (const categoryData of categoriesToInsert) {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .upsert(categoryData, {
+          onConflict: 'external_id'
+        })
+        .select();
+      
+      if (error) {
+        console.error(`Error inserting category ${categoryData.external_id}:`, error.message);
+        // Continue with other categories instead of failing completely
+      } else if (data && data.length > 0) {
+        const category = data[0];
         const originalCategory = parsedCategories.find(c => c.externalId === category.external_id);
         if (originalCategory) {
           categoryMapping[originalCategory.externalId] = category.id;
         }
       }
+    } catch (error: any) {
+      console.error(`Error processing category ${categoryData.external_id}:`, error.message);
+      // Continue with other categories
     }
-    
-    console.log(`Successfully inserted ${categoriesToInsert.length} categories`);
   }
+  
+  console.log(`Successfully processed ${categoriesToInsert.length} categories`);
   
   // Second pass: Update parent_id relationships
   console.log('Updating category parent relationships...');
