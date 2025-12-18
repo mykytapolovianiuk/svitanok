@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Load the XML parser function
-const { parseYML } = require('../utils/xmlParser');
+const { parseYML } = require('../utils/xmlParser.js');
 
 // Load environment variables
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
