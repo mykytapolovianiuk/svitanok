@@ -120,6 +120,7 @@ async function importCategories(parsedCategories) {
   const categoriesToInsert = [];
   
   // First pass: Insert all categories without parent_id
+  console.log('Preparing categories for insertion...');
   for (const category of parsedCategories) {
     try {
       const baseSlug = generateSlug(category.name);
@@ -137,10 +138,13 @@ async function importCategories(parsedCategories) {
       console.error(`Error preparing category ${category.externalId}: ${error.message}`);
     }
   }
+  console.log(`Prepared ${categoriesToInsert.length} categories for insertion`);
   
   // Process categories one by one to better handle conflicts
+  console.log('Processing categories...');
   for (const categoryData of categoriesToInsert) {
     try {
+      console.log(`Processing category: ${categoryData.external_id}`);
       // First, check if a category with the same external_id already exists
       const { data: existingCategory, error: fetchError } = await supabase
         .from('categories')
@@ -148,10 +152,17 @@ async function importCategories(parsedCategories) {
         .eq('external_id', categoryData.external_id)
         .single();
       
+      if (fetchError) {
+        console.log(`Category ${categoryData.external_id} not found, will insert`);
+      } else {
+        console.log(`Category ${categoryData.external_id} found, will update`);
+      }
+      
       let data, error;
       
       if (existingCategory) {
         // Update existing category
+        console.log(`Updating category ${categoryData.external_id}`);
         const { data: updatedData, error: updateError } = await supabase
           .from('categories')
           .update({
@@ -166,6 +177,7 @@ async function importCategories(parsedCategories) {
         error = updateError;
       } else {
         // Insert new category
+        console.log(`Inserting category ${categoryData.external_id}`);
         const { data: insertedData, error: insertError } = await supabase
           .from('categories')
           .insert(categoryData)
