@@ -12,6 +12,7 @@ interface Product {
   attributes: Record<string, any>;
   description: string;
   in_stock: boolean;
+  category_id?: string;
 }
 
 interface UseProductsParams {
@@ -74,9 +75,21 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
 
       // Search query filter - handled below with or() for better ingredient matching
 
-      // Category filter (if provided)
+      // Category filter (if provided) - now using category_id
       if (category) {
-        query = query.eq('category', category);
+        // First get category ID from slug
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', category)
+          .single();
+
+        if (categoryData) {
+          query = query.eq('category_id', categoryData.id);
+        } else {
+          // Fallback to old method if category not found
+          query = query.eq('category', category);
+        }
       }
 
       // Price range filters
@@ -98,10 +111,22 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
 
       // Categories filter (mapped from problems in Catalog.tsx) - check multiple keys
       if (stableProblems.length > 0) {
-        const categoryConditions = stableProblems.map(problem => 
-          `attributes->>Назва_групи.ilike.%${problem}%,attributes->>Category.ilike.%${problem}%`
-        ).join(',');
-        query = query.or(categoryConditions);
+        // First try to match with category table
+        const { data: categoryIds } = await supabase
+          .from('categories')
+          .select('id')
+          .in('name', stableProblems);
+
+        if (categoryIds && categoryIds.length > 0) {
+          const ids = categoryIds.map(cat => cat.id);
+          query = query.in('category_id', ids);
+        } else {
+          // Fallback to old method
+          const categoryConditions = stableProblems.map(problem => 
+            `attributes->>Назва_групи.ilike.%${problem}%,attributes->>Category.ilike.%${problem}%`
+          ).join(',');
+          query = query.or(categoryConditions);
+        }
       }
 
       // Problems filter - check multiple keys with ilike for pipe-separated values

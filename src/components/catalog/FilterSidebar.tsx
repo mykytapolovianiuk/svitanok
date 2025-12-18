@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface FilterSidebarProps {
   selectedBrands: string[];
@@ -12,11 +13,6 @@ interface FilterSidebarProps {
   maxPrice: number;
   onPriceChange: (min: number, max: number) => void;
 }
-
-// Sample data - in a real app, this would come from the database
-const BRANDS = ['Medik8', 'Christina', 'Lamic', 'Demax', 'Advanced Pro-Collagen'];
-const CATEGORIES = ['Сироватки', 'Креми', 'Маски', 'Очищувачі', 'Тонери'];
-const PROBLEMS = ['Зморшки', 'Акне', 'Пігментація', 'Сухість', 'Чутливість'];
 
 export default function FilterSidebar({
   selectedBrands,
@@ -33,9 +29,86 @@ export default function FilterSidebar({
   const [priceOpen, setPriceOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(true);
   const [problemsOpen, setProblemsOpen] = useState(true);
-
+  
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
+  
+  // Dynamic data from database
+  const [brands, setBrands] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [problems, setProblems] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFilterData();
+  }, []);
+
+  const fetchFilterData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch unique brands from products
+      const { data: brandData, error: brandError } = await supabase
+        .from('products')
+        .select('attributes')
+        .not('attributes', 'is', null);
+      
+      if (!brandError && brandData) {
+        const uniqueBrands = new Set<string>();
+        brandData.forEach(product => {
+          const brand = product.attributes?.Виробник || product.attributes?.Brand;
+          if (brand) {
+            uniqueBrands.add(brand);
+          }
+        });
+        setBrands(Array.from(uniqueBrands).sort());
+      }
+      
+      // Fetch categories
+      const { data: categoryData, error: categoryError } = await supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+      
+      if (!categoryError && categoryData) {
+        setCategories(categoryData.map(cat => cat.name));
+      }
+      
+      // Fetch unique problems from products
+      const { data: problemData, error: problemError } = await supabase
+        .from('products')
+        .select('attributes')
+        .not('attributes', 'is', null);
+      
+      if (!problemError && problemData) {
+        const uniqueProblems = new Set<string>();
+        problemData.forEach(product => {
+          // Check multiple keys for problems
+          const problemKeys = ['Проблема шкіри', 'Значення_Проблеми', 'Назва_Проблеми', 'Призначення'];
+          problemKeys.forEach(key => {
+            const problemValue = product.attributes?.[key];
+            if (problemValue) {
+              if (typeof problemValue === 'string') {
+                // Handle pipe-separated values
+                if (problemValue.includes('|')) {
+                  problemValue.split('|').forEach(p => {
+                    if (p.trim()) uniqueProblems.add(p.trim());
+                  });
+                } else {
+                  uniqueProblems.add(problemValue.trim());
+                }
+              }
+            }
+          });
+        });
+        setProblems(Array.from(uniqueProblems).sort());
+      }
+    } catch (error) {
+      console.error('Error fetching filter data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBrandToggle = (brand: string) => {
     if (selectedBrands.includes(brand)) {
@@ -94,6 +167,27 @@ export default function FilterSidebar({
     </label>
   );
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h2
+          className="text-xs font-medium uppercase tracking-[0.3em] border-b border-black pb-2"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          ФІЛЬТРУВАТИ ЗА
+        </h2>
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-3 bg-gray-200 rounded w-full"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h2
@@ -119,8 +213,8 @@ export default function FilterSidebar({
         </button>
 
         {brandsOpen && (
-          <div className="mt-3 space-y-2">
-            {BRANDS.map((brand) => (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {brands.map((brand) => (
               <CustomCheckbox
                 key={brand}
                 checked={selectedBrands.includes(brand)}
@@ -148,8 +242,8 @@ export default function FilterSidebar({
         </button>
 
         {categoriesOpen && (
-          <div className="mt-3 space-y-2">
-            {CATEGORIES.map((category) => (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {categories.map((category) => (
               <CustomCheckbox
                 key={category}
                 checked={selectedCategories.includes(category)}
@@ -177,8 +271,8 @@ export default function FilterSidebar({
         </button>
 
         {problemsOpen && (
-          <div className="mt-3 space-y-2">
-            {PROBLEMS.map((problem) => (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {problems.map((problem) => (
               <CustomCheckbox
                 key={problem}
                 checked={selectedProblems.includes(problem)}

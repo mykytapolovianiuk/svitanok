@@ -12,6 +12,16 @@ CREATE TABLE profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Categories table
+CREATE TABLE categories (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  parent_id UUID REFERENCES categories(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Products table
 CREATE TABLE products (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -22,6 +32,7 @@ CREATE TABLE products (
   description TEXT,
   images TEXT[] DEFAULT '{}',
   category TEXT NOT NULL,
+  category_id UUID REFERENCES categories(id),
   stock INTEGER DEFAULT 0,
   is_featured BOOLEAN DEFAULT FALSE,
   problem_tags TEXT[] DEFAULT '{}',
@@ -40,7 +51,8 @@ CREATE TABLE orders (
   delivery_method TEXT,
   payment_method TEXT CHECK (payment_method IN ('cash', 'card')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  ttn TEXT
 );
 
 -- Order items table
@@ -63,7 +75,9 @@ CREATE TABLE favorites (
 
 -- Indexes for better performance
 CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_category_id ON products(category_id);
 CREATE INDEX idx_products_slug ON products(slug);
+CREATE INDEX idx_categories_slug ON categories(slug);
 CREATE INDEX idx_orders_user_id ON orders(user_id);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_favorites_user_id ON favorites(user_id);
@@ -80,6 +94,22 @@ CREATE POLICY "Public profiles are viewable by everyone"
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
+
+-- Categories
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Categories are publicly readable"
+  ON categories FOR SELECT
+  USING (true);
+
+CREATE POLICY "Only admins can modify categories"
+  ON categories FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
 
 -- Products
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
@@ -195,6 +225,11 @@ CREATE TRIGGER update_products_updated_at
 
 CREATE TRIGGER update_orders_updated_at
   BEFORE UPDATE ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_categories_updated_at
+  BEFORE UPDATE ON categories
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 

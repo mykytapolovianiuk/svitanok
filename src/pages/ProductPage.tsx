@@ -43,7 +43,7 @@ export default function ProductPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
-  const [activeAccordion, setActiveAccordion] = useState<'description' | 'attributes' | null>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'attributes'>('description');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCartStore();
   const { trackViewItem, trackAddToCart, trackFavorite } = useAnalytics();
@@ -213,8 +213,8 @@ export default function ProductPage() {
     setQuantity(value);
   };
 
-  const toggleAccordion = (accordion: 'description' | 'attributes') => {
-    setActiveAccordion(activeAccordion === accordion ? null : accordion);
+  const toggleTab = (tab: 'description' | 'attributes') => {
+    setActiveTab(tab);
   };
 
   if (loading) {
@@ -294,61 +294,7 @@ export default function ProductPage() {
         
         {/* Product Detail - Restructured Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          {/* Description Column - Left */}
-          <div className="lg:col-span-3">
-            <div className="space-y-4">
-              {/* Description Accordion */}
-              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
-                <button
-                  onClick={() => toggleAccordion('description')}
-                  className="w-full p-5 text-left flex justify-between items-center"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  <span className="font-medium uppercase tracking-wider">Опис</span>
-                  <span>{activeAccordion === 'description' ? '⊖' : '⊕'}</span>
-                </button>
-                {activeAccordion === 'description' && (
-                  <div className="p-5 pt-0">
-                    <div
-                      className="prose max-w-none text-gray-600"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                    />
-                  </div>
-                )}
-              </div>
-              
-              {/* Attributes Accordion */}
-              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
-                <button
-                  onClick={() => toggleAccordion('attributes')}
-                  className="w-full p-5 text-left flex justify-between items-center"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  <span className="font-medium uppercase tracking-wider">Характеристики</span>
-                  <span>{activeAccordion === 'attributes' ? '⊖' : '⊕'}</span>
-                </button>
-                {activeAccordion === 'attributes' && (
-                  <div className="p-5 pt-0">
-                    <div className="border border-gray-200 rounded-lg">
-                      {Object.entries(filteredAttributes).map(([key, value]) => (
-                        <div 
-                          key={key} 
-                          className="grid grid-cols-2 gap-4 p-4 border-b border-gray-200 last:border-b-0"
-                          style={{ fontFamily: 'Montserrat, sans-serif' }}
-                        >
-                          <span className="font-medium">{key}:</span>
-                          <span>{String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* Main Image Column - Center */}
+          {/* Main Image Column - Left */}
           <div className="lg:col-span-6">
             <div className="relative">
               <div 
@@ -426,115 +372,161 @@ export default function ProductPage() {
                 ))}
               </div>
             )}
-          </div>
-          
-          {/* Product Info Column - Right */}
-          <div className="lg:col-span-3">
-            <div>
-              <h1
-                className="text-2xl font-light mb-4 uppercase tracking-[2px]"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                {product.name}
-              </h1>
-
-              {/* Rating */}
-              {reviewStats && reviewStats.totalReviews > 0 && (
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <svg 
-                        key={star} 
-                        className={`w-5 h-5 ${
-                          star <= Math.round(reviewStats.averageRating)
-                            ? 'fill-current text-yellow-400'
-                            : 'fill-none text-gray-300'
-                        }`} 
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews} {reviewStats.totalReviews === 1 ? 'відгук' : reviewStats.totalReviews < 5 ? 'відгуки' : 'відгуків'})
-                  </span>
-                </div>
-              )}
-
-              {/* Price */}
-              <div className="flex items-center gap-4 mb-4">
-                <span
-                  className="text-3xl font-light"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {product.price.toFixed(2)} ₴
-                </span>
-                {product.old_price && (
-                  <>
-                    <span
-                      className="text-xl text-gray-400 line-through"
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                    >
-                      {product.old_price.toFixed(2)} ₴
-                    </span>
-                    <span className="px-2 py-1 bg-black text-white text-xs font-medium uppercase tracking-[1px]">
-                      -{discountPercentage}%
-                    </span>
-                  </>
-                )}
-              </div>
-
-              {/* Stock Indicator */}
-              <div className="mb-6">
-                <StockIndicator inStock={product.in_stock} />
-              </div>
-
-              {/* Actions */}
-              <div className="mb-8">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
-                  <div className="flex items-center border border-gray-300 w-full sm:w-auto justify-center sm:justify-start">
-                    <button
-                      onClick={() => handleQuantityChange(quantity - 1)}
-                      className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                      disabled={quantity <= 1}
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span 
-                      className="px-4 md:px-6 py-2 text-sm md:text-base font-medium min-w-[50px] text-center" 
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                    >
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange(quantity + 1)}
-                      className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                      disabled={quantity >= 99}
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!product.in_stock || isAddingToCart}
-                    className="flex-1 border border-black py-3 md:py-4 text-center hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-[1px] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            
+            {/* Description under the photo but not full width */}
+            <div className="mt-8">
+              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
+                <div className="p-5">
+                  <h3 
+                    className="font-medium uppercase tracking-wider mb-3"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
-                    {isAddingToCart && <Spinner size="sm" />}
-                    {isAddingToCart ? 'Додавання...' : 'КУПИТИ'}
-                  </button>
+                    Опис
+                  </h3>
+                  <div
+                    className="prose max-w-none text-gray-600 text-sm"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  />
                 </div>
-
-                {/* Quick Order Button */}
-                <button
-                  onClick={() => setIsQuickOrderOpen(true)}
-                  className="w-full py-3 md:py-4 bg-black text-white text-center hover:opacity-90 transition-opacity uppercase tracking-[1px] text-sm font-medium"
+              </div>
+            </div>
+          </div>
+          
+          {/* Product Info and Characteristics Column - Right */}
+          <div className="lg:col-span-6">
+            <div className="lg:sticky lg:top-4">
+              {/* Product Info */}
+              <div className="mb-8">
+                <h1
+                  className="text-2xl font-light mb-4 uppercase tracking-[2px]"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Купити в 1 клік
-                </button>
+                  {product.name}
+                </h1>
+
+                {/* Rating */}
+                {reviewStats && reviewStats.totalReviews > 0 && (
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <svg 
+                          key={star} 
+                          className={`w-5 h-5 ${
+                            star <= Math.round(reviewStats.averageRating)
+                              ? 'fill-current text-yellow-400'
+                              : 'fill-none text-gray-300'
+                          }`} 
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600">
+                      {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews} {reviewStats.totalReviews === 1 ? 'відгук' : reviewStats.totalReviews < 5 ? 'відгуки' : 'відгуків'})
+                    </span>
+                  </div>
+                )}
+
+                {/* Price */}
+                <div className="flex items-center gap-4 mb-4">
+                  <span
+                    className="text-3xl font-light"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {product.price.toFixed(2)} ₴
+                  </span>
+                  {product.old_price && (
+                    <>
+                      <span
+                        className="text-xl text-gray-400 line-through"
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        {product.old_price.toFixed(2)} ₴
+                      </span>
+                      <span className="px-2 py-1 bg-black text-white text-xs font-medium uppercase tracking-[1px]">
+                        -{discountPercentage}%
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {/* Stock Indicator */}
+                <div className="mb-6">
+                  <StockIndicator inStock={product.in_stock} />
+                </div>
+
+                {/* Actions */}
+                <div className="mb-8">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
+                    <div className="flex items-center border border-gray-300 w-full sm:w-auto justify-center sm:justify-start">
+                      <button
+                        onClick={() => handleQuantityChange(quantity - 1)}
+                        className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                        disabled={quantity <= 1}
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span 
+                        className="px-4 md:px-6 py-2 text-sm md:text-base font-medium min-w-[50px] text-center" 
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange(quantity + 1)}
+                        className="p-2 md:p-3 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                        disabled={quantity >= 99}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={!product.in_stock || isAddingToCart}
+                      className="flex-1 border border-black py-3 md:py-4 text-center hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-[1px] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      {isAddingToCart && <Spinner size="sm" />}
+                      {isAddingToCart ? 'Додавання...' : 'КУПИТИ'}
+                    </button>
+                  </div>
+
+                  {/* Quick Order Button */}
+                  <button
+                    onClick={() => setIsQuickOrderOpen(true)}
+                    className="w-full py-3 md:py-4 bg-black text-white text-center hover:opacity-90 transition-opacity uppercase tracking-[1px] text-sm font-medium"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    Купити в 1 клік
+                  </button>
+                </div>
+              </div>
+              
+              {/* Characteristics - Fixed at the top when scrolling */}
+              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
+                <div className="p-5">
+                  <h3 
+                    className="font-medium uppercase tracking-wider mb-3"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    Характеристики
+                  </h3>
+                  <div className="border border-gray-200 rounded-lg">
+                    {Object.entries(filteredAttributes).map(([key, value]) => (
+                      <div 
+                        key={key} 
+                        className="grid grid-cols-2 gap-4 p-4 border-b border-gray-200 last:border-b-0"
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <span className="font-medium">{key}:</span>
+                        <span>{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
