@@ -171,65 +171,33 @@ async function importCategories(parsedCategories) {
   for (const categoryData of categoriesToInsert) {
     try {
       console.log(`Processing category: ${categoryData.external_id}`);
-      // First, check if a category with the same external_id already exists
-      const { data: existingCategory, error: fetchError } = await supabase
+      
+      let data, error;
+      
+      // Use upsert with proper conflict resolution
+      console.log(`Upserting category ${categoryData.external_id}`);
+      const { data: upsertedData, error: upsertError } = await supabase
         .from('categories')
-        .select('id')
-        .eq('external_id', categoryData.external_id)
-        .single();
+        .upsert(categoryData, {
+          onConflict: 'external_id',
+          returning: 'representation'
+        })
+        .select();
       
       // Add a small delay to avoid overwhelming the database
       await delay(10);
       
-      if (fetchError) {
-        console.log(`Category ${categoryData.external_id} not found, will insert`);
-      } else {
-        console.log(`Category ${categoryData.external_id} found, will update`);
-      }
-      
-      let data, error;
-      
-      if (existingCategory) {
-        // Update existing category
-        console.log(`Updating category ${categoryData.external_id}`);
-        const { data: updatedData, error: updateError } = await supabase
-          .from('categories')
-          .update({
-            name: categoryData.name,
-            slug: categoryData.slug,
-            parent_id: categoryData.parent_id
-          })
-          .eq('external_id', categoryData.external_id)
-          .select();
-        
-        // Add a small delay to avoid overwhelming the database
-        await delay(10);
-        
-        data = updatedData;
-        error = updateError;
-      } else {
-        // Insert new category
-        console.log(`Inserting category ${categoryData.external_id}`);
-        const { data: insertedData, error: insertError } = await supabase
-          .from('categories')
-          .insert(categoryData)
-          .select();
-        
-        // Add a small delay to avoid overwhelming the database
-        await delay(10);
-        
-        data = insertedData;
-        error = insertError;
-      }
-      
-      if (error) {
-        console.error(`Error processing category ${categoryData.external_id}:`, error.message);
+      if (upsertError) {
+        console.error(`Error upserting category ${categoryData.external_id}:`, upsertError.message);
+        console.error(`Category data:`, JSON.stringify(categoryData, null, 2));
         // Continue with other categories instead of failing completely
-      } else if (data && data.length > 0) {
-        const category = data[0];
+        continue;
+      } else if (upsertedData && upsertedData.length > 0) {
+        const category = upsertedData[0];
         const originalCategory = parsedCategories.find(c => c.externalId === category.external_id);
         if (originalCategory) {
           categoryMapping[originalCategory.externalId] = category.id;
+          console.log(`Successfully processed category ${category.external_id} with ID ${category.id}`);
         }
       }
     } catch (error) {
@@ -238,7 +206,7 @@ async function importCategories(parsedCategories) {
     }
   }
   
-  console.log(`Successfully processed ${categoriesToInsert.length} categories`);
+  console.log(`Successfully processed categories`);
   
   // Second pass: Update parent_id relationships
   console.log('Updating category parent relationships...');
@@ -247,6 +215,7 @@ async function importCategories(parsedCategories) {
   for (const category of parsedCategories) {
     if (category.parentExternalId && categoryMapping[category.parentExternalId]) {
       try {
+        console.log(`Updating parent for category ${category.externalId}`);
         const { error: updateError } = await supabase
           .from('categories')
           .update({ parent_id: categoryMapping[category.parentExternalId] })
@@ -259,6 +228,7 @@ async function importCategories(parsedCategories) {
           console.error(`Error updating parent for category ${category.externalId}: ${updateError.message}`);
         } else {
           updatedCount++;
+          console.log(`Successfully updated parent for category ${category.externalId}`);
         }
       } catch (error) {
         console.error(`Error updating parent for category ${category.externalId}: ${error.message}`);
