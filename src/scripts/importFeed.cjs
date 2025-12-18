@@ -97,6 +97,7 @@ async function ensureUniqueSlug(baseSlug, tableName, fieldName = 'slug') {
 
 // Enhanced version that also checks for existing records with same external_id
 async function ensureUniqueCategorySlug(baseSlug, externalId) {
+  console.log(`Ensuring unique slug for category ${externalId}: ${baseSlug}`);
   // First check if a category with this external_id already exists
   const { data: existingCategory, error: fetchError } = await supabase
     .from('categories')
@@ -105,10 +106,12 @@ async function ensureUniqueCategorySlug(baseSlug, externalId) {
     .single();
   
   if (fetchError) {
+    console.log(`Category ${externalId} not found in database, generating unique slug`);
     // Category doesn't exist, generate a unique slug
     return await ensureUniqueSlug(baseSlug, 'categories');
   }
   
+  console.log(`Category ${externalId} found in database with slug: ${existingCategory.slug}`);
   // Category exists, return its current slug
   return existingCategory.slug;
 }
@@ -121,10 +124,14 @@ async function importCategories(parsedCategories) {
   
   // First pass: Insert all categories without parent_id
   console.log('Preparing categories for insertion...');
+  let preparedCount = 0;
   for (const category of parsedCategories) {
     try {
+      console.log(`Preparing category ${++preparedCount}/${parsedCategories.length}: ${category.externalId}`);
       const baseSlug = generateSlug(category.name);
+      console.log(`Generated base slug: ${baseSlug}`);
       const uniqueSlug = await ensureUniqueCategorySlug(baseSlug, category.externalId);
+      console.log(`Got unique slug: ${uniqueSlug}`);
       
       const categoryData = {
         external_id: category.externalId,
@@ -134,6 +141,7 @@ async function importCategories(parsedCategories) {
       };
       
       categoriesToInsert.push(categoryData);
+      console.log(`Added category to insertion list`);
     } catch (error) {
       console.error(`Error preparing category ${category.externalId}: ${error.message}`);
     }
