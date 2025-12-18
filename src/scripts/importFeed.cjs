@@ -262,6 +262,9 @@ async function importCategories(parsedCategories) {
 async function importProducts(parsedProducts, categoryMapping) {
   console.log(`Importing ${parsedProducts.length} products...`);
   
+  // Create a fresh Supabase client for products import to avoid schema cache issues
+  const supabaseProducts = createClient(supabaseUrl, supabaseServiceKey);
+  
   let successCount = 0;
   let errorCount = 0;
   
@@ -296,7 +299,7 @@ async function importProducts(parsedProducts, categoryMapping) {
       }
       
       // Upsert product
-      const { error: upsertError } = await supabase
+      const { error: upsertError } = await supabaseProducts
         .from('products')
         .upsert(productData, {
           onConflict: 'external_id'
@@ -313,6 +316,9 @@ async function importProducts(parsedProducts, categoryMapping) {
       if ((successCount + errorCount) % 100 === 0) {
         console.log(`Processed ${successCount + errorCount}/${parsedProducts.length} products...`);
       }
+      
+      // Add a small delay to avoid overwhelming the database
+      await delay(10);
     } catch (error) {
       console.error(`Error processing product ${product.externalId}: ${error.message}`);
       errorCount++;
