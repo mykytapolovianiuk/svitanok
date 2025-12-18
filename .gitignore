@@ -31,3 +31,4 @@ dist-ssr
 # CSV exports
 export-products.csv
 .vercel
+.env*.local
