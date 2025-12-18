@@ -44,6 +44,7 @@ import AdminPromoCodes from './pages/admin/PromoCodes';
 import AdminReviews from './pages/admin/Reviews';
 import AdminCustomers from './pages/admin/Customers';
 import AdminSettings from './pages/admin/Settings';
+import Bestsellers from './pages/admin/Bestsellers';
 
 // Simple layout without header/footer for checkout
 const CheckoutLayout = ({ children }: { children: React.ReactNode }) => (
@@ -90,6 +91,7 @@ function App() {
               <Route path="reviews" element={<AdminReviews />} />
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="bestsellers" element={<Bestsellers />} />
             </Route>
             
             {/* All other routes with normal layout */}

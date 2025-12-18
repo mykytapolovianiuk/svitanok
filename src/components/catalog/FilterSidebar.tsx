@@ -168,6 +168,13 @@ export default function FilterSidebar({
                 } else {
                   uniqueProblems.add(problemValue.trim());
                 }
+              } else if (Array.isArray(problemValue)) {
+                // Handle array values
+                problemValue.forEach(p => {
+                  if (p && typeof p === 'string' && p.trim()) {
+                    uniqueProblems.add(p.trim());
+                  }
+                });
               }
             }
           });
@@ -261,7 +268,16 @@ export default function FilterSidebar({
   };
 
   const handlePriceApply = () => {
-    onPriceChange(localMinPrice, localMaxPrice);
+    // Validate price inputs
+    let min = localMinPrice;
+    let max = localMaxPrice;
+    
+    // Ensure min is not greater than max
+    if (min > max && max > 0) {
+      [min, max] = [max, min]; // Swap values
+    }
+    
+    onPriceChange(min, max);
   };
 
   // Custom checkbox component
@@ -340,14 +356,18 @@ export default function FilterSidebar({
 
         {brandsOpen && (
           <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
-            {brands.map((brand) => (
-              <CustomCheckbox
-                key={brand}
-                checked={selectedBrands.includes(brand)}
-                onChange={() => handleBrandToggle(brand)}
-                label={brand}
-              />
-            ))}
+            {brands.length > 0 ? (
+              brands.map((brand) => (
+                <CustomCheckbox
+                  key={brand}
+                  checked={selectedBrands.includes(brand)}
+                  onChange={() => handleBrandToggle(brand)}
+                  label={brand}
+                />
+              ))
+            ) : (
+              <p className="text-xs text-gray-500">Бренди не знайдено</p>
+            )}
           </div>
         )}
       </div>
@@ -431,18 +451,20 @@ export default function FilterSidebar({
               <input
                 type="number"
                 placeholder="Від"
-                value={localMinPrice || ''}
-                onChange={(e) => setLocalMinPrice(Number(e.target.value))}
+                value={localMinPrice > 0 ? localMinPrice : ''}
+                onChange={(e) => setLocalMinPrice(e.target.value ? Number(e.target.value) : 0)}
                 className="w-full px-3 py-2 border border-gray-300 text-xs focus:outline-none focus:border-black"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
+                min="0"
               />
               <input
                 type="number"
                 placeholder="До"
-                value={localMaxPrice || ''}
-                onChange={(e) => setLocalMaxPrice(Number(e.target.value))}
+                value={localMaxPrice > 0 ? localMaxPrice : ''}
+                onChange={(e) => setLocalMaxPrice(e.target.value ? Number(e.target.value) : 0)}
                 className="w-full px-3 py-2 border border-gray-300 text-xs focus:outline-none focus:border-black"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
+                min="0"
               />
             </div>
             <button

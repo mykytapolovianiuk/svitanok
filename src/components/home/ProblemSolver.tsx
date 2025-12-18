@@ -69,13 +69,8 @@ export default function ProblemSolver() {
     const problem = skinProblems.find(p => p.id === selectedProblem);
     if (!problem) return;
 
-    const params = new URLSearchParams();
-    params.set('problem', problem.problem);
-    if (selectedProductType) {
-      params.set('category', selectedProductType);
-    }
-
-    navigate(`/catalog?${params.toString()}`);
+    // Navigate to catalog with proper filter parameters
+    navigate(`/catalog?problem=${encodeURIComponent(problem.problem)}`);
   };
 
   const selectedProblemData = selectedProblem 
@@ -118,9 +113,8 @@ export default function ProblemSolver() {
                   <img
                     src={problem.image}
                     alt={problem.name}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 mix-blend-multiply object-position-center"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
-                    style={{ objectPosition: 'center', minWidth: '100%', minHeight: '100%' }}
                   />
                   {isSelected && (
                     <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">

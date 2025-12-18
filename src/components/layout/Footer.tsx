@@ -1,12 +1,30 @@
 import { Link } from 'react-router-dom';
 import { Instagram } from 'lucide-react';
 import { useSiteSetting } from '@/hooks/useSiteSettings';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function Footer() {
   const phone = useSiteSetting('phone', '+380 99 378 60 36');
   const instagramUrl = useSiteSetting('instagram_url', 'https://www.instagram.com/pava.beauty.ua/');
   const address = useSiteSetting('address', 'м. Київ');
   const email = useSiteSetting('email', 'svitanok@gmail.com');
+  const [categories, setCategories] = useState<{name: string}[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+      
+      if (!error && data) {
+        setCategories(data);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <footer className="mt-16 font-sans" style={{ backgroundColor: 'rgba(255, 200, 140, 0.7)' }}>
@@ -42,33 +60,17 @@ export default function Footer() {
               Категорії
             </h4>
             <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-              <li>
-                <Link 
-                  to="/catalog?category=Inner Care" 
-                  className="text-text-main hover:opacity-70 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Догляд для тіла
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/catalog?category=Skin Care" 
-                  className="text-text-main hover:opacity-70 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Догляд для обличчя
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/catalog?category=Scalp Care" 
-                  className="text-text-main hover:opacity-70 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Догляд для волосся
-                </Link>
-              </li>
+              {categories.map((category) => (
+                <li key={category.name}>
+                  <Link 
+                    to={`/catalog?category=${encodeURIComponent(category.name)}`} 
+                    className="text-text-main hover:opacity-70 transition"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -122,7 +124,7 @@ export default function Footer() {
             <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm text-text-main" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               <li>{address}</li>
               <li>
-                <a href="tel:+380993786036" className="hover:underline">
+                <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="hover:underline">
                   {phone}
                 </a>
               </li>

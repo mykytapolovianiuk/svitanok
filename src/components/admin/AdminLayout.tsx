@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, X, Package, ShoppingBag, Star, Users, Settings, LayoutDashboard, ChevronRight, Ticket } from 'lucide-react';
+import { LogOut, Menu, X, Package, ShoppingBag, Star, Users, Settings, LayoutDashboard, ChevronRight, Ticket, TrendingUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,7 @@ export default function AdminLayout() {
     { name: 'Панель управління', href: '/admin', icon: LayoutDashboard },
     { name: 'Замовлення', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Товари', href: '/admin/products', icon: Package },
+    { name: 'Хіти продажу', href: '/admin/bestsellers', icon: TrendingUp },
     { name: 'Промокоди', href: '/admin/promocodes', icon: Ticket },
     { name: 'Відгуки', href: '/admin/reviews', icon: Star },
     { name: 'Клієнти', href: '/admin/customers', icon: Users },
