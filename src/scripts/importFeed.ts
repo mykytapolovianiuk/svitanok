@@ -140,15 +140,42 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
   // Process categories one by one to better handle conflicts
   for (const categoryData of categoriesToInsert) {
     try {
-      const { data, error } = await supabase
+      // First, check if a category with the same external_id already exists
+      const { data: existingCategory, error: fetchError } = await supabase
         .from('categories')
-        .upsert(categoryData, {
-          onConflict: 'external_id'
-        })
-        .select();
+        .select('id')
+        .eq('external_id', categoryData.external_id)
+        .single();
+      
+      let data, error;
+      
+      if (existingCategory) {
+        // Update existing category
+        const { data: updatedData, error: updateError } = await supabase
+          .from('categories')
+          .update({
+            name: categoryData.name,
+            slug: categoryData.slug,
+            parent_id: categoryData.parent_id
+          })
+          .eq('external_id', categoryData.external_id)
+          .select();
+        
+        data = updatedData;
+        error = updateError;
+      } else {
+        // Insert new category
+        const { data: insertedData, error: insertError } = await supabase
+          .from('categories')
+          .insert(categoryData)
+          .select();
+        
+        data = insertedData;
+        error = insertError;
+      }
       
       if (error) {
-        console.error(`Error inserting category ${categoryData.external_id}:`, error.message);
+        console.error(`Error processing category ${categoryData.external_id}:`, error.message);
         // Continue with other categories instead of failing completely
       } else if (data && data.length > 0) {
         const category = data[0];
