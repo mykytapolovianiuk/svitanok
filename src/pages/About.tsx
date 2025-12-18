@@ -111,6 +111,31 @@ export default function About() {
                 </div>
               </div>
             </div>
+            
+            {/* Bank Details */}
+            <div className="bg-white p-6 md:p-8">
+              <h3 
+                className="text-xl md:text-2xl font-medium uppercase tracking-[0.1em] mb-6"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Оплата на рахунок
+              </h3>
+              
+              <div className="space-y-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                <div className="flex flex-col">
+                  <span className="font-medium mb-1">ФОП Кулинич А.М.</span>
+                  <span className="font-light">4035200042250149</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium mb-1">ФОП Кулинич В.О.</span>
+                  <span className="font-light">5169335102586829</span>
+                </div>
+                <div className="flex flex-col mt-4">
+                  <span className="font-medium mb-1">Призначення платежу:</span>
+                  <span className="font-light">оплата за товар</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Contact & Hours (1/3 width) */}

@@ -187,10 +187,10 @@ function BannerSlide({ slide }: { slide: BannerSlide }) {
     
     switch(slide.id) {
       case '1':
-        targetUrl = '/catalog?category=sets';
+        targetUrl = '/catalog';
         break;
       case '2':
-        targetUrl = '/catalog?category=skincare';
+        targetUrl = '/catalog';
         break;
       case '3':
         targetUrl = '/favorites';

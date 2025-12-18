@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { DbProduct } from '../../types';
+import type { Product } from '../../types';
 import { 
   Package, 
   Search, 
@@ -14,11 +14,13 @@ import {
   Tag,
   CheckCircle,
   XCircle,
-  Download
+  Download,
+  Upload
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { exportProductsToCSV } from '../../utils/exportToCSV';
 import { TableSkeleton } from '../../components/ui/SkeletonLoader';
+import FeedImporter from '../../components/admin/FeedImporter';
 
 interface ProductFormData {
   name: string;
@@ -33,13 +35,14 @@ interface ProductFormData {
 }
 
 export default function Products() {
-  const [products, setProducts] = useState<DbProduct[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<DbProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     external_id: '',
@@ -74,7 +77,7 @@ export default function Products() {
 
       if (error) throw error;
       
-      setProducts(data as DbProduct[] || []);
+      setProducts(data as Product[] || []);
     } catch (error: any) {
       console.error('Error fetching products:', error);
       toast.error('Не вдалося завантажити товари');
@@ -118,7 +121,7 @@ export default function Products() {
     setIsModalOpen(true);
   };
 
-  const handleEdit = (product: DbProduct) => {
+  const handleEdit = (product: Product) => {
     setIsAdding(false);
     setEditingProduct(product);
     setFormData({
@@ -225,7 +228,7 @@ export default function Products() {
     }
   };
 
-  const handleDelete = async (productId: string) => {
+  const handleDelete = async (productId: number) => {
     if (!window.confirm('Ви впевнені, що хочете видалити цей товар? Цю дію неможливо скасувати.')) return;
     
     try {
@@ -277,14 +280,24 @@ export default function Products() {
             Управління всіма товарами
           </p>
         </div>
-        <button
-          onClick={handleAddNew}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Додати новий товар
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            <Upload className="h-5 w-5 mr-2" />
+            Імпорт фіду
+          </button>
+          <button
+            onClick={handleAddNew}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Додати новий товар
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -642,6 +655,39 @@ export default function Products() {
                     Зберегти зміни
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                Імпорт товарів з YML/XML
+              </h3>
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <FeedImporter />
+            </div>
+            
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Закрити
               </button>
             </div>
           </div>

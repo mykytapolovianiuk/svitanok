@@ -118,7 +118,7 @@ export default function ProblemSolver() {
                   <img
                     src={problem.image}
                     alt={problem.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 mix-blend-multiply"
+                    className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-300 mix-blend-multiply"
                     loading="lazy"
                   />
                   {isSelected && (
