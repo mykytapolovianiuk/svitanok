@@ -340,19 +340,13 @@ async function main() {
     console.log('XML parsed successfully');
     console.log(`Found ${parsedData.categories.length} categories and ${parsedData.products.length} products`);
     
-    // For testing, let's just import the first 10 categories
-    const testCategories = parsedData.categories.slice(0, 10);
-    console.log(`Testing with first ${testCategories.length} categories...`);
+    // Import categories
+    const categoryMapping = await importCategories(parsedData.categories);
     
-    const categoryMapping = await importCategories(testCategories);
+    // Import products
+    await importProducts(parsedData.products, categoryMapping);
     
-    // For testing, let's just import the first 20 products
-    const testProducts = parsedData.products.slice(0, 20);
-    console.log(`Testing with first ${testProducts.length} products...`);
-    
-    await importProducts(testProducts, categoryMapping);
-    
-    console.log('Test import completed successfully!');
+    console.log('Import completed successfully!');
   } catch (error) {
     console.error('Import failed:', error.message);
     process.exit(1);
