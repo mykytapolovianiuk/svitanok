@@ -11,6 +11,9 @@
  * 3. Import products and link them to categories
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
