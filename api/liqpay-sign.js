@@ -2,12 +2,10 @@ import crypto from 'crypto';
 import { getCorsHeaders, logCorsAttempt } from './utils/cors.js';
 import { checkRateLimit } from './utils/rateLimit.js';
 
-/**
- * LiqPay signature generator
- * Generates the data and signature required by LiqPay payment gateway
- */
+// Генератор підпису LiqPay
+// Генерує дані та підпис, необхідні для платіжного шлюзу LiqPay
 export default async function handler(request, response) {
-  // Set CORS headers
+  // Встановлюємо заголовки CORS
   const origin = request.headers.origin;
   const corsHeaders = getCorsHeaders(origin);
   Object.entries(corsHeaders).forEach(([key, value]) => {
@@ -20,72 +18,72 @@ export default async function handler(request, response) {
     ...(process.env.NODE_ENV === 'development' ? ['http://localhost:5173', 'http://localhost:3000'] : [])
   ]);
   
-  // Handle preflight requests
+  // Обробляємо префлайт запити
   if (request.method === 'OPTIONS') {
     return response.status(200).end();
   }
   
-  // Only allow POST requests
+  // Дозволяємо лише POST запити
   if (request.method !== 'POST') {
     return response.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Rate limiting
+  // Обмеження частоти запитів
   if (!checkRateLimit(request, response, 'payment')) {
     return;
   }
   
   try {
-    // For Vercel serverless functions, the body should already be parsed
-    // but we'll add a fallback just in case
+    // Для безсерверних функцій Vercel тіло вже має бути розібрано
+    // але додамо запасний варіант на всякий випадок
     let body = request.body;
     
-    // If body is a string, parse it
+    // Якщо тіло - рядок, розбираємо його
     if (typeof body === 'string') {
       try {
         body = JSON.parse(body);
       } catch (parseError) {
-        // Error handling in production
-        return response.status(400).json({ error: 'Invalid JSON in request body' });
+        // Обробка помилок у продакшені
+        return response.status(400).json({ error: 'Неправильний JSON у тілі запиту' });
       }
     }
     
-    // If body is still not an object, return an error
+    // Якщо тіло все ще не об'єкт, повертаємо помилку
     if (!body || typeof body !== 'object') {
-      // Error handling in production
-      return response.status(400).json({ error: 'Invalid request body format' });
+      // Обробка помилок у продакшені
+      return response.status(400).json({ error: 'Неправильний формат тіла запиту' });
     }
     
-    // Get environment variables
+    // Отримуємо змінні середовища
     const publicKey = process.env.LIQPAY_PUBLIC_KEY;
     const privateKey = process.env.LIQPAY_PRIVATE_KEY;
     
-    // Log environment variables for debugging (don't log actual values for security)
-    // Environment variables check removed for production
+    // Логуємо змінні середовища для налагодження (не логуємо справжні значення для безпеки)
+    // Перевірку змінних середовища видалено для продакшену
     
-    // Validate environment variables
+    // Перевіряємо змінні середовища
     if (!publicKey || !privateKey) {
-      // Error handling in production
-      // Environment variables check removed for production
-      return response.status(500).json({ error: 'Payment gateway not configured' });
+      // Обробка помилок у продакшені
+      // Перевірку змінних середовища видалено для продакшену
+      return response.status(500).json({ error: 'Платіжний шлюз не налаштовано' });
     }
     
-    // Get request data
+    // Отримуємо дані запиту
     const { amount, currency, description, orderId } = body;
     
-    // Log received data for debugging
-    // Production logging removed
+    // Логуємо отримані дані для налагодження
+    // Продакшен логування видалено
     
-    // Validate required fields
+    // Перевіряємо обов'язкові поля
     if (amount === undefined || amount === null || 
         currency === undefined || currency === null || 
         description === undefined || description === null || 
         orderId === undefined || orderId === null) {
-      // Error handling in production
-      return response.status(400).json({ error: 'Missing required fields' });
+      // Обробка помилок у продакшені
+      return response.status(400).json({ error: 'Відсутні обов\'язкові поля' });
     }
     
-    // Construct LiqPay parameters
+    // Формуємо параметри LiqPay
     const params = {
       public_key: publicKey,
       version: '3',
@@ -97,17 +95,17 @@ export default async function handler(request, response) {
       sandbox: process.env.NODE_ENV === 'development' ? '1' : '0'
     };
     
-    // Convert params to JSON and encode in Base64
+    // Конвертуємо параметри в JSON і кодуємо в Base64
     const data = Buffer.from(JSON.stringify(params)).toString('base64');
     
-    // Create signature: base64_encode(sha1(private_key + data + private_key))
+    // Створюємо підпис: base64_encode(sha1(private_key + data + private_key))
     const signatureString = privateKey + data + privateKey;
     const signature = Buffer.from(crypto.createHash('sha1').update(signatureString).digest()).toString('base64');
     
-    // Return data and signature
+    // Повертаємо дані та підпис
     return response.status(200).json({ data, signature });
   } catch (error) {
-    // Error handling in production
-    return response.status(500).json({ error: 'Failed to generate payment signature' });
+    // Обробка помилок у продакшені
+    return response.status(500).json({ error: 'Не вдалося згенерувати підпис платежу' });
   }
 }

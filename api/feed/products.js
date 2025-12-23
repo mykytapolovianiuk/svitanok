@@ -1,8 +1,6 @@
-/**
- * Product Feed Generator for Facebook Commerce
- * Generates XML feed compatible with Facebook Catalog
- * Refreshes automatically every 24h
- */
+// Генератор фіда товарів для Facebook Commerce
+// Генерує XML фід, сумісний з Facebook Catalog
+// Оновлюється автоматично кожні 24 години
 
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders, logCorsAttempt } from '../utils/cors.js';
@@ -29,13 +27,13 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
-  // Rate limiting
+  // Обмеження частоти запитів
   if (!checkRateLimit(req, res, 'feed')) {
     return;
   }
   
   try {
-    // Check cache
+    // Перевіряємо кеш
     const now = Date.now();
     if (cachedFeed && (now - cacheTimestamp) < CACHE_DURATION) {
       res.setHeader('Content-Type', 'application/xml');
@@ -43,7 +41,7 @@ export default async function handler(req, res) {
       return res.status(200).send(cachedFeed);
     }
     
-    // Get Supabase credentials
+    // Отримуємо облікові дані Supabase
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
@@ -53,7 +51,7 @@ export default async function handler(req, res) {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Fetch all products
+    // Отримуємо всі товари
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
@@ -64,14 +62,14 @@ export default async function handler(req, res) {
       throw error;
     }
     
-    // Get base URL from environment or request
+    // Отримуємо базову URL з оточення або запиту
     const baseUrl = process.env.VITE_SITE_URL || 
                     (req.headers.host ? `https://${req.headers.host}` : 'https://svitanok.com');
     
-    // Generate XML feed
+    // Генеруємо XML фід
     const xml = generateFeedXML(products || [], baseUrl);
     
-    // Cache the feed
+    // Кешуємо фід
     cachedFeed = xml;
     cacheTimestamp = now;
     
@@ -80,7 +78,7 @@ export default async function handler(req, res) {
     return res.status(200).send(xml);
     
   } catch (error) {
-    // Error handling in production
+    // Обробка помилок у продакшені
     return res.status(500).json({ 
       error: 'Failed to generate product feed',
       message: error.message 
@@ -95,7 +93,7 @@ function generateFeedXML(products, baseUrl) {
       ? product.images[0] 
       : `${baseUrl}/placeholder-product.jpg`;
     
-    // Extract brand and category from attributes
+    // Витягуємо бренд та категорію з атрибутів
     const brand = product.attributes?.Виробник || 
                   product.attributes?.Brand || 
                   'Svitanok';
@@ -103,16 +101,16 @@ function generateFeedXML(products, baseUrl) {
                      product.attributes?.Category || 
                      'Косметика';
     
-    // Format price (Facebook requires price in format: "UAH 1500.00")
+    // Форматуємо ціну (Facebook вимагає формат: "UAH 1500.00")
     const price = `${product.currency || 'UAH'} ${product.price.toFixed(2)}`;
     
-    // Determine availability
+    // Визначаємо наявність
     const availability = product.in_stock ? 'in stock' : 'out of stock';
     
-    // Generate description (limit to 5000 chars for Facebook)
+    // Генеруємо опис (обмежуємо 5000 символами для Facebook)
     const description = (product.description || product.name || '')
       .substring(0, 5000)
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/<[^>]*>/g, '') // Видаляємо HTML теги
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')

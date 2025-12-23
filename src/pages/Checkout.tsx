@@ -98,13 +98,43 @@ export default function Checkout() {
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: {
-      deliveryMethod: 'nova-poshta',
-      paymentMethod: 'cash-on-delivery',
+    defaultValues: () => {
+      // Load draft data from localStorage on component mount
+      const draftData = localStorage.getItem('checkout_draft');
+      if (draftData) {
+        try {
+          const parsedData = JSON.parse(draftData);
+          return parsedData;
+        } catch (e) {
+          console.error('Failed to parse checkout draft data:', e);
+          localStorage.removeItem('checkout_draft'); // Clear corrupted data
+        }
+      }
+      // Default values if no draft data
+      return {
+        deliveryMethod: 'nova-poshta',
+        paymentMethod: 'cash-on-delivery',
+      };
     },
   });
+
+  // Save form data to localStorage on every change
+  useEffect(() => {
+    const subscription = watch((data) => {
+      // Save to localStorage whenever form data changes
+      localStorage.setItem('checkout_draft', JSON.stringify(data));
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  // Clear localStorage draft on successful order submission
+  const clearCheckoutDraft = () => {
+    localStorage.removeItem('checkout_draft');
+  };
 
   // Fetch profile for auto-fill (after useForm initialization)
   useEffect(() => {
@@ -425,10 +455,14 @@ export default function Checkout() {
           description: `Оплата замовлення #${orderResult.data.id}`
         });
         setShowLiqPay(true);
+        // Clear checkout draft from localStorage on successful order submission
+        clearCheckoutDraft();
       } else {
         // For cash on delivery, proceed as before
         clearCart();
         navigate('/order-success', { state: { orderId: orderResult.data.id } });
+        // Clear checkout draft from localStorage on successful order submission
+        clearCheckoutDraft();
       }
 
     } catch (error: any) {

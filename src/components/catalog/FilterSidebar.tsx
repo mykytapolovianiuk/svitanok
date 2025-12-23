@@ -33,43 +33,43 @@ export default function FilterSidebar({
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
   
-  // Dynamic data from database
+  // Динамічні дані з бази даних
   const [brands, setBrands] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check if brand cache is older than 1 day and trigger refresh in background
+  // Перевіряємо, чи кеш брендів старіший за 1 день, і оновлюємо у фоні
   useEffect(() => {
     const checkCacheAge = () => {
       const cacheTimestamp = localStorage.getItem('svitanok_brands_cache_timestamp');
       if (cacheTimestamp) {
         const age = Date.now() - parseInt(cacheTimestamp);
-        // If cache is older than 1 day (86400000 ms), refresh in background
+        // Якщо кеш старіший за 1 день (86400000 мс), оновлюємо у фоні
         if (age > 86400000) {
           handleRefreshBrands();
         }
       }
     };
     
-    // Check cache age when component mounts
+    // Перевіряємо вік кешу при монтуванні компонента
     checkCacheAge();
     
-    // Also fetch initial filter data
+    // Також отримуємо початкові дані фільтрів
     fetchFilterData();
     
-    // Check cache age every 6 hours
-    const interval = setInterval(checkCacheAge, 21600000); // 6 hours
+    // Перевіряємо вік кешу кожні 6 годин
+    const interval = setInterval(checkCacheAge, 21600000); // 6 годин
     
     return () => clearInterval(interval);
   }, []);
 
   const fetchFilterData = async () => {
     try {
-      // Fetch unique brands from products with caching
+      // Отримуємо унікальні бренди з продуктів з кешуванням
       let brandsData: string[] = [];
       
-      // Check if we have cached brand data (less than 1 hour old)
+      // Перевіряємо, чи маємо кешовані дані брендів (менше 1 години)
       const cachedBrands = localStorage.getItem('svitanok_brands_cache');
       const cacheTimestamp = localStorage.getItem('svitanok_brands_cache_timestamp');
       const cacheValid = cachedBrands && cacheTimestamp && 
@@ -77,13 +77,13 @@ export default function FilterSidebar({
       
       if (cacheValid) {
         brandsData = JSON.parse(cachedBrands);
-        // If we have cached data, don't show loading spinner
+        // Якщо маємо кешовані дані, не показуємо спінер завантаження
         setLoading(false);
       } else {
-        // Only show loading spinner when fetching from database
+        // Показуємо спінер завантаження лише при отриманні з бази даних
         setLoading(true);
         
-        // Fetch brands from database
+        // Отримуємо бренди з бази даних
         const { data: brandData, error: brandError } = await supabase
           .from('products')
           .select('attributes')
@@ -96,12 +96,12 @@ export default function FilterSidebar({
         if (brandData) {
           const uniqueBrands = new Set<string>();
           brandData.forEach((product: any) => {
-            // Debug log to see what attributes look like
+            // Лог для налагодження, щоб бачити, як виглядають атрибути
             if (process.env.NODE_ENV === 'development') {
               console.log('Product attributes:', product.attributes);
             }
             
-            // Try multiple possible brand keys
+            // Пробуємо кілька можливих ключів брендів
             const brand = product.attributes?.Виробник || 
                          product.attributes?.Brand || 
                          product.attributes?.brand || 
@@ -112,7 +112,7 @@ export default function FilterSidebar({
             if (brand && typeof brand === 'string' && brand.trim()) {
               uniqueBrands.add(brand.trim());
             } else if (brand && Array.isArray(brand) && brand.length > 0) {
-              // Handle case where brand might be an array
+              // Обробляємо випадок, коли бренд може бути масивом
               const firstBrand = brand[0];
               if (firstBrand && typeof firstBrand === 'string' && firstBrand.trim()) {
                 uniqueBrands.add(firstBrand.trim());
@@ -121,11 +121,11 @@ export default function FilterSidebar({
           });
           brandsData = Array.from(uniqueBrands).sort();
           
-          // Cache the results
+          // Кешуємо результати
           localStorage.setItem('svitanok_brands_cache', JSON.stringify(brandsData));
           localStorage.setItem('svitanok_brands_cache_timestamp', Date.now().toString());
           
-          // Debug log to see what brands were extracted
+          // Лог для налагодження, щоб бачити, які бренди були витягнуті
           if (process.env.NODE_ENV === 'development') {
             console.log('Extracted brands:', brandsData);
           }
@@ -134,7 +134,7 @@ export default function FilterSidebar({
       
       setBrands(brandsData);
       
-      // Fetch categories
+      // Отримуємо категорії
       const { data: categoryData, error: categoryError } = await supabase
         .from('categories')
         .select('name')
@@ -144,7 +144,7 @@ export default function FilterSidebar({
         setCategories(categoryData.map((cat: any) => cat.name));
       }
       
-      // Fetch unique problems from products
+      // Отримуємо унікальні проблеми з продуктів
       const { data: problemData, error: problemError } = await supabase
         .from('products')
         .select('attributes')
@@ -153,13 +153,13 @@ export default function FilterSidebar({
       if (!problemError && problemData) {
         const uniqueProblems = new Set<string>();
         problemData.forEach((product: any) => {
-          // Check multiple keys for problems
+          // Перевіряємо кілька ключів для проблем
           const problemKeys = ['Проблема шкіри', 'Значення_Проблеми', 'Назва_Проблеми', 'Призначення'];
           problemKeys.forEach(key => {
             const problemValue = product.attributes?.[key];
             if (problemValue) {
               if (typeof problemValue === 'string') {
-                // Handle pipe-separated values
+                // Обробляємо значення, розділені вертикальною рискою
                 if (problemValue.includes('|')) {
                   const parts = problemValue.split('|');
                   parts.forEach(p => {
@@ -169,7 +169,7 @@ export default function FilterSidebar({
                   uniqueProblems.add(problemValue.trim());
                 }
               } else if (Array.isArray(problemValue)) {
-                // Handle array values
+                // Обробляємо значення масиву
                 problemValue.forEach(p => {
                   if (p && typeof p === 'string' && p.trim()) {
                     uniqueProblems.add(p.trim());
@@ -184,7 +184,7 @@ export default function FilterSidebar({
     } catch (error) {
       console.error('Error fetching filter data:', error);
     } finally {
-      // Only hide loading if we were actually loading
+      // Приховуємо завантаження лише якщо дійсно завантажували
       if (loading) {
         setLoading(false);
       }
@@ -193,13 +193,13 @@ export default function FilterSidebar({
 
   const handleRefreshBrands = async () => {
     try {
-      // Don't show loading spinner for background refresh
+      // Не показуємо спінер завантаження для фонового оновлення
       
-      // Clear cache
+      // Очищуємо кеш
       localStorage.removeItem('svitanok_brands_cache');
       localStorage.removeItem('svitanok_brands_cache_timestamp');
       
-      // Fetch fresh brands from database
+      // Отримуємо свіжі бренди з бази даних
       const { data: brandData, error: brandError } = await supabase
         .from('products')
         .select('attributes')
@@ -223,7 +223,7 @@ export default function FilterSidebar({
           if (brand && typeof brand === 'string' && brand.trim()) {
             uniqueBrands.add(brand.trim());
           } else if (brand && Array.isArray(brand) && brand.length > 0) {
-            // Handle case where brand might be an array
+            // Обробляємо випадок, коли бренд може бути масивом
             const firstBrand = brand[0];
             if (firstBrand && typeof firstBrand === 'string' && firstBrand.trim()) {
               uniqueBrands.add(firstBrand.trim());
@@ -232,7 +232,7 @@ export default function FilterSidebar({
         });
         const brandsData = Array.from(uniqueBrands).sort();
         
-        // Update cache
+        // Оновлюємо кеш
         localStorage.setItem('svitanok_brands_cache', JSON.stringify(brandsData));
         localStorage.setItem('svitanok_brands_cache_timestamp', Date.now().toString());
         
@@ -268,19 +268,19 @@ export default function FilterSidebar({
   };
 
   const handlePriceApply = () => {
-    // Validate price inputs
+    // Валідуємо вхідні дані цін
     let min = localMinPrice;
     let max = localMaxPrice;
     
-    // Ensure min is not greater than max
+    // Переконуємося, що мін не більше макс
     if (min > max && max > 0) {
-      [min, max] = [max, min]; // Swap values
+      [min, max] = [max, min]; // Міняємо значення місцями
     }
     
     onPriceChange(min, max);
   };
 
-  // Custom checkbox component
+  // Власний компонент чекбоксу
   const CustomCheckbox = ({ 
     checked, 
     onChange,

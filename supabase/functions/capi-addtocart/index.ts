@@ -1,7 +1,5 @@
-/**
- * Supabase Edge Function - Meta Conversions API AddToCart Event
- * Server-side tracking for add to cart events
- */
+// Функція Supabase Edge - Подія Meta Conversions API AddToCart
+// Відстеження на стороні сервера для подій додавання в кошик
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, logCorsAttempt } from "../_shared/cors.ts";
@@ -100,12 +98,12 @@ serve(async (req) => {
                       !!testEventCode;
 
     if (!pixelId) {
-      console.log('[CAPI] AddToCart: Pixel ID not configured, using test mode');
+      console.log('[CAPI] AddToCart: Pixel ID не налаштовано, використовується тестовий режим');
       return new Response(
         JSON.stringify({ 
           success: true, 
           test_mode: true,
-          message: 'AddToCart event logged (TEST MODE)',
+          message: 'Подія AddToCart записана (ТЕСТОВИЙ РЕЖИМ)',
           events_received: 1 
         }),
         { 
@@ -116,12 +114,12 @@ serve(async (req) => {
     }
 
     if (isTestMode) {
-      console.log('[CAPI] AddToCart: Running in TEST MODE');
+      console.log('[CAPI] AddToCart: Працює в ТЕСТОВОМУ РЕЖИМІ');
       return new Response(
         JSON.stringify({ 
           success: true, 
           test_mode: true,
-          message: 'AddToCart event logged (TEST MODE)',
+          message: 'Подія AddToCart записана (ТЕСТОВИЙ РЕЖИМ)',
           events_received: 1 
         }),
         { 
@@ -160,7 +158,7 @@ serve(async (req) => {
       );
 
       if (result.success) {
-        console.log('[CAPI] AddToCart sent successfully:', result.result);
+        console.log('[CAPI] AddToCart успішно відправлено:', result.result);
         return new Response(
           JSON.stringify({ 
             success: true, 
@@ -182,10 +180,10 @@ serve(async (req) => {
       }
     }
 
-    console.error('[CAPI] AddToCart error after retries:', lastError);
+    console.error('[CAPI] AddToCart помилка після повторних спроб:', lastError);
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to send AddToCart event',
+        error: 'Не вдалося відправити подію AddToCart',
         details: lastError 
       }),
       { 
@@ -195,10 +193,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[CAPI] AddToCart error:', error);
+    console.error('[CAPI] AddToCart помилка:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Internal server error',
+        error: 'Внутрішня помилка сервера',
         message: error.message 
       }),
       { 

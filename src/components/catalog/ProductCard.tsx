@@ -37,7 +37,7 @@ export default function ProductCard({
   // Додавання товару в кошик
   const { addItem } = useCartStore();
   
-  // Analytics tracking
+  // Відстеження аналітики
   const { trackAddToCart, trackFavorite, trackSelectItem } = useAnalytics();
 
   // Додавання товару в кошик з повідомленням
@@ -65,7 +65,7 @@ export default function ProductCard({
       
       addItem(product);
       
-      // Track add to cart
+      // Відстежуємо додавання в кошик
       trackAddToCart({
         id,
         name,
@@ -73,10 +73,10 @@ export default function ProductCard({
         quantity: 1,
       });
       
-      // Show success message only for cart addition, not for favorites
+      // Показуємо повідомлення лише при додаванні в кошик, не для обраних
       toast.success('Товар додано до кошика!');
     } finally {
-      // Small delay for better UX
+      // Невелика затримка для кращого UX
       setTimeout(() => setIsAddingToCart(false), 300);
     }
   };
@@ -88,10 +88,10 @@ export default function ProductCard({
     const wasFavorite = isFavorite(id);
     toggleFavorite(id);
     
-    // Track favorite action
+    // Відстежуємо дію з обраним
     trackFavorite(wasFavorite ? 'remove' : 'add', id);
     
-    // Show appropriate message based on action
+    // Показуємо відповідне повідомлення залежно від дії
     if (wasFavorite) {
       toast.success('Товар видалено з обраних');
     } else {
@@ -99,7 +99,7 @@ export default function ProductCard({
     }
   };
   
-  // Track product selection when clicking on product card
+  // Відстежуємо вибір товару при кліку на картку товару
   const handleProductClick = () => {
     trackSelectItem({
       item_id: String(id),

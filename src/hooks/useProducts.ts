@@ -20,13 +20,13 @@ interface UseProductsParams {
   minPrice?: number;
   maxPrice?: number;
   brands?: string[];
-  problems?: string[]; // This will be used for categories
+  problems?: string[]; // Це буде використовуватись для категорій
   sortBy?: 'newest' | 'price_asc' | 'price_desc';
   page?: number;
   pageSize?: number;
   searchQuery?: string;
   problemTags?: string[];
-  ingredients?: string[]; // For ingredient filtering
+  ingredients?: string[]; // Для фільтрації за інгредієнтами
 }
 
 interface UseProductsResult {
@@ -43,7 +43,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
     minPrice,
     maxPrice,
     brands = [],
-    problems = [], // Categories
+    problems = [], // Категорії
     sortBy = 'newest',
     page = 1,
     pageSize = 12,
@@ -68,16 +68,16 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
   const { data, isLoading, error } = useQuery({
     queryKey: ['products', category, minPrice, maxPrice, brandsKey, problemsKey, sortBy, page, pageSize, searchQuery, problemTagsKey, ingredientsKey],
     queryFn: async () => {
-      // Build query
+      // Формуємо запит
       let query = supabase
         .from('products')
         .select('*', { count: 'exact' });
 
-      // Search query filter - handled below with or() for better ingredient matching
+      // Фільтр пошуку - обробляється нижче з or() для кращого збігу інгредієнтів
 
-      // Category filter (if provided) - now using category_id
+      // Фільтр категорій (якщо вказано) - тепер використовуємо category_id
       if (category) {
-        // First get category ID from slug
+        // Спочатку отримуємо ID категорії з slug
         const { data: categoryData } = await supabase
           .from('categories')
           .select('id')
@@ -87,7 +87,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         if (categoryData) {
           query = query.eq('category_id', categoryData.id);
         } else {
-          // Fallback to old method if category not found
+          // Повертаємось до старого методу, якщо категорію не знайдено
           query = query.eq('category', category);
         }
       }
@@ -100,19 +100,19 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         query = query.lte('price', maxPrice);
       }
 
-      // Database-level filtering for JSONB attributes
-      // Brand filter - check multiple keys with exact match for better performance
+      // Фільтрація на рівні бази даних для атрибутів JSONB
+      // Фільтр брендів - перевіряємо кілька ключів з точним збігом для кращої продуктивності
       if (stableBrands.length > 0) {
-        // Use exact match instead of ilike for better performance when possible
+        // Використовуємо точний збіг замість ilike для кращої продуктивності, коли це можливо
         const brandConditions = stableBrands.map(brand => 
           `attributes->>Виробник.eq.${brand},attributes->>Brand.eq.${brand}`
         ).join(',');
         query = query.or(brandConditions);
       }
 
-      // Categories filter (mapped from problems in Catalog.tsx) - check multiple keys
+      // Фільтр категорій (відображено з проблем у Catalog.tsx) - перевіряємо кілька ключів
       if (stableProblems.length > 0) {
-        // First try to match with category table
+        // Спочатку намагаємось зіставити з таблицею категорій
         const { data: categoryIds } = await supabase
           .from('categories')
           .select('id')
@@ -122,7 +122,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
           const ids = categoryIds.map(cat => cat.id);
           query = query.in('category_id', ids);
         } else {
-          // Fallback to old method
+          // Повертаємось до старого методу
           const categoryConditions = stableProblems.map(problem => 
             `attributes->>Назва_групи.ilike.%${problem}%,attributes->>Category.ilike.%${problem}%`
           ).join(',');
@@ -130,7 +130,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         }
       }
 
-      // Problems filter - check multiple keys with ilike for pipe-separated values
+      // Фільтр проблем - перевіряємо кілька ключів з ilike для значень, розділених вертикальною рискою
       if (stableProblemTags.length > 0) {
         const problemConditions = stableProblemTags.map(problem => 
           `attributes->>Проблема шкіри.ilike.%${problem}%,attributes->>Значення_Проблеми.ilike.%${problem}%,attributes->>Назва_Проблеми.ilike.%${problem}%,attributes->>Призначення.ilike.%${problem}%`
@@ -138,7 +138,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         query = query.or(problemConditions);
       }
 
-      // Ingredients filter - check ingredients array or string fields
+      // Фільтр інгредієнтів - перевіряємо масив інгредієнтів або рядкові поля
       if (stableIngredients.length > 0) {
         const ingredientConditions = stableIngredients.map(ingredient => 
           `attributes->>Інгредієнти.ilike.%${ingredient}%,attributes->>Ingredient.ilike.%${ingredient}%,attributes->>Ingredients.ilike.%${ingredient}%,attributes->>Ключові_інгредієнти.ilike.%${ingredient}%`
@@ -146,13 +146,13 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         query = query.or(ingredientConditions);
       }
       
-      // Search query filter - search in name, description, and ingredients
+      // Фільтр пошукового запиту - шукаємо в назві, описі та інгредієнтах
       if (searchQuery) {
         if (!searchQuery.includes(' ')) {
-          // Single word search - might be ingredient
+          // Пошук одного слова - може бути інгредієнт
           query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,attributes->>Інгредієнти.ilike.%${searchQuery}%,attributes->>Ingredient.ilike.%${searchQuery}%`);
         } else {
-          // Multi-word search - search in name and description
+          // Пошук кількох слів - шукаємо в назві та описі
           query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
         }
       }
@@ -176,7 +176,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
       const to = from + pageSize - 1;
       query = query.range(from, to);
 
-      // Execute query
+      // Виконуємо запит
       const result = await query;
 
       if (result.error) throw result.error;
