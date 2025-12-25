@@ -44,7 +44,7 @@ export default function BenefitsSlider() {
             <SwiperSlide key={benefit.id}>
               <div className="bg-[#FFF2E1] p-8 md:p-12 lg:p-16">
                 <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto">
-                  {/* Left Column */}
+                  {}
                   <div className="space-y-6 md:space-y-8">
                     {benefit.leftColumn.map((item, index) => (
                       <div key={index}>
@@ -64,10 +64,10 @@ export default function BenefitsSlider() {
                     ))}
                   </div>
 
-                  {/* Vertical Divider */}
+                  {}
                   <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-black"></div>
 
-                  {/* Right Column */}
+                  {}
                   <div className="space-y-6 md:space-y-8">
                     {benefit.rightColumn.map((item, index) => (
                       <div key={index}>

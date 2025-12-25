@@ -2,18 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useUserStore } from '../features/auth/useUserStore';
 
-/**
- * Оптимізований hook для роботи з обраними товарами
- * Використовує React Query для кешування та дедуплікації запитів
- * Вирішує N+1 проблему - один запит замість тисяч
- */
+
 export function useFavorites() {
   const { session } = useUserStore();
   const queryClient = useQueryClient();
   const userId = session?.user.id;
 
-  // Один запит для всіх обраних товарів користувача
-  // React Query автоматично кешує та дедуплікує запити
+  
+  
   const { data: favoriteIds, isLoading } = useQuery({
     queryKey: ['favorites', userId],
     queryFn: async () => {
@@ -26,17 +22,17 @@ export function useFavorites() {
 
       if (error) throw error;
 
-      // Повертаємо Set для швидкої перевірки O(1)
+      
       return new Set(data?.map(fav => fav.product_id) || []);
     },
-    enabled: !!userId, // Запит виконується тільки якщо є userId
-    staleTime: 5 * 60 * 1000, // Дані вважаються свіжими 5 хвилин
-    gcTime: 10 * 60 * 1000, // Кеш зберігається 10 хвилин
-    // Повертаємо порожній Set якщо дані ще не завантажені
+    enabled: !!userId, 
+    staleTime: 5 * 60 * 1000, 
+    gcTime: 10 * 60 * 1000, 
+    
     placeholderData: new Set<number>(),
   });
 
-  // Mutation для додавання/видалення обраного товару
+  
   const toggleFavoriteMutation = useMutation({
     mutationFn: async (productId: number) => {
       if (!userId) throw new Error('User not authenticated');
@@ -44,7 +40,7 @@ export function useFavorites() {
       const isCurrentlyFavorite = (favoriteIds || new Set<number>()).has(productId);
       
       if (isCurrentlyFavorite) {
-        // Видалити з обраних
+        
         const { error } = await supabase
           .from('favorites')
           .delete()
@@ -52,7 +48,7 @@ export function useFavorites() {
 
         if (error) throw error;
       } else {
-        // Додати до обраних
+        
         const { error } = await supabase
           .from('favorites')
           .insert({ user_id: userId, product_id: productId });
@@ -63,7 +59,7 @@ export function useFavorites() {
       return !isCurrentlyFavorite;
     },
     onSuccess: () => {
-      // Оновити кеш після успішної мутації
+      
       queryClient.invalidateQueries({ queryKey: ['favorites', userId] });
     },
   });
@@ -85,12 +81,12 @@ export function useFavorites() {
     return favoriteIds.has(productId);
   };
 
-  // Завжди повертаємо Set, навіть якщо дані ще завантажуються
+  
   const safeFavoriteIds = favoriteIds || new Set<number>();
 
   return {
-    favorites: Array.from(safeFavoriteIds), // Для зворотної сумісності
-    favoriteIds: safeFavoriteIds, // Set для швидкої перевірки
+    favorites: Array.from(safeFavoriteIds), 
+    favoriteIds: safeFavoriteIds, 
     loading: isLoading,
     toggleFavorite,
     isFavorite,

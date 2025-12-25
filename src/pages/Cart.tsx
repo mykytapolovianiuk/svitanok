@@ -15,7 +15,7 @@ export default function Cart() {
   const { appliedCode, applyCode, removeCode, isLoading: promoLoading } = usePromoCode();
   const { discountAmount, finalTotal: subtotal } = usePromoCodeDiscount(totalPrice);
 
-  // Розрахунок вартості доставки
+  
   const shippingCost = useMemo(() => {
     return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   }, [subtotal]);
@@ -24,13 +24,13 @@ export default function Cart() {
     return subtotal + shippingCost;
   }, [subtotal, shippingCost]);
 
-  // Track view cart when component mounts
+  
   useEffect(() => {
     if (items.length > 0) {
       const analyticsItems = formatCartItemsForAnalytics(items);
       trackViewCart(analyticsItems, totalPrice);
     }
-  }, []); // Only on mount
+  }, []); 
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -89,7 +89,7 @@ export default function Cart() {
         </h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-          {/* Cart Items */}
+          {}
           <div className="lg:col-span-2 bg-[#FAF4EB] p-6 md:p-[60px_40px]">
             <div className="space-y-4">
               {items.map((item) => (
@@ -158,7 +158,7 @@ export default function Cart() {
             </div>
           </div>
 
-          {/* Order Summary */}
+          {}
           <div className="lg:col-span-1 bg-[#FAF4EB] p-6 md:p-[60px_40px] lg:sticky lg:top-0 h-fit lg:h-screen lg:overflow-y-auto">
             <h2 
               className="text-xl font-light mb-6 uppercase tracking-[2px] border-b border-black pb-4"
@@ -167,7 +167,7 @@ export default function Cart() {
               Разом
             </h2>
             
-            {/* Promo Code */}
+            {}
             <div className="mb-6">
               {appliedCode ? (
                 <div className="border border-black bg-black p-3 rounded">

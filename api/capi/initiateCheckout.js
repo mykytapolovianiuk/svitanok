@@ -1,6 +1,4 @@
-/**
- * Meta Conversions API - InitiateCheckout Event
- */
+
 
 import crypto from 'crypto';
 import { getCorsHeaders, logCorsAttempt } from '../utils/cors.js';
@@ -32,7 +30,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Rate limiting
+  
   if (!checkRateLimit(req, res, 'capi')) {
     return;
   }
@@ -51,15 +49,15 @@ export default async function handler(req, res) {
     
     if (!pixelId) {
       if (process.env.NODE_ENV === 'development') {
-        // Test mode logging removed for production
+        
       }
       return res.status(200).json({ success: true, message: 'Pixel ID not configured (test mode)' });
     }
     
-    // Test mode detection
+    
     const isTestMode = accessToken === 'TEST_TOKEN' || pixelId.includes('TEST') || pixelId.includes('test');
     if (isTestMode) {
-      // Test mode logging removed for production
+      
       return res.status(200).json({ 
         success: true, 
         test_mode: true,
@@ -97,14 +95,14 @@ export default async function handler(req, res) {
     const result = await response.json();
     
     if (!response.ok) {
-      // Error logging handled by Sentry in production
+      
       return res.status(500).json({ error: 'Failed to send InitiateCheckout event', details: result });
     }
     
     return res.status(200).json({ success: true, events_received: result.events_received || 0 });
     
   } catch (error) {
-    // Error logging handled by Sentry in production
+    
     return res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 }

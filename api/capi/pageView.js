@@ -1,20 +1,17 @@
-/**
- * Meta Conversions API - PageView Event
- * Server-side tracking for page views
- */
+
 
 import crypto from 'crypto';
 import { getCorsHeaders, logCorsAttempt } from '../utils/cors.js';
 import { checkRateLimit } from '../utils/rateLimit.js';
 
-// Hash function for PII (email, phone)
+
 function hashPII(value) {
   if (!value) return null;
   return crypto.createHash('sha256').update(value.toLowerCase().trim()).digest('hex');
 }
 
 export default async function handler(req, res) {
-  // CORS headers
+  
   const origin = req.headers.origin;
   const corsHeaders = getCorsHeaders(origin);
   Object.entries(corsHeaders).forEach(([key, value]) => {
@@ -35,9 +32,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Rate limiting
+  
   if (!checkRateLimit(req, res, 'capi')) {
-    return; // Response already sent by rate limit check
+    return; 
   }
   
   try {
@@ -53,15 +50,15 @@ export default async function handler(req, res) {
     
     if (!pixelId) {
       if (process.env.NODE_ENV === 'development') {
-        // Test mode logging removed for production
+        
       }
       return res.status(200).json({ success: true, message: 'Pixel ID not configured (test mode)' });
     }
     
-    // Test mode detection
+    
     const isTestMode = accessToken === 'TEST_TOKEN' || pixelId.includes('TEST') || pixelId.includes('test');
     if (isTestMode) {
-      // Test mode logging removed for production
+      
       return res.status(200).json({ 
         success: true, 
         test_mode: true,
@@ -70,7 +67,7 @@ export default async function handler(req, res) {
       });
     }
     
-    // Prepare user data with hashing
+    
     const hashedUserData = {};
     if (user_data.email) {
       hashedUserData.em = [hashPII(user_data.email)];
@@ -91,7 +88,7 @@ export default async function handler(req, res) {
       hashedUserData.fbc = user_data.fbc;
     }
     
-    // Prepare event data
+    
     const eventData = {
       data: [{
         event_name: 'PageView',
@@ -103,7 +100,7 @@ export default async function handler(req, res) {
       access_token: accessToken,
     };
     
-    // Send to Meta Conversions API
+    
     const response = await fetch(`https://graph.facebook.com/v18.0/${pixelId}/events`, {
       method: 'POST',
       headers: {
@@ -115,7 +112,7 @@ export default async function handler(req, res) {
     const result = await response.json();
     
     if (!response.ok) {
-      // Error logging handled by Sentry in production
+      
       return res.status(500).json({ 
         error: 'Failed to send PageView event',
         details: result 
@@ -123,7 +120,7 @@ export default async function handler(req, res) {
     }
     
     if (process.env.NODE_ENV === 'development') {
-      // Success logging removed for production
+      
     }
     
     return res.status(200).json({ 
@@ -132,7 +129,7 @@ export default async function handler(req, res) {
     });
     
   } catch (error) {
-    // Error logging handled by Sentry in production
+    
     return res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 

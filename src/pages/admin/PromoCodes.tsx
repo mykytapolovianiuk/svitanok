@@ -69,7 +69,7 @@ export default function PromoCodes() {
     try {
       setLoading(true);
       
-      // Admins can see all promo codes, regular users only active ones
+      
       const { data, error } = await supabase
         .from('promo_codes')
         .select('*')
@@ -89,7 +89,7 @@ export default function PromoCodes() {
   const filterPromoCodes = () => {
     let filtered = [...promoCodes];
 
-    // Filter by search term
+    
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(promo => 
@@ -98,7 +98,7 @@ export default function PromoCodes() {
       );
     }
 
-    // Filter by tab
+    
     const now = new Date();
     switch (activeTab) {
       case 'active':
@@ -118,7 +118,7 @@ export default function PromoCodes() {
         );
         break;
       default:
-        // 'all' - no additional filtering
+        
         break;
     }
 
@@ -163,7 +163,7 @@ export default function PromoCodes() {
     try {
       setSaving(true);
 
-      // Validate form
+      
       if (!formData.code.trim()) {
         toast.error('Код промокоду обов\'язковий');
         return;
@@ -195,7 +195,7 @@ export default function PromoCodes() {
       };
 
       if (isAdding) {
-        // Create new promo code
+        
         const { data, error } = await supabase
           .from('promo_codes')
           .insert([promoCodeData])
@@ -207,7 +207,7 @@ export default function PromoCodes() {
         setPromoCodes([data, ...promoCodes]);
         toast.success('Промокод успішно створено');
       } else if (editingPromoCode) {
-        // Update existing promo code
+        
         const { data, error } = await supabase
           .from('promo_codes')
           .update(promoCodeData)
@@ -334,7 +334,7 @@ export default function PromoCodes() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -354,7 +354,7 @@ export default function PromoCodes() {
         </button>
       </div>
 
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <div className="flex items-center justify-between">
@@ -403,7 +403,7 @@ export default function PromoCodes() {
         </div>
       </div>
 
-      {/* Search and Filters */}
+      {}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
@@ -444,7 +444,7 @@ export default function PromoCodes() {
         </div>
       </div>
 
-      {/* Promo Codes Table */}
+      {}
       <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -564,7 +564,7 @@ export default function PromoCodes() {
         )}
       </div>
 
-      {/* Edit/Add Modal */}
+      {}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
@@ -581,7 +581,7 @@ export default function PromoCodes() {
             </div>
             
             <div className="p-6 space-y-4">
-              {/* Code */}
+              {}
               <div>
                 <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Код промокоду *
@@ -600,7 +600,7 @@ export default function PromoCodes() {
                 </p>
               </div>
 
-              {/* Discount Type and Value */}
+              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="discount_type" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -640,7 +640,7 @@ export default function PromoCodes() {
                 </div>
               </div>
 
-              {/* Min Order Amount and Max Uses */}
+              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="min_order_amount" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -679,7 +679,7 @@ export default function PromoCodes() {
                 </div>
               </div>
 
-              {/* Valid From and Until */}
+              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="valid_from" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -714,7 +714,7 @@ export default function PromoCodes() {
                 </div>
               </div>
 
-              {/* Description */}
+              {}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Опис
@@ -729,7 +729,7 @@ export default function PromoCodes() {
                 />
               </div>
 
-              {/* Is Active */}
+              {}
               <div>
                 <label className="flex items-center">
                   <input

@@ -133,9 +133,9 @@ export default function HeroSlider() {
         ))}
       </Swiper>
 
-      {/* Controls - Bottom Left */}
+      {}
       <div className="absolute bottom-8 left-4 md:bottom-12 md:left-8 z-10 flex items-center gap-4">
-        {/* Navigation Arrows */}
+        {}
         <button
           onClick={goPrev}
           className="w-10 h-10 flex items-center justify-center bg-white/80 hover:bg-white rounded-full transition-all"
@@ -144,7 +144,7 @@ export default function HeroSlider() {
           <ChevronLeft size={20} className="text-black" />
         </button>
 
-        {/* Slide Counter */}
+        {}
         <div className="bg-white/80 px-4 py-2 rounded-full">
           <span className="font-medium text-black" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             {currentSlide} / {slides.length}
@@ -159,10 +159,10 @@ export default function HeroSlider() {
           <ChevronRight size={20} className="text-black" />
         </button>
 
-        {/* Divider */}
+        {}
         <div className="w-px h-8 bg-white/50" />
 
-        {/* Play/Pause Button */}
+        {}
         <button
           onClick={toggleAutoplay}
           className="w-10 h-10 flex items-center justify-center bg-white/80 hover:bg-white rounded-full transition-all"
@@ -211,18 +211,18 @@ function BannerSlide({ slide }: { slide: BannerSlide }) {
   
   return (
     <div className="relative w-full h-full" id={`hero-${slide.id}`}>
-      {/* Background Image */}
+      {}
       <img
         src={slide.image}
         alt={slide.title}
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Content Overlay */}
+      {}
       <div className="absolute inset-0 flex items-center">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl">
-            {/* Desktop Content */}
+            {}
             <div className="hidden md:block">
               <h1
                 className="font-semibold mb-6"
@@ -262,7 +262,7 @@ function BannerSlide({ slide }: { slide: BannerSlide }) {
               </button>
             </div>
 
-            {/* Mobile Content */}
+            {}
             <div className="md:hidden text-center">
               <h1
                 className="font-semibold mb-4"

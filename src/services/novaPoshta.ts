@@ -20,7 +20,7 @@ interface Settlement {
   Description: string;
   Area: string;
   Region: string;
-  // Додаткові поля, які може повертати API
+  
   [key: string]: any;
 }
 
@@ -33,14 +33,14 @@ interface Address {
   DeliveryCity: string;
   Warehouses: number;
   Present: string;
-  // Додаткові поля, які може повертати API
+  
   [key: string]: any;
 }
 
 interface SettlementResponse {
   TotalCount: number;
   Addresses: Address[];
-  // Додаткові поля, які може повертати API
+  
   [key: string]: any;
 }
 
@@ -49,16 +49,16 @@ interface Warehouse {
   Description: string;
   CityRef: string;
   Number: string;
-  // Додаткові поля, які може повертати API
+  
   [key: string]: any;
 }
 
-// Експортуємо інтерфейси з основного файлу типів
+
 export type { CityOption, WarehouseOption } from '../types';
 
-// Пошук населених пунктів (міст) за назвою
-// @param cityName - Назва міста для пошуку
-// @returns Promise, що повертає масив об'єктів CityOption
+
+
+
 export async function searchSettlements(cityName: string): Promise<CityOption[]> {
   try {
     const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {
@@ -83,18 +83,18 @@ export async function searchSettlements(cityName: string): Promise<CityOption[]>
       throw new Error(data.errors.join(', '));
     }
 
-    // Відображаємо відповідь у наш формат CityOption
+    
     let mapped: CityOption[] = [];
     
     if (data.data[0]?.Addresses) {
-      // Новий формат API з масивом Addresses
+      
       mapped = data.data[0].Addresses.map((address: any) => ({
         value: address.DeliveryCity,
         label: `${address.Present} (${address.MainDescription})`,
-        ref: address.DeliveryCity // Використовуємо DeliveryCity як ref для нового формату
+        ref: address.DeliveryCity 
       }));
     } else {
-      // Старий формат API
+      
       mapped = data.data.map((item: any) => ({
         value: item.Ref,
         label: item.Present,
@@ -109,9 +109,9 @@ export async function searchSettlements(cityName: string): Promise<CityOption[]>
   }
 }
 
-// Отримати склади для конкретного міста
-// @param cityRef - ID посилання міста
-// @returns Promise, що повертає масив об'єктів WarehouseOption
+
+
+
 export async function getWarehouses(cityRef: string): Promise<WarehouseOption[]> {
   try {
     const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {
@@ -135,7 +135,7 @@ export async function getWarehouses(cityRef: string): Promise<WarehouseOption[]>
       throw new Error(data.errors.join(', '));
     }
 
-    // Відображаємо відповідь у наш формат WarehouseOption
+    
     const mapped: WarehouseOption[] = data.data.map(item => ({
       value: item.Ref,
       label: item.Description,

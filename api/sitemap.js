@@ -1,17 +1,13 @@
-/**
- * Dynamic Sitemap Generator
- * Generates XML sitemap from products and static pages
- * Cached for 1 hour
- */
+
 
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from './utils/cors.js';
 
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
+const CACHE_DURATION = 60 * 60 * 1000; 
 let cachedSitemap = null;
 let cacheTimestamp = 0;
 
-// Static pages
+
 const STATIC_PAGES = [
   { url: '/', changefreq: 'daily', priority: '1.0' },
   { url: '/catalog', changefreq: 'daily', priority: '0.9' },

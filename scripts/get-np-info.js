@@ -1,12 +1,12 @@
-import fetch from 'node-fetch'; // Або запускай просто node, якщо версія 18+ (там fetch вбудований)
-// Якщо немає node-fetch, просто видали перший рядок, node 18+ підтримує fetch нативно.
+import fetch from 'node-fetch'; 
 
-const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; // Встав сюди свій ключ
+
+const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; 
 
 async function getData() {
   console.log('🔄 Отримую дані відправника...');
 
-  // 1. Отримуємо "Контрагента" (Тебе як відправника)
+  
   const senderResponse = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({
@@ -25,9 +25,9 @@ async function getData() {
   const sender = senderResponse.data[0];
   console.log('\n✅ ВАШ SENDER_REF (Вставте в .env):');
   console.log(`NP_SENDER_REF=${sender.Ref}`);
-  console.log(`NP_CITY_SENDER_REF=${sender.City}`); // Це Ref твого міста
+  console.log(`NP_CITY_SENDER_REF=${sender.City}`); 
 
-  // 2. Отримуємо Контактну особу
+  
   const contactResponse = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({
@@ -43,7 +43,7 @@ async function getData() {
   console.log(`NP_CONTACT_SENDER_REF=${contact.Ref}`);
   console.log(`NP_SENDER_PHONE=${contact.Phones}`);
 
-  // 3. Отримуємо Склад (Перший у списку, щоб ти знав Ref складу відправки)
+  
   const warehouseResponse = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({

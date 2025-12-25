@@ -1,7 +1,4 @@
-/**
- * Structured Data (Schema.org) Component
- * Adds JSON-LD structured data for better SEO
- */
+
 
 import { useEffect } from 'react';
 
@@ -105,13 +102,13 @@ export function BreadcrumbStructuredData({ items }: BreadcrumbStructuredData) {
 }
 
 function addStructuredData(data: object, id: string) {
-  // Remove existing script with same id
+  
   const existing = document.getElementById(id);
   if (existing) {
     existing.remove();
   }
 
-  // Create new script tag
+  
   const script = document.createElement('script');
   script.id = id;
   script.type = 'application/ld+json';

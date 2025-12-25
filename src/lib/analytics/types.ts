@@ -1,15 +1,12 @@
-/**
- * Analytics Types
- * Типи для всієї системи аналітики
- */
 
-// Base event structure
+
+
 export interface BaseEvent {
   event: string;
   [key: string]: any;
 }
 
-// Product item structure (GA4 & Pixel compatible)
+
 export interface AnalyticsProduct {
   item_id: string;
   item_name: string;
@@ -26,7 +23,7 @@ export interface AnalyticsProduct {
   index?: number;
 }
 
-// GA4 E-commerce Events
+
 export interface GA4ViewItemParams {
   currency: string;
   value: number;
@@ -116,7 +113,7 @@ export interface GA4ViewPromotionParams {
   items?: AnalyticsProduct[];
 }
 
-// Meta Pixel Events
+
 export interface PixelViewContentParams {
   content_name?: string;
   content_category?: string;
@@ -181,7 +178,7 @@ export interface PixelSearchParams {
   }>;
 }
 
-// Meta CAPI Server Events
+
 export interface CAPIParams {
   event_name: string;
   event_time: number;
@@ -189,12 +186,12 @@ export interface CAPIParams {
   event_source_url?: string;
   action_source: 'website' | 'email' | 'app' | 'phone_call' | 'chat' | 'physical_store' | 'system_generated' | 'other';
   user_data?: {
-    em?: string[]; // email (hashed)
-    ph?: string[]; // phone (hashed)
+    em?: string[]; 
+    ph?: string[]; 
     client_ip_address?: string;
     client_user_agent?: string;
-    fbp?: string; // Facebook browser ID
-    fbc?: string; // Facebook click ID
+    fbp?: string; 
+    fbc?: string; 
   };
   custom_data?: {
     content_name?: string;
@@ -212,7 +209,7 @@ export interface CAPIParams {
   };
 }
 
-// UI Interaction Events
+
 export interface FilterEvent {
   filter_type: 'brand' | 'category' | 'price' | 'problem' | 'sort';
   filter_value: string | string[];
@@ -242,7 +239,7 @@ export interface BannerClickEvent extends BannerImpressionEvent {
   click_url?: string;
 }
 
-// Unified Event Payload
+
 export interface AnalyticsEvent {
   name: string;
   category?: string;

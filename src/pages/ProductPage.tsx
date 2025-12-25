@@ -49,7 +49,7 @@ export default function ProductPage() {
   const { trackViewItem, trackAddToCart, trackFavorite } = useAnalytics();
   const { favoriteIds, toggleFavorite } = useFavorites();
   
-  // Get product reviews stats
+  
   const { data: reviewStats } = useProductReviews(product?.id || 0);
 
   useEffect(() => {
@@ -73,17 +73,17 @@ export default function ProductPage() {
         return;
       }
 
-      // Decode slug to handle URL-encoded Cyrillic characters
+      
       const decodedSlug = decodeURIComponent(slug);
 
-      // Try to find product by decoded slug first
+      
       let { data, error: fetchError } = await supabase
         .from('products')
         .select('*')
         .eq('slug', decodedSlug)
         .single();
 
-      // If not found, try with original slug (in case it's already decoded)
+      
       if (fetchError && slug !== decodedSlug) {
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('products')
@@ -103,7 +103,7 @@ export default function ProductPage() {
       setProduct(data);
       setSelectedImage(0);
       
-      // Track product view
+      
       trackViewItem({
         id: data.id,
         name: data.name,
@@ -112,7 +112,7 @@ export default function ProductPage() {
         brand: data.attributes?.Виробник || data.attributes?.Brand,
       });
       
-      // Fetch recommended products
+      
       await fetchRecommendedProducts(data.id, data.attributes?.['Назва_групи']);
     } catch (err: any) {
       setError(err.message || 'Failed to load product');
@@ -141,13 +141,13 @@ export default function ProductPage() {
       let data = [];
       let error = null;
       
-      // If we have a product group, find products in the same group
+      
       if (productGroup) {
         const result = await supabase
           .from('products')
           .select('*')
-          .neq('id', productId) // Exclude current product
-          // Check multiple keys for category matching
+          .neq('id', productId) 
+          
           .or(`attributes->>Назва_групи.ilike.%${productGroup}%,attributes->>Category.ilike.%${productGroup}%`)
           .limit(10);
           
@@ -155,12 +155,12 @@ export default function ProductPage() {
         error = result.error;
       }
       
-      // If no products found in the same group or no group, get random products
+      
       if (!data || data.length === 0) {
         const result = await supabase
           .from('products')
           .select('*')
-          .neq('id', productId) // Still exclude current product
+          .neq('id', productId) 
           .limit(10);
           
         data = result.data || [];
@@ -169,7 +169,7 @@ export default function ProductPage() {
       
       if (error) throw error;
       
-      // Shuffle array and pick first 3
+      
       const shuffled = [...data].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 3);
       
@@ -188,12 +188,12 @@ export default function ProductPage() {
     setIsAddingToCart(true);
     
     try {
-      // Add multiple items if quantity > 1
+      
       for (let i = 0; i < quantity; i++) {
         addItem(product);
       }
       
-      // Track add to cart
+      
       trackAddToCart({
         id: product.id,
         name: product.name,
@@ -240,7 +240,7 @@ export default function ProductPage() {
     ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
     : 0;
 
-  // Define which attributes to show in the table
+  
   const importantAttributes = [
     'Виробник',
     'Країна',
@@ -251,7 +251,7 @@ export default function ProductPage() {
     'Призначення'
   ];
 
-  // Filter attributes to show only important ones
+  
   const filteredAttributes = Object.fromEntries(
     Object.entries(product.attributes || {}).filter(([key]) => 
       importantAttributes.includes(key)
@@ -292,9 +292,9 @@ export default function ProductPage() {
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs />
         
-        {/* Product Detail - Restructured Layout */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          {/* Main Image Column - Left */}
+          {}
           <div className="lg:col-span-6">
             <div className="relative">
               <div 
@@ -306,7 +306,7 @@ export default function ProductPage() {
                   alt={product.name}
                   className="w-full h-full"
                 />
-                {/* Lightbox Button */}
+                {}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -318,7 +318,7 @@ export default function ProductPage() {
                   <Maximize2 size={18} className="text-gray-700" />
                 </button>
               </div>
-              {/* Wishlist Badge */}
+              {}
               <button
                 onClick={handleToggleFavorite}
                 className="absolute top-4 right-4 w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow z-10"
@@ -330,7 +330,7 @@ export default function ProductPage() {
                 />
               </button>
               
-              {/* Mobile Image Thumbnails */}
+              {}
               {product.images.length > 1 && (
                 <div className="lg:hidden flex gap-2 mt-4 justify-center">
                   {product.images.map((image, index) => (
@@ -352,7 +352,7 @@ export default function ProductPage() {
               )}
             </div>
             
-            {/* Desktop Image Thumbnails */}
+            {}
             {product.images.length > 1 && (
               <div className="hidden lg:grid grid-cols-5 gap-3 mt-4">
                 {product.images.map((image, index) => (
@@ -373,7 +373,7 @@ export default function ProductPage() {
               </div>
             )}
             
-            {/* Description under the photo but not full width */}
+            {}
             <div className="mt-8">
               <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
                 <div className="p-5">
@@ -393,10 +393,10 @@ export default function ProductPage() {
             </div>
           </div>
           
-          {/* Product Info and Characteristics Column - Right */}
+          {}
           <div className="lg:col-span-6">
             <div className="lg:sticky lg:top-4">
-              {/* Product Info */}
+              {}
               <div className="mb-8">
                 <h1
                   className="text-2xl font-light mb-4 uppercase tracking-[2px]"
@@ -405,7 +405,7 @@ export default function ProductPage() {
                   {product.name}
                 </h1>
 
-                {/* Rating */}
+                {}
                 {reviewStats && reviewStats.totalReviews > 0 && (
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex">
@@ -429,7 +429,7 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                {/* Price */}
+                {}
                 <div className="flex items-center gap-4 mb-4">
                   <span
                     className="text-3xl font-light"
@@ -452,12 +452,12 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                {/* Stock Indicator */}
+                {}
                 <div className="mb-6">
                   <StockIndicator inStock={product.in_stock} />
                 </div>
 
-                {/* Actions */}
+                {}
                 <div className="mb-8">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
                     <div className="flex items-center border border-gray-300 w-full sm:w-auto justify-center sm:justify-start">
@@ -494,7 +494,7 @@ export default function ProductPage() {
                     </button>
                   </div>
 
-                  {/* Quick Order Button */}
+                  {}
                   <button
                     onClick={() => setIsQuickOrderOpen(true)}
                     className="w-full py-3 md:py-4 bg-black text-white text-center hover:opacity-90 transition-opacity uppercase tracking-[1px] text-sm font-medium"
@@ -505,7 +505,7 @@ export default function ProductPage() {
                 </div>
               </div>
               
-              {/* Characteristics - Fixed at the top when scrolling */}
+              {}
               <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
                 <div className="p-5">
                   <h3 
@@ -532,21 +532,21 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Frequently Bought Together */}
+        {}
         {product && <FrequentlyBoughtTogether productId={product.id} />}
 
-        {/* Recommendations Section */}
+        {}
         <RecommendedProducts 
           products={recommendedProducts} 
           loading={recommendationsLoading}
         />
 
-        {/* Product Reviews */}
+        {}
         <div className="mt-12">
           <ProductReviews productId={product.id.toString()} />
         </div>
 
-        {/* Quick Order Modal */}
+        {}
         {product && (
           <QuickOrderModal
             isOpen={isQuickOrderOpen}
@@ -559,7 +559,7 @@ export default function ProductPage() {
           />
         )}
 
-        {/* Image Lightbox */}
+        {}
         {product && (
           <ImageLightbox
             isOpen={isLightboxOpen}

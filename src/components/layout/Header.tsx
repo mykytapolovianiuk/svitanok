@@ -32,10 +32,10 @@ export default function Header() {
   const { fetchSettings } = useSiteSettings();
   const { favoriteIds } = useFavorites();
   
-  // Calculate favorites count
+  
   const favoritesCount = favoriteIds ? favoriteIds.size : 0;
 
-  // Search products query
+  
   const { data: searchResults = [], isLoading: isSearchLoading } = useQuery<SearchProduct[]>({
     queryKey: ['search-products', searchQuery],
     queryFn: async () => {
@@ -55,24 +55,24 @@ export default function Header() {
     staleTime: 30000,
   });
 
-  // Initialize site settings on mount
+  
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
 
-  // Focus search input when it opens
+  
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, [isSearchOpen]);
 
-  // Reset selected index when search query changes
+  
   useEffect(() => {
     setSelectedIndex(-1);
   }, [searchQuery]);
 
-  // Handle keyboard navigation
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isSearchOpen) return;
@@ -98,7 +98,7 @@ export default function Header() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSearchOpen, searchResults, selectedIndex]);
 
-  // Scroll selected item into view
+  
   useEffect(() => {
     if (selectedIndex >= 0 && searchResultsRef.current) {
       const selectedElement = searchResultsRef.current.children[selectedIndex] as HTMLElement;
@@ -108,7 +108,7 @@ export default function Header() {
     }
   }, [selectedIndex]);
 
-  // Close search on outside click
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -169,11 +169,11 @@ export default function Header() {
 
   return (
     <header className="font-sans bg-primary relative z-50">
-      {/* Main Navigation Bar */}
+      {}
       <div className='header-container'>
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex h-14 md:h-16 items-center justify-center relative">
-            {/* Logo */}
+            {}
             <Link 
               to="/" 
               className="absolute left-0 text-lg md:text-2xl font-bold text-text-main tracking-wider"
@@ -182,7 +182,7 @@ export default function Header() {
               SVITANOK
             </Link>
 
-            {/* Desktop Navigation - Centered */}
+            {}
             <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6 mx-auto">
               <Link 
                 to="/catalog" 
@@ -235,9 +235,9 @@ export default function Header() {
               </Link>
             </nav>
 
-            {/* Right Side Icons */}
+            {}
             <div className="absolute right-0 flex items-center space-x-3 md:space-x-4">
-              {/* Search Icon */}
+              {}
               <button 
                 onClick={handleSearchIconClick}
                 className="text-text-main hover:opacity-70 transition"
@@ -246,7 +246,7 @@ export default function Header() {
                 <Search size={20} />
               </button>
 
-              {/* Favorites Icon */}
+              {}
               <div className="relative">
                 <Link 
                   to="/favorites" 
@@ -268,7 +268,7 @@ export default function Header() {
                 )}
               </div>
 
-              {/* User Icon */}
+              {}
               <Link 
                 to={session ? "/account" : "/auth"} 
                 className="text-text-main hover:opacity-70 transition"
@@ -277,7 +277,7 @@ export default function Header() {
                 <User size={20} />
               </Link>
 
-              {/* Cart Icon */}
+              {}
               <button 
                 onClick={toggleCart}
                 className="text-text-main hover:opacity-70 transition relative"
@@ -291,7 +291,7 @@ export default function Header() {
                 )}
               </button>
 
-              {/* Mobile Menu Button */}
+              {}
               <button 
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="lg:hidden text-text-main hover:opacity-70 transition"
@@ -304,7 +304,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Search Overlay */}
+      {}
       {isSearchOpen && (
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
           <div className="container mx-auto px-4 py-6" ref={searchContainerRef}>
@@ -397,7 +397,7 @@ export default function Header() {
         </div>
       )}
 
-      {/* Mobile Menu Overlay */}
+      {}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
           <div className="container mx-auto px-4 py-6">

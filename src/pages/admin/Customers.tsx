@@ -53,7 +53,7 @@ export default function Customers() {
     try {
       setLoading(true);
       
-      // Fetch all profiles
+      
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -61,7 +61,7 @@ export default function Customers() {
 
       if (profilesError) throw profilesError;
 
-      // Fetch orders for each customer
+      
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('user_id, total_price, created_at, status, customer_email')
@@ -69,7 +69,7 @@ export default function Customers() {
 
       if (ordersError) throw ordersError;
 
-      // Fetch customer emails from orders (if available)
+      
       const customerEmails: Record<string, string> = {};
       orders?.forEach(order => {
         if (order.customer_email && order.user_id) {
@@ -77,7 +77,7 @@ export default function Customers() {
         }
       });
       
-      // Calculate stats for each customer
+      
       const customersWithStats: CustomerWithStats[] = (profiles || []).map((profile) => {
         const userOrders = orders?.filter(o => o.user_id === profile.id) || [];
         
@@ -108,7 +108,7 @@ export default function Customers() {
   const filterCustomers = () => {
     let filtered = [...customers];
 
-    // Apply search filter
+    
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(customer => {
@@ -119,7 +119,7 @@ export default function Customers() {
       });
     }
 
-    // Apply status filter
+    
     if (activeFilter === 'with_orders') {
       filtered = filtered.filter(c => (c.orders_count || 0) > 0);
     } else if (activeFilter === 'no_orders') {
@@ -186,7 +186,7 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -198,7 +198,7 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <div className="flex items-center justify-between">
@@ -238,10 +238,10 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Filters and Search */}
+      {}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
+          {}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
@@ -254,7 +254,7 @@ export default function Customers() {
             />
           </div>
           
-          {/* Status Filter */}
+          {}
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-gray-400 flex-shrink-0" />
             <div className="flex gap-2">
@@ -277,7 +277,7 @@ export default function Customers() {
             </div>
           </div>
 
-          {/* Export Button */}
+          {}
           <button
             onClick={() => {
               try {
@@ -298,7 +298,7 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Customers Table */}
+      {}
       <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -408,7 +408,7 @@ export default function Customers() {
         )}
       </div>
 
-      {/* Customer Details Modal */}
+      {}
       {selectedCustomer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
@@ -429,7 +429,7 @@ export default function Customers() {
             </div>
             
             <div className="p-6 space-y-6">
-              {/* Customer Info */}
+              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -484,7 +484,7 @@ export default function Customers() {
                 </div>
               </div>
 
-              {/* Orders List */}
+              {}
               <div>
                 <h4 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Історія замовлень

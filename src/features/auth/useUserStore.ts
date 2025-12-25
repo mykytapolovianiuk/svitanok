@@ -5,10 +5,10 @@ import { supabase } from '../../lib/supabase';
 interface UserStore {
   session: UserSession | null;
   isLoading: boolean;
-  isInitialized: boolean; // Added for race condition fix
+  isInitialized: boolean; 
   setSession: (session: UserSession | null) => void;
   setIsLoading: (loading: boolean) => void;
-  setIsInitialized: (initialized: boolean) => void; // Added for race condition fix
+  setIsInitialized: (initialized: boolean) => void; 
   isAdmin: () => boolean;
   isAuthenticated: () => boolean;
   clearSession: () => void;
@@ -18,17 +18,17 @@ interface UserStore {
 export const useUserStore = create<UserStore>((set, get) => ({
   session: null,
   isLoading: true,
-  isInitialized: false, // Added for race condition fix
+  isInitialized: false, 
 
   setSession: (session) => {
-    set({ session, isLoading: false, isInitialized: true }); // Updated for race condition fix
+    set({ session, isLoading: false, isInitialized: true }); 
   },
 
   setIsLoading: (loading) => {
     set({ isLoading: loading });
   },
 
-  setIsInitialized: (initialized) => { // Added for race condition fix
+  setIsInitialized: (initialized) => { 
     set({ isInitialized: initialized });
   },
 
@@ -43,10 +43,10 @@ export const useUserStore = create<UserStore>((set, get) => ({
   },
 
   clearSession: () => {
-    set({ session: null, isInitialized: true }); // Updated for race condition fix
+    set({ session: null, isInitialized: true }); 
   },
 
-  // Метод для оновлення профілю
+  
   refreshProfile: async () => {
     const currentSession = get().session;
     if (currentSession?.user?.id) {

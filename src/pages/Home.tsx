@@ -27,27 +27,27 @@ export default function Home() {
         }}
       />
       <div>
-      {/* Hero Slider */}
+      {}
       <HeroSlider />
 
-      {/* Info Banner */}
+      {}
       <InfoBanner />
 
-      {/* Category Slider */}
+      {}
       <CategorySlider />
 
-      {/* Problem Solver */}
+      {}
       <ProblemSolver />
 
-      {/* Product Showcase */}
+      {}
       <ProductShowcase />
 
-      {/* About Brand Section */}
+      {}
       <AboutSection />
 
-      {/* Benefits Slider - REMOVED as per requirements */}
+      {}
       
-      {/* Discount Banner (only for non-authenticated users) */}
+      {}
       <DiscountBanner />
     </div>
     </>

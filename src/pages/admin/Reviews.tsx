@@ -69,14 +69,14 @@ export default function Reviews() {
   const filterReviews = () => {
     let filtered = [...reviews];
 
-    // Apply tab filter
+    
     if (activeTab === 'new') {
       filtered = filtered.filter(review => !review.is_approved);
     } else if (activeTab === 'approved') {
       filtered = filtered.filter(review => review.is_approved);
     }
 
-    // Apply search filter
+    
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(review => {
@@ -227,7 +227,7 @@ export default function Reviews() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -239,7 +239,7 @@ export default function Reviews() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <div className="flex items-center justify-between">
@@ -279,10 +279,10 @@ export default function Reviews() {
         </div>
       </div>
 
-      {/* Filters and Search */}
+      {}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
+          {}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
@@ -295,7 +295,7 @@ export default function Reviews() {
             />
           </div>
           
-          {/* Tabs */}
+          {}
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-gray-400 flex-shrink-0" />
             <div className="flex gap-2">
@@ -322,7 +322,7 @@ export default function Reviews() {
         </div>
       </div>
 
-      {/* Reviews List */}
+      {}
       <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
         {filteredReviews.length === 0 ? (
           <div className="text-center py-12">
@@ -448,7 +448,7 @@ export default function Reviews() {
         )}
       </div>
 
-      {/* Reply Modal */}
+      {}
       {replyModal.open && replyModal.review && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">

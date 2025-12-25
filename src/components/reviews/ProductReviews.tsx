@@ -14,7 +14,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   
-  // Form state
+  
   const [userName, setUserName] = useState('');
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -78,7 +78,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         
       if (error) throw error;
       
-      // Reset form
+      
       setUserName('');
       setRating(0);
       setComment('');
@@ -134,7 +134,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           Відгуки покупців
         </h2>
         
-        {/* Reviews List */}
+        {}
         <div className="space-y-6">
           {reviews.length === 0 ? (
             <p 
@@ -198,7 +198,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         </div>
       </div>
       
-      {/* Review Form */}
+      {}
       <div className="border-t border-gray-200 pt-8">
         <h3 
           className="text-xl font-light mb-6 uppercase tracking-[2px]"

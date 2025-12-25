@@ -1,7 +1,4 @@
-/**
- * Breadcrumbs Component
- * Dynamic breadcrumb navigation based on current route
- */
+
 
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
@@ -15,27 +12,27 @@ export default function Breadcrumbs() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  // Build breadcrumbs
+  
   const breadcrumbs: BreadcrumbItem[] = [
     { label: 'Головна', path: '/' },
   ];
 
-  // Add intermediate paths
+  
   let currentPath = '';
   pathnames.forEach((pathname, index) => {
     currentPath += `/${pathname}`;
     
-    // Skip admin routes
+    
     if (pathname === 'admin') return;
     
-    // Generate label from pathname
+    
     let label = pathname;
     
-    // Special cases
+    
     if (pathname === 'catalog') {
       label = 'Каталог';
     } else if (pathname === 'product') {
-      // Product name will be added dynamically if needed
+      
       return;
     } else if (pathname === 'about') {
       label = 'Про нас';
@@ -54,17 +51,17 @@ export default function Breadcrumbs() {
     } else if (pathname === 'favorites') {
       label = 'Обране';
     } else {
-      // For product slugs, decode URI component to show readable text
+      
       if (currentPath.includes('/product/') && index === pathnames.length - 1) {
         try {
-          // Decode the product name for display
+          
           label = decodeURIComponent(pathname);
         } catch (e) {
-          // If decoding fails, use the original
+          
           label = pathname;
         }
       } else {
-        // Capitalize first letter for other paths
+        
         label = pathname.charAt(0).toUpperCase() + pathname.slice(1);
       }
     }
@@ -72,7 +69,7 @@ export default function Breadcrumbs() {
     breadcrumbs.push({ label, path: currentPath });
   });
 
-  // Don't show breadcrumbs on home page
+  
   if (pathnames.length === 0) {
     return null;
   }

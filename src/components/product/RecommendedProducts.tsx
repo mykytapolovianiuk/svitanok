@@ -1,10 +1,10 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
-// @ts-expect-error
+
 import 'swiper/css';
-// @ts-expect-error
+
 import 'swiper/css/navigation';
-// @ts-expect-error
+
 import 'swiper/css/pagination';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
@@ -83,16 +83,16 @@ function RecommendedProductCard({ product }: { product: Product }) {
         to={`/product/${encodeURIComponent(product.slug)}`}
         className="block flex-1"
       >
-        {/* Image Container */}
+        {}
         <div className="relative bg-[#F5F5F5] aspect-[3/4] overflow-hidden">
-          {/* Discount Badge */}
+          {}
           {discountPercent > 0 && (
             <div className="absolute top-2 left-2 z-10 bg-black text-white px-2 py-1 text-xs font-bold uppercase">
               ЗНИЖКА {discountPercent}%
             </div>
           )}
           
-          {/* Heart Icon */}
+          {}
           <button
             onClick={handleToggleFavorite}
             className="absolute top-2 right-2 z-10 p-1.5 bg-white/80 hover:bg-white transition-colors"
@@ -103,7 +103,7 @@ function RecommendedProductCard({ product }: { product: Product }) {
             />
           </button>
 
-          {/* Product Image */}
+          {}
           <img
             src={product.images[0] || '/placeholder-product.jpg'}
             alt={product.name}
@@ -112,9 +112,9 @@ function RecommendedProductCard({ product }: { product: Product }) {
           />
         </div>
 
-        {/* Content */}
+        {}
         <div className="p-4 flex-1 flex flex-col">
-          {/* Product Name */}
+          {}
           <h3
             className="text-sm font-medium uppercase text-center underline underline-offset-4 mb-2 line-clamp-2 min-h-[40px]"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -122,14 +122,14 @@ function RecommendedProductCard({ product }: { product: Product }) {
             {product.name}
           </h3>
 
-          {/* Description */}
+          {}
           {product.description && (
             <p className="text-[10px] text-gray-500 text-center line-clamp-2 mb-3 min-h-[30px]">
               {product.description}
             </p>
           )}
 
-          {/* Price */}
+          {}
           <div className="text-center mb-3">
             {product.old_price ? (
               <div>
@@ -147,7 +147,7 @@ function RecommendedProductCard({ product }: { product: Product }) {
             )}
           </div>
 
-          {/* Rating */}
+          {}
           <div className="flex justify-center mb-4">
             {[...Array(5)].map((_, i) => (
               <span 
@@ -161,7 +161,7 @@ function RecommendedProductCard({ product }: { product: Product }) {
         </div>
       </Link>
 
-      {/* Add to Cart Button */}
+      {}
       <button
         onClick={handleAddToCart}
         className="w-full border border-black py-3 text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors duration-300"
@@ -208,7 +208,7 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
           ЩО МИ РЕКОМЕНДУЄМО З ЦИМ...
         </h2>
         
-        {/* Desktop Grid View - Hidden on mobile */}
+        {}
         <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
           {products.map((product) => (
             <div key={product.id} className="h-full">
@@ -217,7 +217,7 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
           ))}
         </div>
         
-        {/* Mobile Slider View - Hidden on desktop */}
+        {}
         <div className="md:hidden">
           <Swiper
             modules={[Navigation, Pagination]}

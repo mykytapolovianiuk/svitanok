@@ -18,7 +18,7 @@ export default function Accordion({ items }: AccordionProps) {
     const newOpenState = openItemId === id ? null : id;
     setOpenItemId(newOpenState);
     
-    // Auto-scroll to the accordion header when opened
+    
     if (newOpenState && accordionRefs.current[id]) {
       accordionRefs.current[id]?.scrollIntoView({ 
         behavior: 'smooth', 

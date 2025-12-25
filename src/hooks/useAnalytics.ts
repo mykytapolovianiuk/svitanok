@@ -1,16 +1,11 @@
-/**
- * useAnalytics Hook
- * Головний hook для відстеження подій аналітики
- */
+
 
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import * as analytics from '../lib/analytics/dispatcher';
 import type { AnalyticsProduct } from '../lib/analytics/types';
 
-/**
- * Hook for tracking page views automatically
- */
+
 export function usePageTracking(): void {
   const location = useLocation();
   
@@ -19,9 +14,7 @@ export function usePageTracking(): void {
   }, [location.pathname]);
 }
 
-/**
- * Hook for tracking scroll depth
- */
+
 export function useScrollDepth(): void {
   useEffect(() => {
     let tracked25 = false;
@@ -61,9 +54,7 @@ export function useScrollDepth(): void {
   }, []);
 }
 
-/**
- * Hook for tracking banner impressions
- */
+
 export function useBannerImpression(
   bannerId: string,
   bannerName: string,
@@ -73,13 +64,13 @@ export function useBannerImpression(
   useEffect(() => {
     if (!enabled) return;
     
-    // Use Intersection Observer to track when banner is visible
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
             analytics.trackBannerImpression(bannerId, bannerName, bannerType);
-            observer.disconnect(); // Track only once
+            observer.disconnect(); 
           }
         });
       },
@@ -97,53 +88,48 @@ export function useBannerImpression(
   }, [bannerId, bannerName, bannerType, enabled]);
 }
 
-/**
- * Main analytics hook
- * Provides all tracking functions
- */
+
 export function useAnalytics() {
   return {
-    // Page tracking
+    
     trackPageView: analytics.trackPageView,
     
-    // Product tracking
+    
     trackViewItem: analytics.trackViewItem,
     trackViewItemList: analytics.trackViewItemList,
     trackSelectItem: analytics.trackSelectItem,
     
-    // Cart tracking
+    
     trackAddToCart: analytics.trackAddToCart,
     trackRemoveFromCart: analytics.trackRemoveFromCart,
     trackViewCart: analytics.trackViewCart,
     
-    // Checkout tracking
+    
     trackBeginCheckout: analytics.trackBeginCheckout,
     trackAddPaymentInfo: analytics.trackAddPaymentInfo,
     trackAddShippingInfo: analytics.trackAddShippingInfo,
     trackPurchase: analytics.trackPurchase,
     
-    // Search tracking
+    
     trackSearch: analytics.trackSearch,
     
-    // UI tracking
+    
     trackUIInteraction: analytics.trackUIInteraction,
     trackFilter: analytics.trackFilter,
     trackPagination: analytics.trackPagination,
     trackFavorite: analytics.trackFavorite,
     trackBannerClick: analytics.trackBannerClick,
     
-    // Promotions
+    
     trackViewPromotion: analytics.trackViewPromotion,
     trackSelectPromotion: analytics.trackSelectPromotion,
     
-    // Custom events
+    
     dispatch: analytics.dispatch,
   };
 }
 
-/**
- * Helper: Convert cart items to analytics products
- */
+
 export function formatCartItemsForAnalytics(items: Array<{
   product: {
     id: number;

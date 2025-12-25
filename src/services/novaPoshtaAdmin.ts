@@ -1,13 +1,6 @@
-/**
- * Nova Poshta Admin Service
- * Service for creating TTN (waybills) for orders
- */
 
-/**
- * Create TTN for an order
- * @param orderId - The ID of the order to create TTN for
- * @returns Promise with TTN creation result
- */
+
+
 export async function createTTN(orderId: string): Promise<{ success: boolean; ttn?: string; error?: string }> {
   try {
     const response = await fetch('/api/create-ttn', {

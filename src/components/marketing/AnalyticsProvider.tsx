@@ -16,11 +16,11 @@ declare global {
 export default function AnalyticsProvider() {
   const location = useLocation();
   
-  // Initialize all analytics services
+  
   useEffect(() => {
     initAnalytics();
     
-    // Binotel (existing integration)
+    
     const binotelId = import.meta.env.VITE_BINOTEL_ID;
     if (binotelId) {
       const script = document.createElement('script');
@@ -39,13 +39,13 @@ export default function AnalyticsProvider() {
     }
   }, []);
   
-  // Track page views on route changes
+  
   usePageTracking();
   
-  // Track scroll depth
+  
   useScrollDepth();
   
-  // Google Search Console verification
+  
   useEffect(() => {
     const gscVerification = import.meta.env.VITE_GSC_VERIFICATION;
     if (gscVerification) {

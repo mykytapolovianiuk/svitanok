@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-// @ts-ignore
+
 import 'swiper/css';
-// @ts-ignore
+
 import 'swiper/css/pagination';
-// @ts-ignore
+
 import 'swiper/css/navigation';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '@/components/catalog/ProductCard';
@@ -23,12 +23,12 @@ interface Product {
   is_bestseller?: boolean;
 }
 
-// Component for products with real rating
+
 function ProductCardWithRating({ product }: { product: Product }) {
   const { data: reviewStats } = useProductReviews(product.id);
   const rating = reviewStats?.averageRating || 0;
   
-  // Safely handle images array
+  
   const imageUrl = product.images && product.images.length > 0 
     ? product.images[0] 
     : '/placeholder-product.jpg';
@@ -62,7 +62,7 @@ export default function ProductShowcase() {
       let data: Product[] = [];
 
       if (activeTab === 'bestsellers') {
-        // Fetch manually selected bestsellers
+        
         const { data: bestsellersData, error: bestsellersError } = await supabase
           .from('products')
           .select('id, name, slug, price, old_price, images, attributes, description, is_bestseller')
@@ -73,7 +73,7 @@ export default function ProductShowcase() {
         if (bestsellersError) throw bestsellersError;
         data = bestsellersData || [];
       } else {
-        // Fetch new arrivals based on creation date
+        
         const { data: newData, error: newError } = await supabase
           .from('products')
           .select('id, name, slug, price, old_price, images, attributes, description, is_bestseller')

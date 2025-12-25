@@ -1,7 +1,4 @@
-/**
- * Meta Conversions API - Purchase Event
- * Server-side tracking for completed purchases
- */
+
 
 import crypto from 'crypto';
 import { getCorsHeaders, logCorsAttempt } from '../utils/cors.js';
@@ -33,7 +30,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Rate limiting
+  
   if (!checkRateLimit(req, res, 'capi')) {
     return;
   }
@@ -53,17 +50,17 @@ export default async function handler(req, res) {
     
     if (!pixelId) {
       if (process.env.NODE_ENV === 'development') {
-        // Test mode logging removed for production
+        
       }
       return res.status(200).json({ success: true, message: 'Pixel ID not configured (test mode)' });
     }
     
-    // Test mode detection
+    
     const isTestMode = accessToken === 'TEST_TOKEN' || pixelId.includes('TEST') || pixelId.includes('test');
     if (isTestMode) {
-      // Test mode logging removed for production
-      // Test mode logging removed for production
-      // Return success without actually sending to Facebook
+      
+      
+      
       return res.status(200).json({ 
         success: true, 
         test_mode: true,
@@ -72,7 +69,7 @@ export default async function handler(req, res) {
       });
     }
     
-    // Hash PII
+    
     const hashedUserData = {};
     if (user_data.email) {
       hashedUserData.em = [hashPII(user_data.email)];
@@ -93,7 +90,7 @@ export default async function handler(req, res) {
       hashedUserData.fbc = user_data.fbc;
     }
     
-    // Prepare event data
+    
     const eventData = {
       data: [{
         event_name: 'Purchase',
@@ -110,7 +107,7 @@ export default async function handler(req, res) {
       access_token: accessToken,
     };
     
-    // Send to Meta Conversions API with retry logic
+    
     let lastError = null;
     const maxRetries = 3;
     
@@ -128,7 +125,7 @@ export default async function handler(req, res) {
         
         if (response.ok) {
           if (process.env.NODE_ENV === 'development') {
-            // Success logging removed for production
+            
           }
           
           return res.status(200).json({ 
@@ -140,12 +137,12 @@ export default async function handler(req, res) {
         
         lastError = result;
         
-        // Don't retry on certain errors
+        
         if (result.error?.code === 100 || result.error?.code === 190) {
           break;
         }
         
-        // Wait before retry (exponential backoff)
+        
         if (attempt < maxRetries - 1) {
           await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
         }
@@ -158,14 +155,14 @@ export default async function handler(req, res) {
       }
     }
     
-    // Error logging handled by Sentry in production
+    
     return res.status(500).json({ 
       error: 'Failed to send Purchase event after retries',
       details: lastError 
     });
     
   } catch (error) {
-    // Error logging handled by Sentry in production
+    
     return res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 

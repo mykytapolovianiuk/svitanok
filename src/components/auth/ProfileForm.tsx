@@ -12,7 +12,7 @@ export default function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
   const { session } = useUserStore();
   const [formData, setFormData] = useState({
     full_name: profile.full_name || '',
-    phone: profile.phone || session?.user?.phone || '', // Use phone from auth session as fallback
+    phone: profile.phone || session?.user?.phone || '', 
     address: profile.address || ''
   });
   const [saving, setSaving] = useState(false);
@@ -40,7 +40,7 @@ export default function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
       if (error) throw error;
       
-      // Update parent component state
+      
       onUpdate({
         ...profile,
         full_name: formData.full_name,

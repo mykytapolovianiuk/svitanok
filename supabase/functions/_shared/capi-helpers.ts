@@ -1,9 +1,7 @@
-/**
- * Shared helpers for CAPI Edge Functions
- */
 
-// CORS headers тепер визначаються динамічно через getCorsHeaders()
-// Цей експорт залишається для зворотної сумісності, але не використовується
+
+
+
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

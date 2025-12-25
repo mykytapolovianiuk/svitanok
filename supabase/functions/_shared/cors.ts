@@ -1,7 +1,4 @@
-/**
- * CORS utility для Supabase Edge Functions
- * Дозволяє тільки дозволені домени
- */
+
 
 function getAllowedOrigins(): string[] {
   const baseOrigins = [
@@ -9,7 +6,7 @@ function getAllowedOrigins(): string[] {
     'https://www.svitanok.com',
   ];
   
-  // Development origins
+  
   const isDev = Deno.env.get('ENVIRONMENT') === 'development' || 
                 Deno.env.get('NODE_ENV') === 'development';
   
@@ -29,7 +26,7 @@ function getAllowedOrigins(): string[] {
 const ALLOWED_ORIGINS = getAllowedOrigins();
 
 export function getCorsHeaders(origin: string | null): Record<string, string> {
-  // Якщо origin не вказано або не дозволений, використовуємо перший дозволений
+  
   const isAllowed = origin && ALLOWED_ORIGINS.includes(origin);
   const allowedOrigin = isAllowed ? origin : ALLOWED_ORIGINS[0];
 

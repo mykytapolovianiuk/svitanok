@@ -29,7 +29,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Fetch all products to extract data
+  
   const { data: dropdownData, isLoading } = useQuery({
     queryKey: ['megaDropdown'],
     queryFn: async () => {
@@ -40,7 +40,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
 
       if (error) throw error;
 
-      // Extract product types (ТИП ПРОДУКТУ) - use category field or attributes
+      
       const productTypesMap = new Map<string, number>();
       products?.forEach((product) => {
         const type = 
@@ -56,10 +56,10 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
         }
       });
 
-      // Extract problems (ЗА ПРОБЛЕМОЮ)
+      
       const problemsMap = new Map<string, number>();
       products?.forEach((product) => {
-        // Check problem_tags array first
+        
         if (product.attributes?.problem_tags && Array.isArray(product.attributes.problem_tags)) {
           product.attributes.problem_tags.forEach((problem: string) => {
             if (problem) {
@@ -69,7 +69,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
           });
         }
         
-        // Also check other possible keys
+        
         const problems = 
           product.attributes?.Проблема ||
           product.attributes?.Проблеми ||
@@ -92,10 +92,10 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
         }
       });
 
-      // Extract ingredients (ЗА ІНГРЕДІЄНТАМИ)
+      
       const ingredientsMap = new Map<string, number>();
       products?.forEach((product) => {
-        // Check ingredients array first
+        
         if (product.attributes?.ingredients && Array.isArray(product.attributes.ingredients)) {
           product.attributes.ingredients.forEach((ingredient: string) => {
             if (ingredient) {
@@ -105,7 +105,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
           });
         }
         
-        // Also check other possible keys
+        
         const ingredients = 
           product.attributes?.Інгредієнти ||
           product.attributes?.Ingredient ||
@@ -130,7 +130,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
         }
       });
 
-      // Get bestsellers (БЕСТСЕЛЕРИ) - featured products
+      
       const { data: bestsellers } = await supabase
         .from('products')
         .select('id, name, slug, images')
@@ -181,7 +181,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
     gcTime: 10 * 60 * 1000,
   });
 
-  // Close dropdown on outside click
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -204,7 +204,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
     if (column.useSlug) {
       navigate(`${column.linkPrefix}${item.slug}`);
     } else if (column.filterKey) {
-      // Use filter key for proper filtering
+      
       navigate(`/catalog?${column.filterKey}=${encodeURIComponent(item.name)}`);
     } else {
       navigate(`${column.linkPrefix}${encodeURIComponent(item.name)}`);
@@ -293,7 +293,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
                       <li className="text-xs text-gray-400 py-2">Немає даних</li>
                     ) : (
                       <>
-                        {/* First item - "Всі" or "Всі бестселери" */}
+                        {}
                         {idx === 0 && (
                           <li>
                             <button
@@ -340,7 +340,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
         </div>
       )}
 
-      {/* Mobile Dropdown */}
+      {}
       {isOpen && (
         <div 
           className="md:hidden fixed inset-x-0 top-16 bg-white border-t border-gray-200 shadow-lg z-50 max-h-[80vh] overflow-y-auto"

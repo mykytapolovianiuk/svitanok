@@ -1,12 +1,12 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Комбінує Tailwind класи з відповідним пріоритетом
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Форматує ціну в рядок валюти
+
 export function formatPrice(price: number, currency: string = 'UAH'): string {
   return new Intl.NumberFormat('uk-UA', {
     style: 'currency',
@@ -14,8 +14,8 @@ export function formatPrice(price: number, currency: string = 'UAH'): string {
   }).format(price);
 }
 
-// Форматує дату в локалізований рядок (без викликів до timezone БД)
-// Використовує простий формат без Intl API для уникнення запитів до pg_timezone_names
+
+
 export function formatDate(date: string | Date): string {
   const d = new Date(date);
   const months = [
@@ -30,7 +30,7 @@ export function formatDate(date: string | Date): string {
   return `${day} ${month} ${year}`;
 }
 
-// Форматує дату та час в локалізований рядок (без викликів до timezone БД)
+
 export function formatDateTime(date: string | Date, includeTime: boolean = false): string {
   const d = new Date(date);
   const months = [
@@ -53,7 +53,7 @@ export function formatDateTime(date: string | Date, includeTime: boolean = false
   return result;
 }
 
-// Форматує лише час (без викликів до timezone БД)
+
 export function formatTime(date: string | Date, includeSeconds: boolean = false): string {
   const d = new Date(date);
   const hours = String(d.getHours()).padStart(2, '0');
@@ -67,9 +67,9 @@ export function formatTime(date: string | Date, includeSeconds: boolean = false)
   return `${hours}:${minutes}`;
 }
 
-// Генерує slug з рядка (підтримка кирилиці)
+
 export function slugify(text: string): string {
-  // Маппінг кирилиці на латиницю
+  
   const cyrillicMap: Record<string, string> = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'є': 'ye',
     'ж': 'zh', 'з': 'z', 'и': 'y', 'і': 'i', 'ї': 'yi', 'й': 'y', 'к': 'k',
@@ -95,7 +95,7 @@ export function slugify(text: string): string {
     .replace(/\-\-+/g, '-');
 }
 
-// Скорочує текст до вказаної довжини
+
 export function truncate(text: string, length: number = 100): string {
   if (text.length <= length) return text;
   return text.substring(0, length) + '...';

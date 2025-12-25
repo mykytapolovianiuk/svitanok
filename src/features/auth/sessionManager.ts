@@ -2,7 +2,7 @@ import { supabase } from '../../lib/supabase';
 import { useUserStore } from './useUserStore';
 import type { UserSession } from '../../types/index';
 
-// Function to fetch user profile
+
 export const fetchUserProfile = async (userId: string) => {
   try {
     const { data, error } = await supabase
@@ -19,12 +19,12 @@ export const fetchUserProfile = async (userId: string) => {
   }
 };
 
-// Function to handle login
+
 export const handleLogin = async (email: string, password: string) => {
   const setSession = useUserStore.getState().setSession;
   
   try {
-    // Sign in
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -33,10 +33,10 @@ export const handleLogin = async (email: string, password: string) => {
     if (error) throw error;
     
     if (data.session) {
-      // Fetch user profile
+      
       const profile = await fetchUserProfile(data.session.user.id);
       
-      // Create user session object
+      
       const userSession: UserSession = {
         user: {
           id: data.session.user.id,
@@ -45,7 +45,7 @@ export const handleLogin = async (email: string, password: string) => {
         profile,
       };
       
-      // Set session in store
+      
       setSession(userSession);
       
       return { success: true, error: null };
@@ -59,7 +59,7 @@ export const handleLogin = async (email: string, password: string) => {
   }
 };
 
-// Function to handle logout
+
 export const handleLogout = async () => {
   const clearSession = useUserStore.getState().clearSession;
   
@@ -68,10 +68,10 @@ export const handleLogout = async () => {
     
     if (error) throw error;
     
-    // Clear session in store
+    
     clearSession();
     
-    // Clear cart when user logs out
+    
     const { useCartStore } = await import('../../store/cartStore');
     useCartStore.getState().clearCart();
     

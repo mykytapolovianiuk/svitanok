@@ -9,7 +9,7 @@ export default function SessionDebugger() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get localStorage items
+    
     const items: Record<string, string> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -19,7 +19,7 @@ export default function SessionDebugger() {
     }
     setLocalStorageItems(items);
 
-    // Get Supabase session directly
+    
     supabase.auth.getSession()
       .then(({ data, error }) => {
         if (error) {

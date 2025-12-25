@@ -1,7 +1,4 @@
-/**
- * CORS utility для безпечної обробки Cross-Origin запитів
- * Дозволяє тільки дозволені домени
- */
+
 
 export function getCorsHeaders(origin: string | undefined): Record<string, string> {
   const allowedOrigins = [
@@ -12,7 +9,7 @@ export function getCorsHeaders(origin: string | undefined): Record<string, strin
       : [])
   ];
 
-  // Якщо origin не вказано або не дозволений, використовуємо перший дозволений
+  
   const isAllowed = origin && allowedOrigins.includes(origin);
   const allowedOrigin = isAllowed ? origin : allowedOrigins[0];
 
@@ -24,9 +21,7 @@ export function getCorsHeaders(origin: string | undefined): Record<string, strin
   };
 }
 
-/**
- * Логування спроб недозволених запитів (тільки в development)
- */
+
 export function logCorsAttempt(origin: string | undefined, allowedOrigins: string[]): void {
   if (process.env.NODE_ENV === 'development' || import.meta.env.DEV) {
     if (origin && !allowedOrigins.includes(origin)) {

@@ -12,7 +12,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 import AuthProvider from './components/auth/AuthProvider';
 
-// Direct imports for all pages
+
 import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import ProductPage from './pages/ProductPage';
@@ -36,7 +36,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import NotFound from './pages/NotFound';
 
-// Admin Components
+
 import AdminLayout from './components/admin/AdminLayout';
 import AdminOrders from './pages/admin/Orders';
 import AdminProducts from './pages/admin/Products';
@@ -46,17 +46,14 @@ import AdminCustomers from './pages/admin/Customers';
 import AdminSettings from './pages/admin/Settings';
 import Bestsellers from './pages/admin/Bestsellers';
 
-// Simple layout without header/footer for checkout
+
 const CheckoutLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="min-h-screen bg-white">
     {children}
   </div>
 );
 
-/**
- * Головний компонент додатку
- * Містить маршрутизацію та основні провайдери
- */
+
 function App() {
   return (
     <ErrorBoundary>
@@ -68,14 +65,14 @@ function App() {
             <CartDrawer />
             <Toaster position="top-right" />
             <Routes>
-            {/* Checkout route without header/footer */}
+            {}
             <Route path="/checkout" element={
               <CheckoutLayout>
                 <Checkout />
               </CheckoutLayout>
             } />
             
-            {/* Admin routes without header/footer */}
+            {}
             <Route
               path="admin"
               element={
@@ -94,7 +91,7 @@ function App() {
               <Route path="bestsellers" element={<Bestsellers />} />
             </Route>
             
-            {/* All other routes with normal layout */}
+            {}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="catalog" element={<Catalog />} />
@@ -116,7 +113,7 @@ function App() {
               <Route path="privacy" element={<Privacy />} />
               <Route path="terms" element={<Terms />} />
               
-              {/* Protected Routes */}
+              {}
               <Route
                 path="account"
                 element={
@@ -126,7 +123,7 @@ function App() {
                 }
               />
               
-              {/* 404 */}
+              {}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

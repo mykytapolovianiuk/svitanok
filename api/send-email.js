@@ -1,7 +1,4 @@
-/**
- * Email API endpoint
- * Server-side email sending using Resend
- */
+
 
 import { getCorsHeaders } from './utils/cors.js';
 import { checkRateLimit } from './utils/rateLimit.js';
@@ -25,7 +22,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
-  // Rate limiting
+  
   if (!checkRateLimit(req, res, 'default')) {
     return;
   }
@@ -57,7 +54,7 @@ export default async function handler(req, res) {
     
     if (!response.ok) {
       const error = await response.json();
-      // Error handling in production
+      
       return res.status(500).json({ error: 'Failed to send email', details: error });
     }
     
@@ -69,7 +66,7 @@ export default async function handler(req, res) {
     });
     
   } catch (error) {
-    // Error handling in production
+    
     return res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 

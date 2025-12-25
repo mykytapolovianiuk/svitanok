@@ -16,7 +16,7 @@ import { sendOrderNotification } from '@/services/notifications';
 import { X, Plus, Minus, Check, Tag } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 
-// Schema Validation
+
 const checkoutSchema = z.object({
   firstName: z.string().min(1, "Введіть ім'я"),
   lastName: z.string().min(1, 'Введіть прізвище'),
@@ -34,10 +34,7 @@ const checkoutSchema = z.object({
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
-/**
- * Форма оформлення замовлення
- * Обробляє введення даних користувача, доставку та оплату
- */
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, clearCart, removeItem, updateQuantity } = useCartStore();
@@ -46,11 +43,11 @@ export default function Checkout() {
   const { trackBeginCheckout, trackAddPaymentInfo, trackAddShippingInfo, trackPurchase } = useAnalytics();
   const { appliedCode, isLoading: promoLoading, applyCode, removeCode } = usePromoCode();
   
-  // Константа для безкоштовної доставки
+  
   const FREE_SHIPPING_THRESHOLD = 4000;
-  const SHIPPING_COST = 150; // Вартість доставки, якщо не досягнуто порогу
+  const SHIPPING_COST = 150; 
 
-  // Розрахунок знижки та фінальної суми з правильними залежностями
+  
   const discountAmount = useMemo(() => {
     if (!appliedCode) return 0;
     
@@ -63,7 +60,7 @@ export default function Checkout() {
     return Math.max(0, baseTotalPrice - discountAmount);
   }, [baseTotalPrice, discountAmount]);
 
-  // Розрахунок вартості доставки
+  
   const shippingCost = useMemo(() => {
     return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   }, [subtotal]);
@@ -77,19 +74,19 @@ export default function Checkout() {
   const [showLiqPay, setShowLiqPay] = useState(false);
   const [liqPayOrderData, setLiqPayOrderData] = useState<{ orderId: string; amount: number; description: string } | null>(null);
   
-  // State to store full objects
+  
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState<WarehouseOption | null>(null);
   
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(false);
 
-  // Empty Cart Check
+  
   useEffect(() => {
     if (items.length === 0) navigate('/catalog');
   }, [items, navigate]);
 
-          // Track begin checkout on mount
+          
           const analyticsItems = useMemo(() => formatCartItemsForAnalytics(items), [items]);
 
   const {
@@ -102,7 +99,7 @@ export default function Checkout() {
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: () => {
-      // Load draft data from localStorage on component mount
+      
       const draftData = localStorage.getItem('checkout_draft');
       if (draftData) {
         try {
@@ -110,10 +107,10 @@ export default function Checkout() {
           return parsedData;
         } catch (e) {
           console.error('Failed to parse checkout draft data:', e);
-          localStorage.removeItem('checkout_draft'); // Clear corrupted data
+          localStorage.removeItem('checkout_draft'); 
         }
       }
-      // Default values if no draft data
+      
       return {
         deliveryMethod: 'nova-poshta',
         paymentMethod: 'cash-on-delivery',
@@ -121,22 +118,22 @@ export default function Checkout() {
     },
   });
 
-  // Save form data to localStorage on every change
+  
   useEffect(() => {
     const subscription = watch((data) => {
-      // Save to localStorage whenever form data changes
+      
       localStorage.setItem('checkout_draft', JSON.stringify(data));
     });
     
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  // Clear localStorage draft on successful order submission
+  
   const clearCheckoutDraft = () => {
     localStorage.removeItem('checkout_draft');
   };
 
-  // Fetch profile for auto-fill (after useForm initialization)
+  
   useEffect(() => {
     if (session?.user?.id) {
       (async () => {
@@ -148,7 +145,7 @@ export default function Checkout() {
             .single();
           
           if (!error && data) {
-            // Auto-fill form fields
+            
             if (data.full_name) {
               const nameParts = data.full_name.split(' ');
               if (nameParts.length >= 2) {
@@ -166,7 +163,7 @@ export default function Checkout() {
             }
           }
         } catch (error) {
-          // Silently fail
+          
           console.error('Error loading profile:', error);
         }
       })();
@@ -176,39 +173,39 @@ export default function Checkout() {
   const deliveryMethod = watch('deliveryMethod');
   const paymentMethod = watch('paymentMethod');
 
-  // Format phone number with 380 prefix
+  
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === 'phone') {
         const phoneValue = value.phone || '';
-        // Remove all non-digit characters
+        
         const digitsOnly = phoneValue.replace(/\D/g, '');
         
-        // If it's empty, just update
+        
         if (digitsOnly === '') {
           setValue('phone', '', { shouldValidate: true });
           return;
         }
         
-        // If it starts with 0, remove the 0 and prepend 380
+        
         if (digitsOnly.startsWith('0')) {
           const formattedPhone = '380' + digitsOnly.substring(1);
-          // Only update if the value has changed to prevent infinite loop
+          
           if (formattedPhone !== phoneValue) {
             setValue('phone', formattedPhone, { shouldValidate: true });
           }
         }
-        // If it doesn't start with 380, prepend 380
+        
         else if (!digitsOnly.startsWith('380')) {
           const formattedPhone = '380' + digitsOnly;
-          // Only update if the value has changed to prevent infinite loop
+          
           if (formattedPhone !== phoneValue) {
             setValue('phone', formattedPhone, { shouldValidate: true });
           }
         }
-        // If it already starts with 380, ensure it's properly formatted
+        
         else if (digitsOnly.startsWith('380')) {
-          // Only update if the value has changed to prevent infinite loop
+          
           if (digitsOnly !== phoneValue) {
             setValue('phone', digitsOnly, { shouldValidate: true });
           }
@@ -223,16 +220,16 @@ export default function Checkout() {
     if (items.length > 0) {
       trackBeginCheckout(analyticsItems, finalTotal);
     }
-  }, [items.length]); // Track on mount and when items change
+  }, [items.length]); 
 
-  // Track payment method change
+  
   useEffect(() => {
     if (paymentMethod && items.length > 0) {
       trackAddPaymentInfo(analyticsItems, finalTotal, paymentMethod === 'liqpay' ? 'liqpay' : 'cash');
     }
   }, [paymentMethod, analyticsItems, finalTotal, items.length]);
 
-  // Track shipping method change
+  
   useEffect(() => {
     if (deliveryMethod && items.length > 0) {
       const shippingTier = deliveryMethod === 'nova-poshta' ? 'nova_poshta' : 
@@ -242,7 +239,7 @@ export default function Checkout() {
     }
   }, [deliveryMethod, analyticsItems, finalTotal, items.length]);
 
-  // Load Cities
+  
   const loadCities = async (inputValue: string) => {
     if (!inputValue || inputValue.length < 2) return [];
     setIsLoadingCities(true);
@@ -259,7 +256,7 @@ export default function Checkout() {
     }
   };
 
-  // Load warehouses when city is selected
+  
   useEffect(() => {
     if (selectedCity?.ref) {
       setIsLoadingWarehouses(true);
@@ -294,7 +291,7 @@ export default function Checkout() {
     }
   }, [selectedCity, setValue, deliveryMethod]);
 
-  // Handlers
+  
   const handleCityChange = (option: CityOption | null) => {
     setSelectedCity(option);
     setValue('city', option?.label || '');
@@ -307,23 +304,23 @@ export default function Checkout() {
     setValue('warehouseRef', option?.ref || '');
   };
 
-  // Handle delivery method change (for tabs)
+  
   const handleDeliveryMethodChange = (method: 'nova-poshta' | 'courier' | 'ukrposhta') => {
     setValue('deliveryMethod', method);
   };
 
-  // Handle payment method change
+  
   const handlePaymentMethodChange = (method: 'cash-on-delivery' | 'liqpay') => {
     setValue('paymentMethod', method);
   };
 
-  // Обробка замовлення: валідація -> база -> ТТН
+  
   const onSubmit = async (data: CheckoutFormData) => {
     if (!session) return;
     setIsSubmitting(true);
 
     try {
-      // 1. CRITICAL VALIDATION FOR NOVA POSHTA
+      
       const finalCityRef = data.cityRef || selectedCity?.ref || '';
       const finalWarehouseRef = data.warehouseRef || selectedWarehouse?.ref || '';
 
@@ -332,20 +329,20 @@ export default function Checkout() {
         return;
       }
 
-      // 2. Map Delivery Method
+      
       let deliveryMethodDb = 'nova_poshta_dept';
       if (deliveryMethod === 'courier') deliveryMethodDb = 'nova_poshta_courier';
       if (deliveryMethod === 'ukrposhta') deliveryMethodDb = 'ukrposhta';
 
-      // 3. Calculate total price with discount
+      
       const calculatedTotalPrice = finalTotal;
 
-      // Validate total price
+      
       if (calculatedTotalPrice <= 0) {
         throw new Error('Некоректна сума замовлення. Будь ласка, перезавантажте сторінку та спробуйте ще раз.');
       }
 
-      // 4. Prepare Payload (without items array since it's stored in a separate table)
+      
       const orderData = {
         user_id: session.user.id,
         customer_name: `${data.firstName} ${data.lastName}`,
@@ -368,7 +365,7 @@ export default function Checkout() {
         discount_amount: discountAmount > 0 ? discountAmount : null,
       };
 
-      // 5. Insert Order
+      
       const orderResult: any = await supabase
         .from('orders')
         .insert(orderData)
@@ -377,7 +374,7 @@ export default function Checkout() {
 
       if (orderResult.error) throw orderResult.error;
 
-      // 6. Insert Items (separately in order_items table)
+      
       const orderItems = items.map(item => ({
         order_id: orderResult.data.id,
         product_id: Number(item.product.id),
@@ -389,7 +386,7 @@ export default function Checkout() {
       const itemsResult: any = await supabase.from('order_items').insert(orderItems);
       if (itemsResult.error) throw itemsResult.error;
 
-      // 7. Increment promo code usage if applied
+      
       if (appliedCode) {
         await supabase
           .from('promo_codes')
@@ -397,19 +394,19 @@ export default function Checkout() {
           .eq('id', appliedCode.id);
       }
 
-      // 8. Track purchase
+      
       trackPurchase(
         orderResult.data.id.toString(),
         analyticsItems,
         calculatedTotalPrice,
-        undefined, // tax
-        undefined, // shipping
-        appliedCode?.code || undefined  // coupon
+        undefined, 
+        undefined, 
+        appliedCode?.code || undefined  
       );
 
-      // 8. Send Telegram notification (before redirecting)
+      
       try {
-        // Include items in the notification data
+        
         const notificationData = {
           ...orderData,
           id: orderResult.data.id,
@@ -418,10 +415,10 @@ export default function Checkout() {
         await sendOrderNotification(orderResult.data.id, notificationData);
       } catch (notificationError) {
         console.error('Failed to send Telegram notification:', notificationError);
-        // Continue with the flow even if notification fails
+        
       }
 
-      // 8.1. Send order confirmation email
+      
       if (orderData.customer_email) {
         try {
           const { sendOrderConfirmation } = await import('../services/email');
@@ -442,26 +439,26 @@ export default function Checkout() {
           });
         } catch (emailError) {
           console.error('Failed to send order confirmation email:', emailError);
-          // Continue even if email fails
+          
         }
       }
 
-      // 9. Handle payment method
+      
       if (paymentMethod === 'liqpay') {
-        // For LiqPay, show redirect component instead of navigating to success page
+        
         setLiqPayOrderData({
           orderId: orderResult.data.id.toString(),
           amount: calculatedTotalPrice,
           description: `Оплата замовлення #${orderResult.data.id}`
         });
         setShowLiqPay(true);
-        // Clear checkout draft from localStorage on successful order submission
+        
         clearCheckoutDraft();
       } else {
-        // For cash on delivery, proceed as before
+        
         clearCart();
         navigate('/order-success', { state: { orderId: orderResult.data.id } });
-        // Clear checkout draft from localStorage on successful order submission
+        
         clearCheckoutDraft();
       }
 
@@ -473,7 +470,7 @@ export default function Checkout() {
     }
   };
 
-  // If showing LiqPay redirect, render that component instead
+  
   if (showLiqPay && liqPayOrderData) {
     return (
       <LiqPayRedirect
@@ -487,9 +484,9 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-[#FFF2E1]">
       <form onSubmit={handleSubmit(onSubmit)} className="container mx-auto px-4 md:px-8 max-w-[1440px] flex flex-col lg:flex-row gap-0">
-        {/* Left Column - Form (60% width, White Background) */}
+        {}
         <div className="w-full lg:w-[60%] bg-white p-6 md:p-8 lg:p-12">
-          {/* Page Title */}
+          {}
           <h1 
             className="text-2xl md:text-3xl font-light mb-8 md:mb-12 text-center uppercase tracking-[2px]"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -498,7 +495,7 @@ export default function Checkout() {
           </h1>
 
           <div className="space-y-8 md:space-y-12">
-            {/* Section 1: КОНТАКТ */}
+            {}
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 
@@ -576,7 +573,7 @@ export default function Checkout() {
               </div>
             </div>
 
-          {/* Section 2: СПОСІБ ДОСТАВКИ */}
+          {}
           <div>
             <h2 
               className="text-base md:text-lg font-medium mb-4 md:mb-6 uppercase tracking-[2px]"
@@ -585,7 +582,7 @@ export default function Checkout() {
               Спосіб доставки
             </h2>
             
-            {/* Delivery Options - Radio buttons */}
+            {}
             <div className="space-y-3 mb-4">
               <label className="flex items-start cursor-pointer">
                 <input 

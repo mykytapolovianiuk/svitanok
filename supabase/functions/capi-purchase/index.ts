@@ -1,7 +1,4 @@
-/**
- * Supabase Edge Function - Meta Conversions API Purchase Event
- * Server-side tracking for completed purchases
- */
+
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, logCorsAttempt } from "../_shared/cors.ts";

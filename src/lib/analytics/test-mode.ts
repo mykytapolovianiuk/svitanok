@@ -1,11 +1,6 @@
-/**
- * Test Mode Utilities
- * Допоміжні функції для тестового режиму аналітики
- */
 
-/**
- * Check if analytics is running in test mode
- */
+
+
 export function isTestMode(): boolean {
   if (typeof window === 'undefined') return false;
   
@@ -23,21 +18,17 @@ export function isTestMode(): boolean {
   );
 }
 
-/**
- * Log test event (only in dev/test mode)
- */
+
 export function logTestEvent(eventName: string, data: Record<string, any>): void {
   if (!isTestMode()) return;
   
   console.group(`🧪 [TEST MODE] ${eventName}`);
-  // Production logging removed
-  // Production logging removed
+  
+  
   console.groupEnd();
 }
 
-/**
- * Get test mode status for display
- */
+
 export function getTestModeStatus(): {
   isTest: boolean;
   gaId: string | undefined;

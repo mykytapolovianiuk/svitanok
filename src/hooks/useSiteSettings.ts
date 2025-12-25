@@ -51,7 +51,7 @@ export const useSiteSettings = create<SiteSettingsState>((set, get) => ({
         
       if (error) throw error;
       
-      // Update local state
+      
       set((state) => ({
         settings: {
           ...state.settings,
@@ -66,7 +66,7 @@ export const useSiteSettings = create<SiteSettingsState>((set, get) => ({
   }
 }));
 
-// Helper hook to get a specific setting value
+
 export const useSiteSetting = (key: string, defaultValue: string = '') => {
   const { settings } = useSiteSettings();
   return settings[key] || defaultValue;
