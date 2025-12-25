@@ -4,8 +4,8 @@ import { useParams, Link } from 'react-router-dom';
 export default function PaymentPage() {
   const { orderId } = useParams<{ orderId: string }>();
 
-  // In a real implementation, this would integrate with LiqPay API
-  // For now, it's a placeholder
+  
+  
 
   return (
     <div className="container mx-auto px-4 py-16 text-center">

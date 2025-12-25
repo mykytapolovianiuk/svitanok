@@ -6,14 +6,14 @@ export default function CheckoutSuccess() {
   const location = useLocation();
   const { orderId, totalAmount } = location.state || {};
 
-  // If no order data, redirect to home
+  
   useEffect(() => {
     if (!orderId) {
       window.location.href = '/';
     }
   }, [orderId]);
 
-  // Trigger confetti on mount
+  
   useEffect(() => {
     if (orderId) {
       triggerConfetti();

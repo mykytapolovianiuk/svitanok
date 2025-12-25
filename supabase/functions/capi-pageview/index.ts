@@ -1,7 +1,4 @@
-/**
- * Supabase Edge Function - Meta Conversions API PageView Event
- * Server-side tracking for page views
- */
+
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, logCorsAttempt } from "../_shared/cors.ts";
@@ -68,7 +65,7 @@ serve(async (req) => {
   const corsHeaders = getCorsHeaders(origin);
   logCorsAttempt(origin);
   
-  // Handle CORS preflight
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -82,12 +79,12 @@ serve(async (req) => {
       user_data = {},
     } = body;
 
-    // Get environment variables
+    
     const pixelId = Deno.env.get('VITE_FB_PIXEL_ID');
     const accessToken = Deno.env.get('META_CAPI_ACCESS_TOKEN') || 'TEST_TOKEN';
     const testEventCode = Deno.env.get('META_TEST_EVENT_CODE');
 
-    // Test mode detection
+    
     const isTestMode = accessToken === 'TEST_TOKEN' || 
                       pixelId?.includes('TEST') || 
                       pixelId?.includes('test') ||
@@ -125,7 +122,7 @@ serve(async (req) => {
       );
     }
 
-    // Prepare user data with hashing
+    
     const hashedUserData: any = {};
     if (user_data.email) {
       hashedUserData.em = [await hashPII(user_data.email)];
@@ -146,7 +143,7 @@ serve(async (req) => {
       hashedUserData.fbc = user_data.fbc;
     }
 
-    // Prepare event data
+    
     const eventData = {
       event_name: 'PageView',
       event_time: event_time || Math.floor(Date.now() / 1000),
@@ -155,7 +152,7 @@ serve(async (req) => {
       user_data: hashedUserData,
     };
 
-    // Send to Meta Conversions API with retry
+    
     let lastError = null;
     const maxRetries = 1;
 
@@ -183,12 +180,12 @@ serve(async (req) => {
 
       lastError = result.error;
       
-      // Don't retry on certain errors
+      
       if (result.error?.error?.code === 100 || result.error?.error?.code === 190) {
         break;
       }
 
-      // Wait before retry
+      
       if (attempt < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }

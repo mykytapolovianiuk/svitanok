@@ -1,4 +1,4 @@
-// Database Types
+
 export interface Profile {
   id: string;
   role: 'user' | 'admin';
@@ -74,7 +74,7 @@ export interface Review {
   created_at: string;
 }
 
-// UI Types
+
 export interface DeliveryInfo {
   full_name: string;
   phone: string;
@@ -102,13 +102,13 @@ export interface UserSession {
   user: {
     id: string;
     email: string;
-    phone?: string; // Add phone field
+    phone?: string; 
   };
   profile: Profile | null;
 }
 
-// Admin Types
-// Extended types for admin interfaces
+
+
 export interface OrderWithItems extends Order {
   items: (OrderItem & { product: Product })[];
 }
@@ -119,7 +119,7 @@ export interface SiteSetting {
   label: string;
 }
 
-// Extended Review type to include product information
+
 export interface ReviewWithProduct extends Review {
   product: {
     name: string;
@@ -127,15 +127,15 @@ export interface ReviewWithProduct extends Review {
   } | null;
 }
 
-// Nova Poshta Types
+
 export interface CityOption {
   value: string;
   label: string;
-  ref?: string; // Made ref optional to match AsyncSelect expectations
+  ref?: string; 
 }
 
 export interface WarehouseOption {
   value: string;
   label: string;
-  ref?: string; // Made ref optional to match AsyncSelect expectations
+  ref?: string; 
 }

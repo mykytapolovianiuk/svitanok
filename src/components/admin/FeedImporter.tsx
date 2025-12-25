@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { parseYML } from '@/utils/xmlParser';
 import toast from 'react-hot-toast';
 
-// Utility function to transliterate Cyrillic to Latin
+
 function transliterate(text: string): string {
   const cyrillicToLatin: Record<string, string> = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
@@ -21,16 +21,16 @@ function transliterate(text: string): string {
   return text.split('').map(char => cyrillicToLatin[char] || char).join('');
 }
 
-// Generate URL-friendly slug
+
 function generateSlug(text: string): string {
   return transliterate(text)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .substring(0, 100); // Limit slug length
+    .substring(0, 100); 
 }
 
-// Ensure slug uniqueness
+
 async function ensureUniqueSlug(baseSlug: string, tableName: string, fieldName: string = 'slug'): Promise<string> {
   let slug = baseSlug;
   let counter = 1;
@@ -44,18 +44,18 @@ async function ensureUniqueSlug(baseSlug: string, tableName: string, fieldName: 
     
     if (error) {
       console.error(`Error checking slug uniqueness: ${error.message}`);
-      return slug; // Return as-is if we can't check
+      return slug; 
     }
     
     if (!data || data.length === 0) {
-      return slug; // Slug is unique
+      return slug; 
     }
     
-    // If slug exists, append counter
+    
     slug = `${baseSlug}-${counter}`;
     counter++;
     
-    // Prevent infinite loop
+    
     if (counter > 1000) {
       console.warn(`Could not generate unique slug for ${baseSlug}, returning with counter`);
       return slug;
@@ -64,14 +64,14 @@ async function ensureUniqueSlug(baseSlug: string, tableName: string, fieldName: 
 }
 
 interface CategoryMapping {
-  [externalId: string]: string; // externalId -> internal UUID
+  [externalId: string]: string; 
 }
 
 async function importCategories(parsedCategories: any[]): Promise<CategoryMapping> {
   const categoryMapping: CategoryMapping = {};
   const categoriesToInsert: any[] = [];
   
-  // First pass: Insert all categories without parent_id
+  
   for (const category of parsedCategories) {
     try {
       const baseSlug = generateSlug(category.name);
@@ -81,7 +81,7 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
         external_id: category.externalId,
         name: category.name,
         slug: uniqueSlug,
-        parent_id: null // Will be updated in second pass
+        parent_id: null 
       };
       
       categoriesToInsert.push(categoryData);
@@ -90,7 +90,7 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
     }
   }
   
-  // Bulk insert categories
+  
   if (categoriesToInsert.length > 0) {
     const { data, error } = await supabase
       .from('categories')
@@ -103,7 +103,7 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
       throw error;
     }
     
-    // Create mapping from external_id to internal UUID
+    
     if (data) {
       for (const category of data) {
         const originalCategory = parsedCategories.find(c => c.externalId === category.external_id);
@@ -114,7 +114,7 @@ async function importCategories(parsedCategories: any[]): Promise<CategoryMappin
     }
   }
   
-  // Second pass: Update parent_id relationships
+  
   let updatedCount = 0;
   
   for (const category of parsedCategories) {
@@ -146,13 +146,13 @@ async function importProducts(parsedProducts: any[], categoryMapping: CategoryMa
       const baseSlug = generateSlug(product.name);
       const uniqueSlug = await ensureUniqueSlug(baseSlug, 'products', 'slug');
       
-      // Map category ID
+      
       let categoryId: string | null = null;
       if (product.categoryId && categoryMapping[product.categoryId]) {
         categoryId = categoryMapping[product.categoryId];
       }
       
-      // Prepare product data
+      
       const productData: any = {
         external_id: product.externalId,
         name: product.name,
@@ -163,15 +163,15 @@ async function importProducts(parsedProducts: any[], categoryMapping: CategoryMa
         currency: product.currency || 'UAH',
         images: product.images || [],
         attributes: product.attributes || {},
-        in_stock: true // Default to in stock
+        in_stock: true 
       };
       
-      // Add category_id if available
+      
       if (categoryId) {
         productData['category_id'] = categoryId;
       }
       
-      // Upsert product
+      
       const { error: upsertError } = await supabase
         .from('products')
         .upsert(productData, {
@@ -218,13 +218,13 @@ export default function FeedImporter() {
     setImportResult(null);
 
     try {
-      // Parse XML
+      
       const parsedData = parseYML(fileContent);
       
-      // Import categories
+      
       const categoryMapping = await importCategories(parsedData.categories);
       
-      // Import products
+      
       const productResult = await importProducts(parsedData.products, categoryMapping);
       
       setImportResult({

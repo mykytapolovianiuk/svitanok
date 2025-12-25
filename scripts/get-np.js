@@ -1,6 +1,6 @@
-import fetch from 'node-fetch'; // Якщо помилка, видали цей рядок (для node 18+)
+import fetch from 'node-fetch'; 
 
-const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; // Твій новий ключ
+const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; 
 const SENDER_LASTNAME = 'Кулинич';
 const CITY_NAME = 'Суми';
 const WAREHOUSE_NUM = '2';
@@ -8,7 +8,7 @@ const WAREHOUSE_NUM = '2';
 async function getKeys() {
   console.log('🔄 Шукаю дані для м. Суми та ФОП Кулинич...');
 
-  // 1. Шукаємо Відправника (Контрагента)
+  
   const senderRes = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({
@@ -19,7 +19,7 @@ async function getKeys() {
     })
   }).then(r => r.json());
 
-  // Шукаємо за прізвищем
+  
   const sender = senderRes.data.find(s => s.Description.includes(SENDER_LASTNAME));
   
   if (!sender) {
@@ -28,7 +28,7 @@ async function getKeys() {
   }
   console.log(`✅ Знайдено відправника: ${sender.Description}`);
 
-  // 2. Шукаємо Контактну особу
+  
   const contactRes = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({
@@ -41,7 +41,7 @@ async function getKeys() {
   
   const contact = contactRes.data[0];
 
-  // 3. Шукаємо Місто (Суми)
+  
   const cityRes = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({
@@ -55,7 +55,7 @@ async function getKeys() {
   const city = cityRes.data[0]?.Addresses[0];
   console.log(`✅ Знайдено місто: ${city.MainDescription}`);
 
-  // 4. Шукаємо Склад №2
+  
   const warehouseRes = await fetch('https://api.novaposhta.ua/v2.0/json/', {
     method: 'POST',
     body: JSON.stringify({

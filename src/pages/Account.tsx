@@ -183,15 +183,15 @@ export default function Account() {
     pendingOrders: orders.filter(o => o.status === 'pending').length,
   };
 
-  // REMOVE any internal useEffect that calls Maps('/auth') or checks for !session
-  // The ProtectedRoute wrapper already handles security.
-  // HANDLE NULL PROFILE: If profile is null but user exists, do NOT redirect.
-  // Instead, render the <ProfileForm /> so the user can fill in their details.
+  
+  
+  
+  
 
   return (
     <div className="min-h-screen bg-[#FFF2E1] py-6 sm:py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        {/* Header */}
+        {}
         <div className="mb-6 sm:mb-8">
           <h1 
             className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-900 mb-2 uppercase tracking-[2px]"
@@ -207,7 +207,7 @@ export default function Account() {
           </p>
         </div>
 
-        {/* Stats Cards */}
+        {}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
           <div className="bg-white rounded-none border border-black p-4 md:p-6">
             <div className="flex items-center justify-between">
@@ -268,7 +268,7 @@ export default function Account() {
           </div>
         </div>
         
-        {/* Tabs */}
+        {}
         <div className="bg-white rounded-none border border-black mb-6">
           <div className="border-b border-black">
             <nav className="flex -mb-px">
@@ -303,11 +303,11 @@ export default function Account() {
           </nav>
         </div>
 
-          {/* Tab Content */}
+          {}
           <div className="p-6 md:p-8">
         {activeTab === 'profile' ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-            {/* Profile Section */}
+            {}
                 <div className="lg:col-span-2 space-y-6 md:space-y-8">
                   <div>
                     <h2 
@@ -316,14 +316,14 @@ export default function Account() {
                     >
                       Особиста інформація
                     </h2>
-                {/* Pass the user.phone (from the store) as a default value to the ProfileForm */}
+                {}
                 <ProfileForm 
                   profile={profile} 
                   onUpdate={handleProfileUpdate} 
                 />
               </div>
 
-                  {/* Account Info */}
+                  {}
                   <div className="border-t border-black pt-6 md:pt-8">
                     <h3 
                       className="text-base md:text-lg font-medium text-gray-900 mb-4 md:mb-6 uppercase tracking-[1px]"
@@ -349,7 +349,7 @@ export default function Account() {
                           </p>
                         </div>
                       </div>
-                      {/* Display phone from auth session if available */}
+                      {}
                       {session?.user?.phone && (
                         <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200">
                           <Phone className="h-5 w-5 text-gray-400 flex-shrink-0" />
@@ -390,7 +390,7 @@ export default function Account() {
               </div>
             </div>
             
-            {/* Actions Section */}
+            {}
             <div className="lg:col-span-1">
                   <div className="bg-[#FAF4EB] rounded-none border border-black p-6">
                     <h3 
@@ -423,7 +423,7 @@ export default function Account() {
             </div>
           </div>
         ) : (
-          /* Orders Section */
+          
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h2 
@@ -457,7 +457,7 @@ export default function Account() {
               <div className="space-y-4 md:space-y-6">
                 {orders.map((order) => (
               <div key={order.id.toString()} className="border border-black rounded-none overflow-hidden bg-white">
-            {/* Order Summary */}
+            {}
             <div 
                   className="p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors"
               onClick={() => toggleOrderExpansion(order.id)}
@@ -508,11 +508,11 @@ export default function Account() {
                   </div>
                 </div>
                 
-                {/* Expanded Order Details */}
+                {}
                 {expandedOrderId === order.id && (
                       <div className="border-t border-black bg-[#FAF4EB] p-4 md:p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Order Items */}
+                      {}
                           <div className="lg:col-span-2">
                             <h4 
                               className="text-sm md:text-base font-medium text-gray-900 mb-4 uppercase tracking-[1px]"
@@ -574,7 +574,7 @@ export default function Account() {
                         </div>
                       </div>
                       
-                      {/* Delivery Info */}
+                      {}
                       <div>
                             <h4 
                               className="text-sm md:text-base font-medium text-gray-900 mb-4 uppercase tracking-[1px]"

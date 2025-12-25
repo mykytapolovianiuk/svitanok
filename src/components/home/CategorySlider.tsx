@@ -52,7 +52,7 @@ export default function CategorySlider() {
   return (
     <section className="py-12 md:py-16 lg:py-20 bg-white">
       <div className="container mx-auto px-4 md:px-8 max-w-[1440px]">
-        {/* Section Title */}
+        {}
         <h2 
           className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium text-center text-text-main mb-6 md:mb-8 lg:mb-12 uppercase tracking-[0.2em]"
           style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -60,7 +60,7 @@ export default function CategorySlider() {
           Оберіть категорію
         </h2>
 
-        {/* Swiper Slider */}
+        {}
         <Swiper
           modules={[Autoplay, Navigation]}
           spaceBetween={20}
@@ -98,7 +98,7 @@ export default function CategorySlider() {
                 className="block group cursor-pointer"
               >
                 <div className="bg-primary rounded-lg overflow-hidden transition-transform duration-300 hover:scale-105">
-                  {/* Image Container - 80% height */}
+                  {}
                   <div className="aspect-[3/4] overflow-hidden">
                     <img
                       src={category.image}
@@ -107,7 +107,7 @@ export default function CategorySlider() {
                     />
                   </div>
 
-                  {/* Text Label - 20% height */}
+                  {}
                   <div className="py-3 md:py-4 text-center">
                     <h3 
                       className="text-xs md:text-sm font-medium text-text-main uppercase tracking-wide"

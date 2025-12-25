@@ -67,7 +67,7 @@ export default function Favorites() {
 
   const loading = favoritesLoading || (productIds.length > 0 && productsLoading);
 
-  // Filter favorites by search term
+  
   const filteredFavorites = useMemo(() => {
     if (!searchTerm.trim()) return favorites;
     const term = searchTerm.toLowerCase();
@@ -123,13 +123,13 @@ export default function Favorites() {
     }
   };
 
-  // Remove the redirect for non-authenticated users and show favorites for all users
-  // The useFavorites hook already handles local storage for non-authenticated users
+  
+  
 
   return (
     <div className="min-h-screen bg-[#FFF2E1] py-6 sm:py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        {/* Header */}
+        {}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div>
@@ -160,7 +160,7 @@ export default function Favorites() {
             )}
           </div>
 
-          {/* Search and View Toggle */}
+          {}
           {favorites.length > 0 && (
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">

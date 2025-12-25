@@ -13,14 +13,14 @@ export default function DiscountBanner() {
     checkAuth();
   }, []);
 
-  // Не показувати банер якщо користувач авторизований
+  
   if (isAuthenticated) {
     return null;
   }
 
   return (
     <section className="relative w-full py-12 md:py-16 lg:py-20 overflow-hidden">
-      {/* Background Image with 50% opacity */}
+      {}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -29,7 +29,7 @@ export default function DiscountBanner() {
         }}
       />
 
-      {/* Content */}
+      {}
       <div className="relative z-10 container mx-auto px-4 md:px-8 max-w-[1440px] text-center">
         <h2
           className="font-bold mb-4 md:mb-6 px-2"

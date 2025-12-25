@@ -23,7 +23,7 @@ export default function CartDrawer() {
   
   const navigate = useNavigate();
 
-  // Розрахунок вартості доставки
+  
   const shippingCost = useMemo(() => {
     return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   }, [subtotal]);
@@ -32,7 +32,7 @@ export default function CartDrawer() {
     return subtotal + shippingCost;
   }, [subtotal, shippingCost]);
   
-  // Close cart when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const cartElement = document.getElementById('cart-drawer');
@@ -79,15 +79,15 @@ export default function CartDrawer() {
 
   return (
     <div className="fixed inset-0 z-[60] overflow-hidden">
-      {/* Backdrop */}
+      {}
       <div className="absolute inset-0 bg-black bg-opacity-50" />
       
-      {/* Drawer */}
+      {}
       <div 
         id="cart-drawer"
         className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-[#FAF4EB] shadow-xl transform transition-transform duration-300 ease-in-out"
       >
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2
             className="text-xl font-light uppercase tracking-[2px]"
@@ -103,7 +103,7 @@ export default function CartDrawer() {
           </button>
         </div>
         
-        {/* Body */}
+        {}
         <div className="flex-1 overflow-y-auto p-4">
           {items.length === 0 ? (
             <div className="text-center py-12">
@@ -140,7 +140,7 @@ export default function CartDrawer() {
                 ))}
               </div>
               
-              {/* Promo Code Section */}
+              {}
               <div className="mt-6 pt-4 border-t border-gray-200">
                 {appliedCode ? (
                   <div className="flex items-center justify-between p-3 bg-black border border-black rounded">
@@ -189,9 +189,9 @@ export default function CartDrawer() {
                 )}
               </div>
 
-              {/* Footer */}
+              {}
               <div className="mt-4 pt-4 border-t border-gray-200">
-                {/* Discount Badge */}
+                {}
                 {appliedCode && discountAmount > 0 && (
                   <div className="mb-3 p-2 bg-black border border-black rounded-lg">
                     <div className="flex items-center justify-between">

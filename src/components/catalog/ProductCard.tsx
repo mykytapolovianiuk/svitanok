@@ -31,16 +31,16 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   
-  // Керування обраним (вибране/не вибране)
+  
   const { toggleFavorite, isFavorite } = useFavorites();
   
-  // Додавання товару в кошик
+  
   const { addItem } = useCartStore();
   
-  // Відстеження аналітики
+  
   const { trackAddToCart, trackFavorite, trackSelectItem } = useAnalytics();
 
-  // Додавання товару в кошик з повідомленням
+  
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -50,7 +50,7 @@ export default function ProductCard({
     setIsAddingToCart(true);
     
     try {
-      // Створюємо об'єкт товару з необхідними властивостями
+      
       const product = {
         id,
         name,
@@ -65,7 +65,7 @@ export default function ProductCard({
       
       addItem(product);
       
-      // Відстежуємо додавання в кошик
+      
       trackAddToCart({
         id,
         name,
@@ -73,25 +73,25 @@ export default function ProductCard({
         quantity: 1,
       });
       
-      // Показуємо повідомлення лише при додаванні в кошик, не для обраних
+      
       toast.success('Товар додано до кошика!');
     } finally {
-      // Невелика затримка для кращого UX
+      
       setTimeout(() => setIsAddingToCart(false), 300);
     }
   };
 
-  // Перемикач для обраного статусу товару
+  
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const wasFavorite = isFavorite(id);
     toggleFavorite(id);
     
-    // Відстежуємо дію з обраним
+    
     trackFavorite(wasFavorite ? 'remove' : 'add', id);
     
-    // Показуємо відповідне повідомлення залежно від дії
+    
     if (wasFavorite) {
       toast.success('Товар видалено з обраних');
     } else {
@@ -99,7 +99,7 @@ export default function ProductCard({
     }
   };
   
-  // Відстежуємо вибір товару при кліку на картку товару
+  
   const handleProductClick = () => {
     trackSelectItem({
       item_id: String(id),
@@ -112,9 +112,9 @@ export default function ProductCard({
   return (
     <div className="group transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <Link to={`/product/${encodeURIComponent(slug)}`} className="block" onClick={handleProductClick}>
-        {/* Image Container */}
+        {}
         <div className="relative bg-[#F5F5F5] aspect-[3/4] overflow-hidden">
-          {/* Heart Icon */}
+          {}
           <button
             onClick={handleToggleFavorite}
             className="absolute top-3 left-3 z-10 p-1.5 hover:bg-gray-100 transition-colors"
@@ -125,7 +125,7 @@ export default function ProductCard({
             />
           </button>
 
-          {/* Image with WebP support */}
+          {}
           <picture>
             <source
               srcSet={image ? getImageSrcSet(image) : undefined}
@@ -141,9 +141,9 @@ export default function ProductCard({
           </picture>
         </div>
 
-        {/* Content */}
+        {}
         <div className="pt-4">
-          {/* Title */}
+          {}
           <h3
             className="text-xs font-medium uppercase text-center underline underline-offset-4 mb-2 line-clamp-2 min-h-[40px]"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -151,14 +151,14 @@ export default function ProductCard({
             {name}
           </h3>
 
-          {/* Description */}
+          {}
           {description && (
             <p className="text-[10px] text-gray-500 text-center line-clamp-2 mb-3 min-h-[30px]">
               {description}
             </p>
           )}
 
-          {/* Price */}
+          {}
           <div className="text-center mb-3">
             <span
               className="text-lg font-medium"
@@ -168,7 +168,7 @@ export default function ProductCard({
             </span>
           </div>
 
-          {/* Rating */}
+          {}
           <div className="flex justify-center mb-4">
             {[...Array(5)].map((_, i) => (
               <span 
@@ -182,7 +182,7 @@ export default function ProductCard({
         </div>
       </Link>
 
-      {/* Action Button */}
+      {}
       <button
         className="w-full border border-black py-3 text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}

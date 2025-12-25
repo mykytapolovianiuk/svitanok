@@ -24,7 +24,7 @@ function DraggableListItem<T extends DraggableItem>({
   moveItem,
   renderItem,
 }: DraggableListItemProps<T>) {
-  // Simple implementation without drag and drop for now
+  
   return (
     <div>
       {renderItem(item, index, {})}

@@ -1,13 +1,13 @@
 import fetch from 'node-fetch';
 
-const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; // Встав сюди свій ключ
-const CITY_REF = 'db5c88d0-391c-11dd-90d9-001a9297174a'; // Ref міста Суми
+const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; 
+const CITY_REF = 'db5c88d0-391c-11dd-90d9-001a9297174a'; 
 
 async function getWarehouseInfo() {
   console.log('🔄 Отримую інформацію про склади у м. Суми...');
 
   try {
-    // Отримуємо список складів у м. Суми
+    
     const warehouseResponse = await fetch('https://api.novaposhta.ua/v2.0/json/', {
       method: 'POST',
       headers: {

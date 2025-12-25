@@ -19,7 +19,7 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
   const [phone, setPhone] = useState('+380');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Ensure phone starts with +380
+  
   useEffect(() => {
     if (!phone.startsWith('+380')) {
       setPhone('+380');
@@ -69,7 +69,7 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
         
       if (itemError) throw itemError;
       
-      // Production logging removed
+      
       
       toast.success('Замовлення успішно оформлено! Очікуйте дзвінка.');
       setName('');
@@ -85,15 +85,15 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+      {}
       <div 
         className="absolute inset-0 bg-black bg-opacity-50"
         onClick={onClose}
       />
       
-      {/* Modal */}
+      {}
       <div className="relative w-full max-w-md bg-white rounded-none border border-black shadow-xl">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-6 border-b border-black">
           <h2
             className="text-xl font-medium uppercase tracking-[2px]"
@@ -110,7 +110,7 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
           </button>
         </div>
         
-        {/* Product Info */}
+        {}
         <div className="p-6 border-b border-gray-200 bg-gray-50">
           <h3 
             className="font-medium text-base mb-2 uppercase tracking-wide"
@@ -126,7 +126,7 @@ export default function QuickOrderModal({ isOpen, onClose, product }: QuickOrder
           </p>
         </div>
         
-        {/* Form */}
+        {}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-6">
             <div>

@@ -1,12 +1,12 @@
 import fetch from 'node-fetch';
 
-const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; // Встав сюди свій ключ
+const API_KEY = '6e5d454d862f50c90eb47c8e76af5353'; 
 
 async function getCityRef() {
   console.log('🔄 Отримую список міст...');
 
   try {
-    // Отримуємо список міст
+    
     const cityResponse = await fetch('https://api.novaposhta.ua/v2.0/json/', {
       method: 'POST',
       headers: {

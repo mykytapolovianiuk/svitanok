@@ -1,8 +1,4 @@
-/**
- * Unified Analytics Dispatcher
- * Центральний диспетчер для всіх подій аналітики
- * Автоматично відправляє події до GA4, Pixel, GTM та CAPI
- */
+
 
 import * as gtm from './gtm';
 import * as ga4 from './ga4';
@@ -23,17 +19,15 @@ import type {
   CAPIParams,
 } from './types';
 
-/**
- * Initialize all analytics services
- */
+
 export function initAnalytics(): void {
   if (typeof window === 'undefined') return;
   
   if (import.meta.env.DEV) {
-    // Production logging removed
-    // Production logging removed
-    // Production logging removed
-    // Production logging removed
+    
+    
+    
+    
   }
   
   gtm.initGTM();
@@ -41,36 +35,30 @@ export function initAnalytics(): void {
   pixel.initPixel();
   
   if (import.meta.env.DEV) {
-    // Production logging removed
+    
   }
 }
 
-/**
- * Dispatch event to all analytics services
- * @param eventName - Event name
- * @param payload - Event payload
- */
+
 export function dispatch(eventName: string, payload: Record<string, any> = {}): void {
-  // Always push to GTM first (central hub)
+  
   gtm.pushEvent(eventName, payload);
   
-  // Log in test/dev mode
+  
   if (isTestMode()) {
     logTestEvent(eventName, payload);
   } else if (import.meta.env.DEV) {
-    // Production logging removed
+    
   }
 }
 
-/**
- * Track page view across all platforms
- */
+
 export function trackPageView(pagePath: string, pageTitle?: string): void {
   ga4.trackPageView(pagePath, pageTitle);
   pixel.trackPageView();
   gtm.trackPageView(pagePath, pageTitle);
   
-  // Send to CAPI
+  
   capi.sendCAPIEvent('pageView', {
     event_name: 'PageView',
     event_time: Math.floor(Date.now() / 1000),
@@ -79,9 +67,7 @@ export function trackPageView(pagePath: string, pageTitle?: string): void {
   });
 }
 
-/**
- * Track product view
- */
+
 export function trackViewItem(product: {
   id: number | string;
   name: string;
@@ -92,7 +78,7 @@ export function trackViewItem(product: {
   const ga4Product = ga4.formatProductForGA4(product);
   const pixelProduct = pixel.formatProductForPixel(product);
   
-  // GA4
+  
   const ga4Params: GA4ViewItemParams = {
     currency: 'UAH',
     value: product.price,
@@ -100,7 +86,7 @@ export function trackViewItem(product: {
   };
   ga4.trackViewItem(ga4Params);
   
-  // Pixel
+  
   const pixelParams: PixelViewContentParams = {
     content_name: product.name,
     content_category: product.category,
@@ -111,7 +97,7 @@ export function trackViewItem(product: {
   };
   pixel.trackViewContent(pixelParams);
   
-  // GTM
+  
   dispatch('view_item', {
     product_id: String(product.id),
     product_name: product.name,
@@ -120,7 +106,7 @@ export function trackViewItem(product: {
     currency: 'UAH',
   });
   
-  // CAPI
+  
   capi.sendCAPIEvent('viewContent', {
     event_name: 'ViewContent',
     event_time: Math.floor(Date.now() / 1000),
@@ -140,9 +126,7 @@ export function trackViewItem(product: {
   });
 }
 
-/**
- * Track add to cart
- */
+
 export function trackAddToCart(product: {
   id: number | string;
   name: string;
@@ -157,7 +141,7 @@ export function trackAddToCart(product: {
   const ga4Product = ga4.formatProductForGA4({ ...product, quantity });
   const pixelProduct = pixel.formatProductForPixel({ ...product, quantity });
   
-  // GA4
+  
   const ga4Params: GA4AddToCartParams = {
     currency: 'UAH',
     value: value,
@@ -165,7 +149,7 @@ export function trackAddToCart(product: {
   };
   ga4.trackAddToCart(ga4Params);
   
-  // Pixel
+  
   const pixelParams: PixelAddToCartParams = {
     content_name: product.name,
     content_category: product.category,
@@ -176,7 +160,7 @@ export function trackAddToCart(product: {
   };
   pixel.trackAddToCart(pixelParams);
   
-  // GTM
+  
   dispatch('add_to_cart', {
     product_id: String(product.id),
     product_name: product.name,
@@ -186,7 +170,7 @@ export function trackAddToCart(product: {
     currency: 'UAH',
   });
   
-  // CAPI
+  
   capi.sendCAPIEvent('addToCart', {
     event_name: 'AddToCart',
     event_time: Math.floor(Date.now() / 1000),
@@ -206,9 +190,7 @@ export function trackAddToCart(product: {
   });
 }
 
-/**
- * Track remove from cart
- */
+
 export function trackRemoveFromCart(product: {
   id: number | string;
   name: string;
@@ -235,9 +217,7 @@ export function trackRemoveFromCart(product: {
   });
 }
 
-/**
- * Track view cart
- */
+
 export function trackViewCart(items: AnalyticsProduct[], totalValue: number): void {
   ga4.trackViewCart({
     currency: 'UAH',
@@ -252,9 +232,7 @@ export function trackViewCart(items: AnalyticsProduct[], totalValue: number): vo
   });
 }
 
-/**
- * Track begin checkout
- */
+
 export function trackBeginCheckout(items: AnalyticsProduct[], totalValue: number, coupon?: string): void {
   ga4.trackBeginCheckout({
     currency: 'UAH',
@@ -284,7 +262,7 @@ export function trackBeginCheckout(items: AnalyticsProduct[], totalValue: number
     coupon: coupon,
   });
   
-  // CAPI
+  
   capi.sendCAPIEvent('initiateCheckout', {
     event_name: 'InitiateCheckout',
     event_time: Math.floor(Date.now() / 1000),
@@ -303,9 +281,7 @@ export function trackBeginCheckout(items: AnalyticsProduct[], totalValue: number
   });
 }
 
-/**
- * Track add payment info
- */
+
 export function trackAddPaymentInfo(items: AnalyticsProduct[], totalValue: number, paymentType?: string): void {
   ga4.trackAddPaymentInfo({
     currency: 'UAH',
@@ -328,9 +304,7 @@ export function trackAddPaymentInfo(items: AnalyticsProduct[], totalValue: numbe
   });
 }
 
-/**
- * Track add shipping info
- */
+
 export function trackAddShippingInfo(items: AnalyticsProduct[], totalValue: number, shippingTier?: string): void {
   ga4.trackAddShippingInfo({
     currency: 'UAH',
@@ -353,9 +327,7 @@ export function trackAddShippingInfo(items: AnalyticsProduct[], totalValue: numb
   });
 }
 
-/**
- * Track purchase
- */
+
 export function trackPurchase(
   transactionId: string,
   items: AnalyticsProduct[],
@@ -364,7 +336,7 @@ export function trackPurchase(
   shipping?: number,
   coupon?: string
 ): void {
-  // GA4
+  
   ga4.trackPurchase({
     transaction_id: transactionId,
     value: totalValue,
@@ -375,7 +347,7 @@ export function trackPurchase(
     coupon: coupon,
   });
   
-  // Pixel
+  
   const pixelItems = items.map(item => pixel.formatProductForPixel({
     id: item.item_id,
     price: item.price,
@@ -390,7 +362,7 @@ export function trackPurchase(
     num_items: items.length,
   });
   
-  // GTM
+  
   dispatch('purchase', {
     transaction_id: transactionId,
     value: totalValue,
@@ -401,7 +373,7 @@ export function trackPurchase(
     coupon: coupon,
   });
   
-  // CAPI
+  
   capi.sendCAPIEvent('purchase', {
     event_name: 'Purchase',
     event_time: Math.floor(Date.now() / 1000),
@@ -422,18 +394,14 @@ export function trackPurchase(
   });
 }
 
-/**
- * Track search
- */
+
 export function trackSearch(searchTerm: string): void {
   ga4.trackSearch({ search_term: searchTerm });
   pixel.trackSearch({ search_string: searchTerm });
   dispatch('search', { search_term: searchTerm });
 }
 
-/**
- * Track view item list
- */
+
 export function trackViewItemList(items: AnalyticsProduct[], listId?: string, listName?: string): void {
   ga4.trackViewItemList({
     item_list_id: listId,
@@ -448,9 +416,7 @@ export function trackViewItemList(items: AnalyticsProduct[], listId?: string, li
   });
 }
 
-/**
- * Track select item
- */
+
 export function trackSelectItem(product: AnalyticsProduct, listId?: string, listName?: string): void {
   ga4.trackSelectItem({
     item_list_id: listId,
@@ -465,9 +431,7 @@ export function trackSelectItem(product: AnalyticsProduct, listId?: string, list
   });
 }
 
-/**
- * Track UI interactions
- */
+
 export function trackUIInteraction(
   category: string,
   action: string,
@@ -483,9 +447,7 @@ export function trackUIInteraction(
   });
 }
 
-/**
- * Track filter usage
- */
+
 export function trackFilter(filterType: string, filterValue: string | string[]): void {
   dispatch('filter', {
     filter_type: filterType,
@@ -493,9 +455,7 @@ export function trackFilter(filterType: string, filterValue: string | string[]):
   });
 }
 
-/**
- * Track pagination
- */
+
 export function trackPagination(pageNumber: number, pageSize: number, totalPages: number): void {
   dispatch('pagination', {
     page_number: pageNumber,
@@ -504,9 +464,7 @@ export function trackPagination(pageNumber: number, pageSize: number, totalPages
   });
 }
 
-/**
- * Track favorite add/remove
- */
+
 export function trackFavorite(action: 'add' | 'remove', productId: number | string): void {
   dispatch('favorite', {
     action: action,
@@ -514,9 +472,7 @@ export function trackFavorite(action: 'add' | 'remove', productId: number | stri
   });
 }
 
-/**
- * Track banner impression
- */
+
 export function trackBannerImpression(bannerId: string, bannerName: string, bannerType: string): void {
   dispatch('banner_impression', {
     banner_id: bannerId,
@@ -525,9 +481,7 @@ export function trackBannerImpression(bannerId: string, bannerName: string, bann
   });
 }
 
-/**
- * Track banner click
- */
+
 export function trackBannerClick(
   bannerId: string,
   bannerName: string,
@@ -542,9 +496,7 @@ export function trackBannerClick(
   });
 }
 
-/**
- * Track scroll depth
- */
+
 export function trackScrollDepth(depth: '25%' | '50%' | '75%' | '100%'): void {
   dispatch('scroll_depth', {
     depth: depth,
@@ -552,9 +504,7 @@ export function trackScrollDepth(depth: '25%' | '50%' | '75%' | '100%'): void {
   });
 }
 
-/**
- * Track promotion view
- */
+
 export function trackViewPromotion(params: {
   promotion_id?: string;
   promotion_name?: string;
@@ -567,9 +517,7 @@ export function trackViewPromotion(params: {
   gtm.pushEvent('view_promotion', params);
 }
 
-/**
- * Track promotion selection
- */
+
 export function trackSelectPromotion(params: {
   promotion_id?: string;
   promotion_name?: string;

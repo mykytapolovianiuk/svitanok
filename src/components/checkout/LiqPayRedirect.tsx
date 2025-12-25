@@ -10,20 +10,20 @@ export default function LiqPayRedirect({ orderId, amount, description }: LiqPayR
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    // Fetch signature from backend and submit form
+    
     const initiatePayment = async () => {
       try {
-        // Log the data we're sending
+        
         const requestData = {
-          orderId: orderId.toString(), // Ensure orderId is a string
+          orderId: orderId.toString(), 
           amount,
           currency: 'UAH',
           description,
         };
         
-        // Production logging removed
         
-        // Request signature from backend
+        
+        
         const response = await fetch('/api/liqpay-sign', {
           method: 'POST',
           headers: {
@@ -32,7 +32,7 @@ export default function LiqPayRedirect({ orderId, amount, description }: LiqPayR
           body: JSON.stringify(requestData),
         });
 
-        // Production logging removed
+        
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -45,33 +45,33 @@ export default function LiqPayRedirect({ orderId, amount, description }: LiqPayR
 
         const { data, signature } = result;
 
-        // Set form values
+        
         const form = formRef.current;
         if (form) {
-          // Set data field
+          
           const dataInput = document.createElement('input');
           dataInput.type = 'hidden';
           dataInput.name = 'data';
           dataInput.value = data;
           form.appendChild(dataInput);
 
-          // Set signature field
+          
           const signatureInput = document.createElement('input');
           signatureInput.type = 'hidden';
           signatureInput.name = 'signature';
           signatureInput.value = signature;
           form.appendChild(signatureInput);
 
-          // Submit form
+          
           form.submit();
         }
       } catch (error) {
-        // Error logging handled by Sentry in production
+        
         alert('Виникла помилка при ініціалізації оплати. Спробуйте ще раз.');
       }
     };
 
-    // Auto-submit payment form
+    
     initiatePayment();
   }, [orderId, amount, description]);
 

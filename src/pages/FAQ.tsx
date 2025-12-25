@@ -112,15 +112,15 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-[#F5F1EA]">
-      {/* Hero Section with Beige Background */}
+      {}
       <div className="bg-[rgba(255,200,140,0.4)] py-8">
         <div className="container mx-auto px-4 md:px-8 max-w-[1440px]">
-          {/* Breadcrumbs */}
+          {}
           <div className="text-sm mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             головна &gt; питання
           </div>
           
-          {/* Page Title */}
+          {}
           <h1 
             className="text-3xl md:text-4xl font-medium uppercase tracking-[0.2em] text-center mb-2"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -130,7 +130,7 @@ export default function FAQ() {
         </div>
       </div>
 
-      {/* Content Section */}
+      {}
       <div className="container mx-auto px-4 md:px-8 max-w-[1440px] py-12">
         <div className="bg-white p-6 md:p-8">
           <div className="space-y-8">

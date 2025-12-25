@@ -23,32 +23,32 @@ export default function AddToCartAnimation({
   useEffect(() => {
     if (!isAnimating) return;
 
-    // Reset position
+    
     setPosition(startPosition);
     setOpacity(1);
     setScale(1);
 
-    // Animation timeline
-    const duration = 600; // 600ms
+    
+    const duration = 600; 
     const startTime = Date.now();
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // Easing function (ease-out)
+      
       const easeOut = 1 - Math.pow(1 - progress, 3);
 
-      // Calculate current position
+      
       const currentX = startPosition.x + (endPosition.x - startPosition.x) * easeOut;
       const currentY = startPosition.y + (endPosition.y - startPosition.y) * easeOut;
 
-      // Scale and opacity changes
+      
       if (progress < 0.3) {
-        // Scale up at the beginning
+        
         setScale(1 + progress * 0.5);
       } else if (progress > 0.7) {
-        // Scale down and fade out at the end
+        
         setScale(1 - (progress - 0.7) * 2);
         setOpacity(1 - (progress - 0.7) * 3.33);
       }

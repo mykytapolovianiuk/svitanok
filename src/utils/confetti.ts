@@ -1,8 +1,6 @@
 import confetti from 'canvas-confetti';
 
-/**
- * Запускає confetti анімацію при успішному замовленні
- */
+
 export function triggerConfetti() {
   const duration = 3000;
   const animationEnd = Date.now() + duration;
@@ -21,7 +19,7 @@ export function triggerConfetti() {
 
     const particleCount = 50 * (timeLeft / duration);
 
-    // Створюємо конфеті з різних позицій
+    
     confetti({
       ...defaults,
       particleCount,
@@ -34,7 +32,7 @@ export function triggerConfetti() {
     });
   }, 250);
 
-  // Фінальний вибух
+  
   setTimeout(() => {
     confetti({
       ...defaults,

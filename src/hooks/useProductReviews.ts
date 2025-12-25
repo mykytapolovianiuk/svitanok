@@ -1,6 +1,4 @@
-/**
- * Hook для отримання статистики відгуків товару
- */
+
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -40,11 +38,11 @@ export function useProductReviews(productId: number | string) {
         };
       }
 
-      // Calculate average rating
+      
       const sum = reviews.reduce((acc, review) => acc + (review.rating || 0), 0);
       const averageRating = sum / totalReviews;
 
-      // Calculate rating distribution
+      
       const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
       reviews.forEach((review) => {
         const rating = review.rating;
@@ -54,13 +52,13 @@ export function useProductReviews(productId: number | string) {
       });
 
       return {
-        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+        averageRating: Math.round(averageRating * 10) / 10, 
         totalReviews,
         ratingDistribution: distribution,
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000, 
+    gcTime: 10 * 60 * 1000, 
   });
 }
 

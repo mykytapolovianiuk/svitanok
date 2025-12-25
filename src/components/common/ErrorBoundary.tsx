@@ -13,10 +13,7 @@ interface State {
   error: Error | null;
 }
 
-/**
- * Error Boundary компонент для перехоплення помилок React
- * Використовується для запобігання падіння всього додатку при помилці в одному компоненті
- */
+
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -34,16 +31,16 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Логування помилки
+    
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    // Відправити помилку в Sentry
+    
     captureException(error, {
       errorInfo,
       componentStack: errorInfo.componentStack,
     });
     
-    // Виклик callback якщо він переданий
+    
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }

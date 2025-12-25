@@ -79,7 +79,7 @@ export default function Admin() {
     try {
       setLoading(true);
 
-      // Fetch orders
+      
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
@@ -87,14 +87,14 @@ export default function Admin() {
 
       if (ordersError) throw ordersError;
 
-      // Fetch products
+      
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*');
 
       if (productsError) throw productsError;
 
-      // Fetch order items for top products
+      
       const { data: itemsData, error: itemsError } = await supabase
         .from('order_items')
         .select('*, product:products(*)')
@@ -102,7 +102,7 @@ export default function Admin() {
 
       if (itemsError) throw itemsError;
 
-      // Calculate order stats
+      
       const orders = ordersData || [];
       const orderStats = {
         total: orders.length,
@@ -113,7 +113,7 @@ export default function Admin() {
         cancelled: orders.filter((o: any) => o.status === 'cancelled').length,
       };
 
-      // Calculate revenue
+      
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -137,7 +137,7 @@ export default function Admin() {
           .reduce((sum: number, o: any) => sum + Number(o.total_price || 0), 0),
       };
 
-      // Calculate product stats
+      
       const products = productsData || [];
       const productStats = {
         total: products.length,
@@ -145,10 +145,10 @@ export default function Admin() {
         outOfStock: products.filter((p: any) => !p.in_stock).length,
       };
 
-      // Get recent orders (last 5)
+      
       const recentOrders = orders.slice(0, 5);
 
-      // Calculate top products
+      
       const productCounts: Record<string, { count: number; revenue: number; product: any }> = {};
       (itemsData || []).forEach((item: any) => {
         const productId = item.product_id;
@@ -200,7 +200,7 @@ export default function Admin() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           Панель управління
@@ -210,7 +210,7 @@ export default function Admin() {
         </p>
       </div>
 
-      {/* Revenue Stats */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
           <div className="flex items-center justify-between">
@@ -261,9 +261,9 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Orders & Products Stats */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Orders Status */}
+        {}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             Статуси замовлень
@@ -319,7 +319,7 @@ export default function Admin() {
           </div>
         </div>
         
-        {/* Products Status */}
+        {}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
             Статус товарів
@@ -356,9 +356,9 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Recent Orders & Top Products */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
+        {}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -410,7 +410,7 @@ export default function Admin() {
           </div>
         </div>
         
-        {/* Top Products */}
+        {}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -455,7 +455,7 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           Швидкі дії

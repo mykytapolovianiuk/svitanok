@@ -10,10 +10,7 @@ interface State {
   error: Error | null;
 }
 
-/**
- * Error Boundary component to catch and handle React rendering errors
- * Prevents the entire app from crashing when a component throws an error
- */
+
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -31,13 +28,13 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log the error to console in development
+    
     if (process.env.NODE_ENV === 'development') {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
     
-    // In production, you might want to send this to an error reporting service
-    // Example: Sentry.captureException(error, { errorInfo });
+    
+    
   }
 
   handleRetry = () => {
@@ -49,12 +46,12 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // If a fallback component is provided, use it
+      
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default error UI
+      
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">

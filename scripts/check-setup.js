@@ -1,7 +1,4 @@
-/**
- * Скрипт для перевірки налаштування проекту
- * Перевіряє підключення до Supabase та наявність необхідних змінних оточення
- */
+
 
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
@@ -11,7 +8,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Завантажити змінні оточення
+
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -20,7 +17,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 console.log('🔍 Перевірка налаштування проекту...\n');
 
-// Перевірка змінних оточення
+
 console.log('📋 Змінні оточення:');
 console.log('  VITE_SUPABASE_URL:', supabaseUrl ? '✅ Налаштовано' : '❌ Відсутня');
 console.log('  VITE_SUPABASE_ANON_KEY:', supabaseKey ? '✅ Налаштовано' : '❌ Відсутня');
@@ -35,13 +32,13 @@ console.log('  VITE_NOVA_POSHTA_API_KEY:', process.env.VITE_NOVA_POSHTA_API_KEY 
 console.log('  RESEND_API_KEY:', process.env.RESEND_API_KEY ? '✅ Налаштовано' : '⚠️  Відсутня');
 console.log('');
 
-// Перевірка підключення до Supabase
+
 if (supabaseUrl && supabaseKey) {
   console.log('🔌 Перевірка підключення до Supabase...');
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   try {
-    // Перевірка таблиці products
+    
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select('id, name')
@@ -54,7 +51,7 @@ if (supabaseUrl && supabaseKey) {
       console.log(`  📦 Кількість товарів: ${products ? products.length : 0} (перевірено 1 запис)`);
     }
     
-    // Перевірка таблиці orders
+    
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
       .select('id')
@@ -66,7 +63,7 @@ if (supabaseUrl && supabaseKey) {
       console.log('  ✅ Підключення до orders: OK');
     }
     
-    // Перевірка таблиці promo_codes
+    
     const { data: promoCodes, error: promoCodesError } = await supabase
       .from('promo_codes')
       .select('id, code')
@@ -78,7 +75,7 @@ if (supabaseUrl && supabaseKey) {
       console.log('  ✅ Підключення до promo_codes: OK');
     }
     
-    // Перевірка таблиці profiles
+    
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, role')

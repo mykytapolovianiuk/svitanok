@@ -9,9 +9,7 @@ interface ErrorFallbackProps {
   message?: string;
 }
 
-/**
- * Компонент для відображення помилки з можливістю повторної спроби
- */
+
 export default function ErrorFallback({
   error,
   resetErrorBoundary,

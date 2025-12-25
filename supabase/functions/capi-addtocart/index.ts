@@ -1,5 +1,5 @@
-// Функція Supabase Edge - Подія Meta Conversions API AddToCart
-// Відстеження на стороні сервера для подій додавання в кошик
+
+
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, logCorsAttempt } from "../_shared/cors.ts";

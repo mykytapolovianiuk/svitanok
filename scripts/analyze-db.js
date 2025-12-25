@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Load environment variables
+
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Supabase configuration
+
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -14,10 +14,10 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
-// Create Supabase client
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Function to fetch and display table structure
+
 async function analyzeTable(tableName, queryModifier = null) {
   try {
     console.log(`\n🔍 Analyzing table: ${tableName}`);
@@ -25,7 +25,7 @@ async function analyzeTable(tableName, queryModifier = null) {
     
     let query = supabase.from(tableName).select('*').limit(1);
     
-    // Apply custom query modifier if provided
+    
     if (queryModifier) {
       query = queryModifier(query);
     }
@@ -42,14 +42,14 @@ async function analyzeTable(tableName, queryModifier = null) {
       return;
     }
     
-    // Display structure
+    
     console.log(`✅ Sample record from ${tableName}:`);
     Object.keys(data).forEach(key => {
       const value = data[key];
       const type = typeof value;
       console.log(`  ${key}: ${type}`);
       
-      // Show detailed structure for objects
+      
       if (type === 'object' && value !== null) {
         if (Array.isArray(value)) {
           console.log(`    └─ Array[${value.length}]`);
@@ -67,14 +67,14 @@ async function analyzeTable(tableName, queryModifier = null) {
   }
 }
 
-// Main analysis function
+
 async function analyzeDatabase() {
   console.log('📊 Supabase Database Structure Analysis');
   console.log('=====================================');
   console.log(`🔗 Connecting to: ${supabaseUrl}`);
   
   try {
-    // Test connection
+    
     const { data: test, error: testError } = await supabase.from('products').select('id').limit(1);
     if (testError) {
       console.error('❌ Connection failed:', testError.message);
@@ -82,7 +82,7 @@ async function analyzeDatabase() {
     }
     console.log('✅ Connection successful\n');
     
-    // Analyze key tables
+    
     await analyzeTable('products');
     await analyzeTable('orders');
     await analyzeTable('order_items');
@@ -101,5 +101,5 @@ async function analyzeDatabase() {
   }
 }
 
-// Run analysis
+
 analyzeDatabase();

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 
-// Custom debounce function
+
 function useAsyncDebounce<T extends (...args: any[]) => any>(func: T, delay: number): T & { cancel: () => void } {
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -14,7 +14,7 @@ function useAsyncDebounce<T extends (...args: any[]) => any>(func: T, delay: num
     }, delay);
   }) as T, [func, delay]);
 
-  // Add cancel method
+  
   (debouncedFunc as any).cancel = () => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -42,7 +42,7 @@ export default function AsyncSelect({
   error,
   isLoading: externalIsLoading = false,
 }: AsyncSelectProps) {
-  // Production logging removed
+  
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState<{ value: string; label: string; ref?: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -59,7 +59,7 @@ export default function AsyncSelect({
     setInternalIsLoading(true);
     try {
       const results = await loadOptions(input);
-      // Production logging removed
+      
       setOptions(results);
     } catch (error) {
       console.error('Error loading options:', error);
@@ -71,17 +71,17 @@ export default function AsyncSelect({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Production logging removed
+    
     setInputValue(value);
     debouncedLoadOptions(value);
   };
 
   const handleSelect = (option: { value: string; label: string; ref?: string }) => {
-    // Production logging removed
+    
     onChange(option);
     setIsOpen(false);
     setInputValue(option.label);
-    // Cancel any pending debounced calls
+    
     debouncedLoadOptions.cancel();
   };
 
@@ -90,14 +90,14 @@ export default function AsyncSelect({
   };
 
   const handleBlur = (e: React.FocusEvent) => {
-    // Delay to allow click on options
+    
     setTimeout(() => {
       setIsOpen(false);
     }, 200);
   };
 
   const displayValue = value?.label || inputValue || '';
-  // Production logging removed
+  
 
   return (
     <div className="relative mb-4">

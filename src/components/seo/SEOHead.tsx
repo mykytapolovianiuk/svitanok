@@ -1,7 +1,4 @@
-/**
- * SEO Head Component
- * Manages meta tags, Open Graph, and Twitter Card tags
- */
+
 
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
@@ -48,7 +45,7 @@ export default function SEOHead({
       {keywords && <meta name="keywords" content={keywords} />}
       {noindex && <meta name="robots" content="noindex, nofollow" />}
       
-      {/* Open Graph tags */}
+      {}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={fullDescription} />
       <meta property="og:image" content={fullImage} />
@@ -56,13 +53,13 @@ export default function SEOHead({
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content={siteName} />
       
-      {/* Twitter Card tags */}
+      {}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={fullDescription} />
       <meta name="twitter:image" content={fullImage} />
       
-      {/* Canonical URL */}
+      {}
       <link rel="canonical" href={canonicalUrl} />
     </Helmet>
   );

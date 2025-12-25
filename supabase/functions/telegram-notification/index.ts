@@ -1,4 +1,4 @@
-// Supabase Edge Function for sending Telegram notifications on new orders
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -26,7 +26,7 @@ interface OrderItem {
   } | null;
 }
 
-// CORS headers to allow requests from any origin
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -34,7 +34,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle preflight OPTIONS requests
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -43,7 +43,7 @@ serve(async (req) => {
   }
 
   try {
-    // Get environment variables
+    
     const BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
     const CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
@@ -65,7 +65,7 @@ serve(async (req) => {
       );
     }
 
-    // Get the order data from the request (Supabase webhook format)
+    
     const { record }: { record: OrderData } = await req.json();
 
     if (!record || !record.id) {
@@ -76,10 +76,10 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client to fetch order items
+    
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Fetch order items with product names
+    
     const { data: orderItems, error: itemsError } = await supabase
       .from('order_items')
       .select(`
@@ -94,10 +94,10 @@ serve(async (req) => {
 
     if (itemsError) {
       console.error('Error fetching order items:', itemsError);
-      // Continue anyway, we'll show items as unavailable
+      
     }
 
-    // Format delivery method for display
+    
     const formatDeliveryMethod = (method: string | null): string => {
       if (!method) return 'Не вказано';
       
@@ -115,7 +115,7 @@ serve(async (req) => {
       }
     };
 
-    // Format address from delivery_info
+    
     const formatAddress = (deliveryInfo: OrderData['delivery_info']): string => {
       if (!deliveryInfo) return 'Не вказано';
       
@@ -127,10 +127,10 @@ serve(async (req) => {
       return parts.length > 0 ? parts.join(', ') : 'Не вказано';
     };
 
-    // Format order ID (show first 8 characters)
+    
     const orderIdShort = record.id.substring(0, 8).toUpperCase();
 
-    // Build the message according to requirements
+    
     let message = `🛒 Нове замовлення #${orderIdShort}\n\n`;
     
     message += `👤 Клієнт: ${record.customer_name || 'Не вказано'}\n`;
@@ -139,7 +139,7 @@ serve(async (req) => {
     
     message += `📦 Товари:\n`;
     
-    // Add items list
+    
     if (orderItems && orderItems.length > 0) {
       orderItems.forEach((item: OrderItem) => {
         const productName = item.products?.name || `Товар #${item.product_id}`;
@@ -159,7 +159,7 @@ serve(async (req) => {
 
     console.log('Formatted message:', message);
 
-    // Send message to Telegram
+    
     const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
     
     const response = await fetch(telegramUrl, {
@@ -170,7 +170,7 @@ serve(async (req) => {
       body: JSON.stringify({
         chat_id: CHAT_ID,
         text: message,
-        parse_mode: 'HTML', // Enable HTML formatting if needed
+        parse_mode: 'HTML', 
       }),
     });
 
@@ -178,12 +178,12 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('Telegram API error:', errorText);
       
-      // Try to parse error for better logging
+      
       try {
         const errorData = JSON.parse(errorText);
         console.error('Telegram API error details:', errorData);
       } catch {
-        // Ignore parse errors
+        
       }
       
       return new Response(

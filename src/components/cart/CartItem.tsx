@@ -35,7 +35,7 @@ export default function CartItem({
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200 relative">
-      {/* Image */}
+      {}
       <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded overflow-hidden border border-black">
         <img
           src={image || '/placeholder-product.jpg'}
@@ -44,7 +44,7 @@ export default function CartItem({
         />
       </div>
 
-      {/* Info */}
+      {}
       <div className="flex-1">
         <h3
           className="font-medium text-sm uppercase tracking-[0.5px] mb-1 line-clamp-2"
@@ -55,7 +55,7 @@ export default function CartItem({
           </a>
         </h3>
 
-        {/* Price */}
+        {}
         <p
           className="text-base font-medium mb-3"
           style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -63,7 +63,7 @@ export default function CartItem({
           {price.toFixed(2)} ₴
         </p>
 
-        {/* Quantity Controls - Centered below name+price */}
+        {}
         <div className="flex justify-center">
           <div className="flex items-center gap-4">
             <button
@@ -88,7 +88,7 @@ export default function CartItem({
         </div>
       </div>
 
-      {/* Remove Button - Top Right */}
+      {}
       <button
         onClick={() => removeItem(id)}
         className="absolute top-0 right-0 text-gray-500 hover:text-red-500"

@@ -13,7 +13,7 @@ export default function Catalog() {
   const [searchParams] = useSearchParams();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Filter states
+  
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
@@ -23,62 +23,62 @@ export default function Catalog() {
   const [currentPage, setCurrentPage] = useState(1);
   const [problemTags, setProblemTags] = useState<string[]>([]);
 
-  // Get category, search query, problem, and ingredient from URL if present
+  
   const category = searchParams.get('category') || undefined;
   const urlSearchQuery = searchParams.get('q') || undefined;
   const problem = searchParams.get('problem') || undefined;
   const ingredient = searchParams.get('ingredient') || undefined;
   
-  // Combine search query with ingredient if present
+  
   const searchQuery = ingredient ? ingredient : urlSearchQuery;
 
-  // Update problem tags when problem parameter changes
+  
   useEffect(() => {
     if (problem) {
       setProblemTags([problem]);
       setSelectedProblems([problem]);
     } else if (!problem && problemTags.length > 0) {
-      // Clear if problem param is removed
+      
       setProblemTags([]);
       setSelectedProblems([]);
     }
   }, [problem]);
 
-  // Update ingredient search when ingredient parameter changes
+  
   useEffect(() => {
     if (ingredient) {
-      // Ingredient will be used as searchQuery in useProducts
-      // No need to set state, it's already in the URL
+      
+      
     }
   }, [ingredient]);
 
-  // Fetch products
+  
   const { products, loading, error, totalCount, totalPages } = useProducts({
     category,
     minPrice,
     maxPrice,
     brands: selectedBrands,
-    // Use selectedCategories for category filtering
+    
     problems: selectedCategories,
     sortBy,
     page: currentPage,
     pageSize: 12,
-    searchQuery: urlSearchQuery, // Only use q parameter for search
-    problemTags: problem ? [problem] : problemTags, // Use problem from URL if present
-    ingredients: ingredient ? [ingredient] : [], // Use ingredient from URL if present
+    searchQuery: urlSearchQuery, 
+    problemTags: problem ? [problem] : problemTags, 
+    ingredients: ingredient ? [ingredient] : [], 
   });
 
-  // Analytics tracking
+  
   const { trackSearch, trackFilter, trackPagination, trackViewItemList } = useAnalytics();
 
-  // Track search
+  
   useEffect(() => {
     if (searchQuery) {
       trackSearch(searchQuery);
     }
   }, [searchQuery, trackSearch]);
 
-  // Track filters
+  
   useEffect(() => {
     if (selectedBrands.length > 0) {
       trackFilter('brand', selectedBrands);
@@ -94,14 +94,14 @@ export default function Catalog() {
     }
   }, [selectedBrands, selectedCategories, selectedProblems, minPrice, maxPrice, trackFilter]);
 
-  // Track pagination
+  
   useEffect(() => {
     if (currentPage > 1) {
       trackPagination(currentPage, 12, totalPages);
     }
   }, [currentPage, totalPages, trackPagination]);
 
-  // Track view item list
+  
   const analyticsProducts = useMemo(() => {
     return products.map((product, index) => formatProductForGA4({
       id: product.id,
@@ -124,22 +124,22 @@ export default function Catalog() {
   const handlePriceChange = (min: number, max: number) => {
     setMinPrice(min);
     setMaxPrice(max);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   const handleBrandsChange = (brands: string[]) => {
     setSelectedBrands(brands);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   const handleCategoriesChange = (categories: string[]) => {
     setSelectedCategories(categories);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   const handleProblemsChange = (problems: string[]) => {
     setSelectedProblems(problems);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -152,7 +152,7 @@ export default function Catalog() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Generate pagination numbers
+  
   const getPaginationRange = () => {
     const delta = 2;
     const range: (number | string)[] = [];
@@ -182,7 +182,7 @@ export default function Catalog() {
     <>
       <Breadcrumbs />
       <div className="container mx-auto px-4 py-8">
-      {/* Header */}
+      {}
       <div className="text-center mb-8">
         <h1 
           className="text-3xl font-medium uppercase mb-2"
@@ -198,7 +198,7 @@ export default function Catalog() {
         </p>
       </div>
 
-      {/* Mobile Filters Button */}
+      {}
       <div className="lg:hidden mb-6">
         <button
           onClick={() => setShowMobileFilters(true)}
@@ -210,7 +210,7 @@ export default function Catalog() {
         </button>
       </div>
 
-          {/* Mobile Filters Drawer */}
+          {}
       {showMobileFilters && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
@@ -245,7 +245,7 @@ export default function Catalog() {
       )}
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
-        {/* Desktop Sidebar */}
+        {}
         <aside className="hidden lg:block w-64 flex-shrink-0">
           <div className="sticky top-4">
             <FilterSidebar
@@ -262,9 +262,9 @@ export default function Catalog() {
           </div>
         </aside>
 
-        {/* Main Content */}
+        {}
         <div className="flex-1 min-w-0">
-          {/* Header with Sort */}
+          {}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
             <p
               className="text-xs sm:text-sm text-gray-600"
@@ -293,18 +293,18 @@ export default function Catalog() {
             </div>
           </div>
 
-          {/* Loading State */}
+          {}
           {loading ? (
             <ProductGridSkeleton count={12} />
           ) : error ? (
-            /* Error State */
+            
             <div className="text-center py-12">
               <p className="text-red-600" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 {error}
               </p>
             </div>
           ) : (
-            /* Products Grid */
+            
             <>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
@@ -322,7 +322,7 @@ export default function Catalog() {
                 ))}
               </div>
 
-              {/* Empty State */}
+              {}
               {products.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -331,10 +331,10 @@ export default function Catalog() {
                 </div>
               )}
 
-              {/* Pagination */}
+              {}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-12">
-                  {/* Previous */}
+                  {}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -343,7 +343,7 @@ export default function Catalog() {
                     <ChevronLeft size={16} />
                   </button>
 
-                  {/* Page Numbers */}
+                  {}
                   {getPaginationRange().map((page, index) => (
                     <button
                       key={index}
@@ -360,7 +360,7 @@ export default function Catalog() {
                     </button>
                   ))}
 
-                  {/* Next */}
+                  {}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}

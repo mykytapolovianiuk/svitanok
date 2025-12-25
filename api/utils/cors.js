@@ -1,7 +1,4 @@
-/**
- * CORS utility для безпечної обробки Cross-Origin запитів
- * Дозволяє тільки дозволені домени
- */
+
 
 function getCorsHeaders(origin) {
   const allowedOrigins = [
@@ -12,7 +9,7 @@ function getCorsHeaders(origin) {
       : [])
   ];
 
-  // Якщо origin не вказано або не дозволений, використовуємо перший дозволений
+  
   const isAllowed = origin && allowedOrigins.includes(origin);
   const allowedOrigin = isAllowed ? origin : allowedOrigins[0];
 
@@ -27,7 +24,7 @@ function getCorsHeaders(origin) {
 function logCorsAttempt(origin, allowedOrigins) {
   if (process.env.NODE_ENV === 'development') {
     if (origin && !allowedOrigins.includes(origin)) {
-      // CORS warning in production
+      
     }
   }
 }

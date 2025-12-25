@@ -1,7 +1,4 @@
-/**
- * Email service using Resend
- * Handles order confirmations and status updates
- */
+
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://svitanok.com';
 const SITE_NAME = 'Svitanok';
@@ -28,9 +25,7 @@ interface OrderData {
   orderDate: string;
 }
 
-/**
- * Send order confirmation email
- */
+
 export async function sendOrderConfirmation(orderData: OrderData): Promise<boolean> {
   try {
     const html = generateOrderConfirmationHTML(orderData);
@@ -55,7 +50,7 @@ export async function sendOrderConfirmation(orderData: OrderData): Promise<boole
       return false;
     }
 
-    // Production logging removed
+    
     return true;
   } catch (error) {
     console.error('[Email] Error sending order confirmation:', error);
@@ -63,9 +58,7 @@ export async function sendOrderConfirmation(orderData: OrderData): Promise<boole
   }
 }
 
-/**
- * Send order status update email
- */
+
 export async function sendOrderStatusUpdate(
   email: string,
   orderId: string,
@@ -95,7 +88,7 @@ export async function sendOrderStatusUpdate(
       return false;
     }
 
-    // Production logging removed
+    
     return true;
   } catch (error) {
     console.error('[Email] Error sending status update:', error);
@@ -232,7 +225,7 @@ function generateStatusUpdateHTML(orderId: string, statusText: string, ttn?: str
 }
 
 function escapeHtml(text: string): string {
-  // Server-side safe HTML escaping
+  
   return String(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

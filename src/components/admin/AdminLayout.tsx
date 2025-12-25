@@ -29,7 +29,7 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     try {
-      // Instead of signing out completely, just navigate to profile page
+      
       toast.success('Вихід з адмінки');
       navigate('/account');
     } catch (error: any) {
@@ -39,7 +39,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-100 overflow-hidden">
-      {/* Mobile sidebar */}
+      {}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)}></div>
@@ -99,7 +99,7 @@ export default function AdminLayout() {
         </div>
       )}
 
-      {/* Static sidebar for desktop */}
+      {}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-30">
         <div className="flex flex-col flex-grow pt-5 bg-white border-r border-gray-200 overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-4 pb-4 border-b border-gray-200">
@@ -160,7 +160,7 @@ export default function AdminLayout() {
             <h1 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               SVITANOK Admin
             </h1>
-            <div className="w-10" /> {/* Spacer */}
+            <div className="w-10" /> {}
           </div>
         </div>
         <main className="flex-1 bg-gray-100">

@@ -4,7 +4,7 @@ export default function Returns() {
   return (
     <div className="min-h-screen bg-[#FFF2E1] py-8 sm:py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-        {/* Header */}
+        {}
         <div className="text-center mb-12 sm:mb-16">
           <h1 
             className="text-3xl sm:text-4xl md:text-5xl font-light text-gray-900 mb-4 uppercase tracking-[2px]"
@@ -14,7 +14,7 @@ export default function Returns() {
           </h1>
         </div>
 
-        {/* Content */}
+        {}
         <div className="bg-white rounded-none border border-black p-6 sm:p-8">
           <div className="prose prose-gray max-w-none">
             <div className="flex items-start gap-4 mb-8">

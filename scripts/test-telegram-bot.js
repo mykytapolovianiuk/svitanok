@@ -1,12 +1,4 @@
-/**
- * Test script for Telegram bot notification
- * Usage: node scripts/test-telegram-bot.js
- * 
- * Make sure to set environment variables:
- * - TELEGRAM_BOT_TOKEN
- * - TELEGRAM_CHAT_ID
- * - SUPABASE_URL (optional, for full test)
- */
+
 
 import dotenv from 'dotenv';
 import path from 'path';
@@ -15,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables
+
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;

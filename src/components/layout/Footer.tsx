@@ -30,7 +30,7 @@ export default function Footer() {
     <footer className="mt-16 font-sans" style={{ backgroundColor: 'rgba(255, 200, 140, 0.7)' }}>
       <div className="container mx-auto px-4 md:px-8 py-8 md:py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {/* Column 1: Brand & Social */}
+          {}
           <div className="col-span-2 md:col-span-1">
             <h3 
               className="text-lg md:text-xl font-bold text-text-main mb-3 md:mb-4 tracking-wider"
@@ -51,7 +51,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Категорії */}
+          {}
           <div className="col-span-1">
             <h4 
               className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
@@ -74,7 +74,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Допомога */}
+          {}
           <div className="col-span-1">
             <h4 
               className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
@@ -113,7 +113,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Контакти */}
+          {}
           <div className="col-span-2 md:col-span-1">
             <h4 
               className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
@@ -133,7 +133,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Copyright & Policies */}
+        {}
         <div className="border-t border-gray-400 mt-6 md:mt-8 pt-4 md:pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 text-xs md:text-sm text-text-main">
             <p style={{ fontFamily: 'Montserrat, sans-serif' }}>

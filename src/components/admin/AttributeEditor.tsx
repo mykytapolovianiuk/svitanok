@@ -13,7 +13,7 @@ interface AttributeEditorProps {
 }
 
 export default function AttributeEditor({ value, onChange }: AttributeEditorProps) {
-  // Convert object to array format for editing
+  
   const objectToArray = (obj: Record<string, any>): AttributeRow[] => {
     if (!obj) return [{ key: '', value: '' }];
     return Object.entries(obj).map(([key, value]) => ({
@@ -22,7 +22,7 @@ export default function AttributeEditor({ value, onChange }: AttributeEditorProp
     }));
   };
 
-  // Convert array format back to object
+  
   const arrayToObject = (arr: AttributeRow[]): Record<string, any> => {
     const obj: Record<string, any> = {};
     arr.forEach(({ key, value }) => {
@@ -37,16 +37,16 @@ export default function AttributeEditor({ value, onChange }: AttributeEditorProp
   const [attributeKeys, setAttributeKeys] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch all existing attribute keys from the database
+  
   useEffect(() => {
     const fetchAttributeKeys = async () => {
       try {
-        // Get all unique attribute keys from products
+        
         const { data, error } = await supabase.rpc('get_unique_attribute_keys');
         
         if (error) {
           console.error('Error fetching attribute keys:', error);
-          // Fallback to fetching from existing products if RPC fails
+          
           const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('attributes');
@@ -71,7 +71,7 @@ export default function AttributeEditor({ value, onChange }: AttributeEditorProp
     fetchAttributeKeys();
   }, []);
 
-  // Update parent when attributes change
+  
   useEffect(() => {
     const newObj = arrayToObject(attributes);
     onChange(newObj);
@@ -96,7 +96,7 @@ export default function AttributeEditor({ value, onChange }: AttributeEditorProp
     const newAttributes = [...attributes];
     newAttributes[index][field] = newValue;
     
-    // Validation
+    
     const keys = newAttributes.map(attr => attr.key).filter(key => key.trim() !== '');
     const uniqueKeys = new Set(keys);
     

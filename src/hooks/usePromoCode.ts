@@ -31,16 +31,13 @@ interface UsePromoCodeResult {
 
 const STORAGE_KEY = 'applied_promo_code';
 
-/**
- * Hook для роботи з промокодами
- * Підтримує валідацію, застосування та збереження в localStorage
- */
+
 export function usePromoCode(): UsePromoCodeResult {
   const { appliedCode, setAppliedCode, clearPromoCode } = usePromoCodeStore();
   const [isLoading, setIsLoading] = useState(false);
   const { trackUIInteraction } = useAnalytics();
 
-  // Синхронізація з localStorage для сумісності
+  
   useEffect(() => {
     const savedCode = localStorage.getItem(STORAGE_KEY);
     if (savedCode && !appliedCode) {
@@ -54,9 +51,7 @@ export function usePromoCode(): UsePromoCodeResult {
     }
   }, [appliedCode, setAppliedCode]);
 
-  /**
-   * Валідація промокоду
-   */
+  
   const validateCode = async (
     code: string,
     orderTotal: number
@@ -79,7 +74,7 @@ export function usePromoCode(): UsePromoCodeResult {
 
       const promoCode = data as PromoCode;
 
-      // Перевірка терміну дії
+      
       const now = new Date();
       if (promoCode.valid_from && new Date(promoCode.valid_from) > now) {
         return { valid: false, error: 'Промокод ще не активний' };
@@ -88,7 +83,7 @@ export function usePromoCode(): UsePromoCodeResult {
         return { valid: false, error: 'Промокод вже недійсний' };
       }
 
-      // Перевірка мінімальної суми замовлення
+      
       if (orderTotal < promoCode.min_order_amount) {
         return {
           valid: false,
@@ -96,7 +91,7 @@ export function usePromoCode(): UsePromoCodeResult {
         };
       }
 
-      // Перевірка кількості використань
+      
       if (promoCode.max_uses !== null && promoCode.used_count >= promoCode.max_uses) {
         return { valid: false, error: 'Промокод вже використано максимальну кількість разів' };
       }
@@ -108,9 +103,7 @@ export function usePromoCode(): UsePromoCodeResult {
     }
   };
 
-  /**
-   * Застосування промокоду
-   */
+  
   const applyCode = async (code: string, orderTotal: number): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -124,7 +117,7 @@ export function usePromoCode(): UsePromoCodeResult {
 
       const promoCode = validation.promoCode;
 
-      // Перевірка, чи промокод вже застосований
+      
       if (appliedCode?.code === promoCode.code) {
         toast.error('Цей промокод вже застосовано');
         return false;
@@ -147,9 +140,7 @@ export function usePromoCode(): UsePromoCodeResult {
     }
   };
 
-  /**
-   * Видалення промокоду
-   */
+  
   const removeCode = () => {
     if (appliedCode) {
       trackUIInteraction('promo_code', 'remove', appliedCode.code);
@@ -159,10 +150,7 @@ export function usePromoCode(): UsePromoCodeResult {
     toast.success('Промокод видалено');
   };
 
-  /**
-   * Розрахунок знижки (потрібно передавати orderTotal при виклику)
-   * Використовує store для отримання поточного промокоду
-   */
+  
   const calculateDiscount = (orderTotal: number): number => {
     const currentCode = usePromoCodeStore.getState().appliedCode;
     if (!currentCode) return 0;
@@ -173,25 +161,22 @@ export function usePromoCode(): UsePromoCodeResult {
   };
   
   return {
-    appliedCode, // Використовуємо appliedCode зі store
-    discount: 0, // Буде розраховано в компонентах через calculateDiscount
-    discountAmount: 0, // Буде розраховано в компонентах
+    appliedCode, 
+    discount: 0, 
+    discountAmount: 0, 
     isLoading,
     applyCode,
     removeCode,
     validateCode,
-    calculateDiscount, // Експортуємо функцію для розрахунку
+    calculateDiscount, 
   };
 }
 
-/**
- * Helper hook для розрахунку знижки з урахуванням orderTotal
- * Використовує Zustand store для синхронізації стану між компонентами
- */
+
 export function usePromoCodeDiscount(orderTotal: number) {
   const appliedCode = usePromoCodeStore((state) => state.appliedCode);
   
-  // Використовуємо useMemo для правильного оновлення при зміні appliedCode або orderTotal
+  
   const discountAmount = useMemo(() => {
     if (!appliedCode) return 0;
     

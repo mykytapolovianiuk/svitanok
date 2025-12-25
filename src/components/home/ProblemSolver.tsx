@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Check } from 'lucide-react';
 
-// Проблеми шкіри, які ми вирішуємо
+
 const skinProblems = [
   {
     id: 'wrinkles',
@@ -42,7 +42,7 @@ const skinProblems = [
   }
 ];
 
-// Типи продуктів (опціонально)
+
 const productTypes = [
   { value: '', label: 'Всі типи' },
   { value: 'serum', label: 'Сирівки' },
@@ -69,7 +69,7 @@ export default function ProblemSolver() {
     const problem = skinProblems.find(p => p.id === selectedProblem);
     if (!problem) return;
 
-    // Navigate to catalog with proper filter parameters
+    
     navigate(`/catalog?problem=${encodeURIComponent(problem.problem)}`);
   };
 
@@ -80,7 +80,7 @@ export default function ProblemSolver() {
   return (
     <section className="py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4 md:px-8 max-w-[1440px]">
-        {/* Header with Dropdown */}
+        {}
         <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 
@@ -99,7 +99,7 @@ export default function ProblemSolver() {
           </div>
         </div>
         
-        {/* Problems Grid - Responsive for desktop */}
+        {}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-6 md:mb-8">
           {skinProblems.map((problem) => {
             const isSelected = selectedProblem === problem.id;
@@ -135,7 +135,7 @@ export default function ProblemSolver() {
           })}
         </div>
 
-        {/* Mobile Dropdown */}
+        {}
         <div className="md:hidden mb-6">
           <select
             value={selectedProblem || ''}
@@ -152,7 +152,7 @@ export default function ProblemSolver() {
           </select>
         </div>
 
-        {/* Footer with Product Type Dropdown and Button */}
+        {}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
           <div className="flex-1 relative border-b border-gray-300">
             <select

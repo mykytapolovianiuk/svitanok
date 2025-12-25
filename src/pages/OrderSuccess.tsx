@@ -6,7 +6,7 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const { orderId, totalAmount } = location.state || {};
 
-  // If no order data, redirect to home
+  
   useEffect(() => {
     if (!orderId) {
       navigate('/');

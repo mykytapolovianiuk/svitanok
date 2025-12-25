@@ -18,13 +18,13 @@ export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Login form
+  
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
   });
 
-  // Register form
+  
   const [registerData, setRegisterData] = useState({
     name: '',
     surname: '',
@@ -39,9 +39,9 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      // Note: Supabase automatically handles session persistence based on browser settings
-      // The "Remember Me" functionality is handled by the browser's session storage vs local storage
-      // We don't need to manually set the session here
+      
+      
+      
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
@@ -50,7 +50,7 @@ export default function Auth() {
 
       if (error) throw error;
 
-      // Fetch user profile
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -61,7 +61,7 @@ export default function Auth() {
         console.error('Error fetching profile:', profileError);
       }
 
-      // Set session in store
+      
       const setSession = useUserStore.getState().setSession;
       setSession({
         user: {
@@ -122,7 +122,7 @@ export default function Auth() {
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-6xl mx-auto">
-          {/* Вхід */}
+          {}
           <div className="bg-white border border-gray-200 shadow-sm p-6 md:p-8">
             <h2
               className="text-2xl md:text-3xl font-light mb-8 text-center uppercase tracking-[2px]"
@@ -132,7 +132,7 @@ export default function Auth() {
             </h2>
 
             <form onSubmit={handleLogin} className="space-y-5">
-              {/* Email */}
+              {}
               <div>
                 <input
                   type="email"
@@ -145,7 +145,7 @@ export default function Auth() {
                 />
               </div>
 
-              {/* Пароль */}
+              {}
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -165,7 +165,7 @@ export default function Auth() {
                 </button>
               </div>
 
-              {/* Запам'ятати мене */}
+              {}
               <div className="flex items-center justify-between pt-2">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -219,7 +219,7 @@ export default function Auth() {
                 />
               </div>
 
-              {/* Прізвище */}
+              {}
               <div>
                 <input
                   type="text"
@@ -232,7 +232,7 @@ export default function Auth() {
                 />
               </div>
 
-              {/* Email */}
+              {}
               <div>
                 <input
                   type="email"
@@ -245,7 +245,7 @@ export default function Auth() {
                 />
               </div>
 
-              {/* Телефон */}
+              {}
               <div>
                 <input
                   type="tel"
@@ -258,7 +258,7 @@ export default function Auth() {
                 />
               </div>
 
-              {/* Пароль */}
+              {}
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -278,7 +278,7 @@ export default function Auth() {
                 </button>
               </div>
 
-              {/* Повторити пароль */}
+              {}
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -298,7 +298,7 @@ export default function Auth() {
                 </button>
               </div>
 
-              {/* Кнопка реєстрації */}
+              {}
               <button
                 type="submit"
                 disabled={loading}
@@ -309,7 +309,7 @@ export default function Auth() {
                 {loading ? 'Завантаження...' : 'СТВОРИТИ'}
               </button>
 
-              {/* Чекбокси */}
+              {}
               <div className="space-y-3 text-xs pt-4">
                 <label className="flex items-start cursor-pointer">
                   <input
@@ -347,7 +347,7 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Discount Banner - Hide on Auth page */}
+      {}
       {location.pathname !== '/auth' && <DiscountBanner />}
     </div>
   );

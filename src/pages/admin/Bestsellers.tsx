@@ -29,7 +29,7 @@ export default function Bestsellers() {
     try {
       setLoading(true);
       
-      // Fetch bestsellers with product data
+      
       const { data: bestsellersData, error: bestsellersError } = await supabase
         .from('bestsellers')
         .select(`
@@ -40,7 +40,7 @@ export default function Bestsellers() {
 
       if (bestsellersError) throw bestsellersError;
 
-      // Fetch all products for selector
+      
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
@@ -108,7 +108,7 @@ export default function Bestsellers() {
     try {
       setSaving(true);
       
-      // Update positions for all items
+      
       const updates = newOrder.map((item, index) => 
         supabase
           .from('bestsellers')
@@ -118,7 +118,7 @@ export default function Bestsellers() {
 
       const results = await Promise.all(updates);
       
-      // Check for errors
+      
       const errors = results.filter(result => result.error);
       if (errors.length > 0) {
         throw new Error('Не вдалося оновити порядок');
@@ -161,7 +161,7 @@ export default function Bestsellers() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -181,7 +181,7 @@ export default function Bestsellers() {
         </button>
       </div>
 
-      {/* Info Banner */}
+      {}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
         <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
@@ -194,7 +194,7 @@ export default function Bestsellers() {
         </div>
       </div>
 
-      {/* Bestsellers List */}
+      {}
       {bestsellers.length > 0 ? (
         <div className="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">
           <DraggableList
@@ -261,7 +261,7 @@ export default function Bestsellers() {
         </div>
       )}
 
-      {/* Product Selector Modal */}
+      {}
       {showProductSelector && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
@@ -278,7 +278,7 @@ export default function Bestsellers() {
                 </button>
               </div>
               
-              {/* Search */}
+              {}
               <div className="mt-4 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
@@ -293,7 +293,7 @@ export default function Bestsellers() {
               </div>
             </div>
             
-            {/* Products List */}
+            {}
             <div className="flex-1 overflow-y-auto">
               {filteredProducts.length > 0 ? (
                 <div className="divide-y divide-gray-200">

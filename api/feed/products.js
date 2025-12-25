@@ -1,12 +1,12 @@
-// Генератор фіда товарів для Facebook Commerce
-// Генерує XML фід, сумісний з Facebook Catalog
-// Оновлюється автоматично кожні 24 години
+
+
+
 
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders, logCorsAttempt } from '../utils/cors.js';
 import { checkRateLimit } from '../utils/rateLimit.js';
 
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_DURATION = 24 * 60 * 60 * 1000; 
 let cachedFeed = null;
 let cacheTimestamp = 0;
 
@@ -27,21 +27,21 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
-  // Обмеження частоти запитів
+  
   if (!checkRateLimit(req, res, 'feed')) {
     return;
   }
   
   try {
-    // Перевіряємо кеш
+    
     const now = Date.now();
     if (cachedFeed && (now - cacheTimestamp) < CACHE_DURATION) {
       res.setHeader('Content-Type', 'application/xml');
-      res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+      res.setHeader('Cache-Control', 'public, max-age=86400'); 
       return res.status(200).send(cachedFeed);
     }
     
-    // Отримуємо облікові дані Supabase
+    
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Отримуємо всі товари
+    
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
@@ -62,23 +62,23 @@ export default async function handler(req, res) {
       throw error;
     }
     
-    // Отримуємо базову URL з оточення або запиту
+    
     const baseUrl = process.env.VITE_SITE_URL || 
                     (req.headers.host ? `https://${req.headers.host}` : 'https://svitanok.com');
     
-    // Генеруємо XML фід
+    
     const xml = generateFeedXML(products || [], baseUrl);
     
-    // Кешуємо фід
+    
     cachedFeed = xml;
     cacheTimestamp = now;
     
     res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+    res.setHeader('Cache-Control', 'public, max-age=86400'); 
     return res.status(200).send(xml);
     
   } catch (error) {
-    // Обробка помилок у продакшені
+    
     return res.status(500).json({ 
       error: 'Failed to generate product feed',
       message: error.message 
@@ -93,7 +93,7 @@ function generateFeedXML(products, baseUrl) {
       ? product.images[0] 
       : `${baseUrl}/placeholder-product.jpg`;
     
-    // Витягуємо бренд та категорію з атрибутів
+    
     const brand = product.attributes?.Виробник || 
                   product.attributes?.Brand || 
                   'Svitanok';
@@ -101,16 +101,16 @@ function generateFeedXML(products, baseUrl) {
                      product.attributes?.Category || 
                      'Косметика';
     
-    // Форматуємо ціну (Facebook вимагає формат: "UAH 1500.00")
+    
     const price = `${product.currency || 'UAH'} ${product.price.toFixed(2)}`;
     
-    // Визначаємо наявність
+    
     const availability = product.in_stock ? 'in stock' : 'out of stock';
     
-    // Генеруємо опис (обмежуємо 5000 символами для Facebook)
+    
     const description = (product.description || product.name || '')
       .substring(0, 5000)
-      .replace(/<[^>]*>/g, '') // Видаляємо HTML теги
+      .replace(/<[^>]*>/g, '') 
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -135,7 +135,7 @@ function generateFeedXML(products, baseUrl) {
   }).join('\n');
   
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+<rss version="2.0" xmlns:g="http:
   <channel>
     <title>Svitanok Product Feed</title>
     <link>${baseUrl}</link>

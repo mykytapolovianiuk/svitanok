@@ -24,7 +24,7 @@ export default function Settings() {
   }, []);
 
   useEffect(() => {
-    // Check if there are changes
+    
     const changed = Object.keys(formData).some(
       key => formData[key] !== originalData[key]
     );
@@ -44,7 +44,7 @@ export default function Settings() {
       
       setSettings(data || []);
       
-      // Initialize form data
+      
       const initialFormData: Record<string, string> = {};
       data?.forEach(setting => {
         initialFormData[setting.key] = setting.value;
@@ -70,7 +70,7 @@ export default function Settings() {
     try {
       setSaving(true);
       
-      // Update each setting
+      
       const updates = Object.entries(formData).map(([key, value]) => 
         supabase
           .from('site_settings')
@@ -80,7 +80,7 @@ export default function Settings() {
       
       const results = await Promise.all(updates);
       
-      // Check for errors
+      
       const errors = results.filter(result => result.error);
       if (errors.length > 0) {
         throw new Error('Не вдалося зберегти деякі налаштування');
@@ -109,7 +109,7 @@ export default function Settings() {
     const groups: Record<string, SiteSetting[]> = {};
     
     settings.forEach(setting => {
-      // Group by prefix or category
+      
       let groupKey = 'Інше';
       
       if (setting.key.includes('phone') || setting.key.includes('email') || setting.key.includes('address')) {
@@ -158,7 +158,7 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -200,7 +200,7 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Info Banner */}
+      {}
       {hasChanges && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -215,7 +215,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Settings Groups */}
+      {}
       <div className="space-y-6">
         {groupedSettings.map((group) => (
           <div key={group.title} className="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">

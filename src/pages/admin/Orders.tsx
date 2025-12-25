@@ -31,16 +31,16 @@ export default function Orders() {
     filterOrders();
   }, [orders, activeFilter, searchTerm]);
 
-  // Handle highlighting order from URL
+  
   useEffect(() => {
     if (highlightedOrderId && orders.length > 0) {
-      // Find the order
+      
       const order = orders.find(o => o.id === highlightedOrderId);
       if (order) {
-        // Expand the order
+        
         setExpandedOrderId(highlightedOrderId);
         
-        // Scroll to the order after a short delay to ensure it's rendered
+        
         setTimeout(() => {
           const orderElement = orderRefs.current[highlightedOrderId];
           if (orderElement) {
@@ -51,7 +51,7 @@ export default function Orders() {
           }
         }, 300);
 
-        // Remove the highlight after 5 seconds
+        
         setTimeout(() => {
           setSearchParams((prev) => {
             const newParams = new URLSearchParams(prev);
@@ -102,12 +102,12 @@ export default function Orders() {
   const filterOrders = () => {
     let filtered = [...orders];
 
-    // Apply status filter
+    
     if (activeFilter !== 'all') {
       filtered = filtered.filter(order => order.status === activeFilter);
     }
 
-    // Apply search filter
+    
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(order => {
@@ -245,7 +245,7 @@ export default function Orders() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -257,7 +257,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <div className="flex items-center justify-between">
@@ -297,10 +297,10 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Filters and Search */}
+      {}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
+          {}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
@@ -313,7 +313,7 @@ export default function Orders() {
             />
           </div>
           
-          {/* Status Filter */}
+          {}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
             <Filter className="h-5 w-5 text-gray-400 flex-shrink-0" />
             <div className="flex gap-2">
@@ -339,7 +339,7 @@ export default function Orders() {
             </div>
           </div>
 
-          {/* Export Button */}
+          {}
           <button
             onClick={() => {
               try {
@@ -360,7 +360,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Orders List */}
+      {}
       <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
         {filteredOrders.length === 0 ? (
           <div className="text-center py-12">
@@ -387,7 +387,7 @@ export default function Orders() {
                     : ''
                 }`}
               >
-                {/* Order Summary Row */}
+                {}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 px-4 sm:px-6 py-4 items-center">
                   <div className="lg:col-span-2">
                     <div className="flex items-center gap-2">
@@ -492,11 +492,11 @@ export default function Orders() {
                   </div>
                 </div>
                 
-                {/* Expanded Order Details */}
+                {}
                 {expandedOrderId === order.id && (
                   <div className="px-4 sm:px-6 pb-6 border-t border-gray-200 pt-4 bg-gray-50">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Order Items */}
+                      {}
                       <div className="lg:col-span-2">
                         <h4 className="text-md font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                           Товари ({order.items.length})
@@ -539,7 +539,7 @@ export default function Orders() {
                         </div>
                       </div>
                       
-                      {/* Delivery Info */}
+                      {}
                       <div>
                         <h4 className="text-md font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                           Доставка

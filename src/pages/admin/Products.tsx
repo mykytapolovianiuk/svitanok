@@ -57,7 +57,7 @@ export default function Products() {
     images: [],
     attributes: {},
   });
-  // attributesJson is no longer needed as we use AttributeEditor component
+  
   const [imagesInput, setImagesInput] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -147,7 +147,7 @@ export default function Products() {
     try {
       setSaving(true);
 
-      // Validate form
+      
       if (!formData.name.trim()) {
         toast.error('Назва товару обов\'язкова');
         return;
@@ -157,13 +157,13 @@ export default function Products() {
         return;
       }
 
-      // Parse images
+      
       const images = imagesInput
         .split('\n')
         .map(url => url.trim())
         .filter(url => url.length > 0);
 
-      // Generate slug if not provided
+      
       let slug = formData.slug.trim();
       if (!slug) {
         slug = formData.name
@@ -186,7 +186,7 @@ export default function Products() {
       };
 
       if (isAdding) {
-        // Create new product
+        
         const { data, error } = await supabase
           .from('products')
           .insert([productData])
@@ -198,7 +198,7 @@ export default function Products() {
         setProducts([data, ...products]);
         toast.success('Товар успішно додано');
       } else if (editingProduct) {
-        // Update existing product
+        
         const { data, error } = await supabase
           .from('products')
           .update(productData)
@@ -265,7 +265,7 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -295,7 +295,7 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <div className="flex items-center justify-between">
@@ -335,7 +335,7 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Search and Export */}
+      {}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
@@ -369,7 +369,7 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Products Table */}
+      {}
       <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -471,7 +471,7 @@ export default function Products() {
         )}
       </div>
 
-      {/* Edit/Add Modal */}
+      {}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
@@ -488,7 +488,7 @@ export default function Products() {
             </div>
             
             <div className="p-6 space-y-6">
-              {/* Basic Info */}
+              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
@@ -583,7 +583,7 @@ export default function Products() {
                       checked={(editingProduct as any)?.is_bestseller || false}
                       onChange={async (e) => {
                         if (editingProduct) {
-                          // Update the bestseller status in the database
+                          
                           try {
                             const { error } = await supabase
                               .from('products')
@@ -592,7 +592,7 @@ export default function Products() {
                             
                             if (error) throw error;
                             
-                            // Update the local state
+                            
                             setProducts(products.map(p => 
                               p.id === editingProduct.id 
                                 ? { ...p, is_bestseller: e.target.checked } 
@@ -615,7 +615,7 @@ export default function Products() {
                 </div>
               </div>
 
-              {/* Description */}
+              {}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Опис
@@ -629,7 +629,7 @@ export default function Products() {
                 />
               </div>
 
-              {/* Images */}
+              {}
               <div>
                 <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Зображення (по одному URL на рядок)
@@ -644,7 +644,7 @@ export default function Products() {
                 />
               </div>
 
-              {/* Attributes */}
+              {}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Атрибути
@@ -690,7 +690,7 @@ export default function Products() {
         </div>
       )}
 
-      {/* Import Modal */}
+      {}
       {isImportModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
