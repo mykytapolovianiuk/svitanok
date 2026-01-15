@@ -28,7 +28,7 @@ const checkoutSchema = z.object({
   warehouseRef: z.string().optional(),
   address: z.string().optional(),
   paymentMethod: z.enum(['cash-on-delivery', 'liqpay', 'monobank-card', 'monobank-parts']),
-  partsCount: z.number().min(2).max(12).optional(),
+  partsCount: z.number().min(3).max(24).optional(),
   comment: z.string().optional(),
 });
 
@@ -76,7 +76,7 @@ export default function Checkout() {
   const [warehouses, setWarehouses] = useState<WarehouseOption[]>([]);
   const [showLiqPay, setShowLiqPay] = useState(false);
   const [liqPayOrderData, setLiqPayOrderData] = useState<{ orderId: string; amount: number; description: string } | null>(null);
-  const [partsCount, setPartsCount] = useState<number>(2); // Default to 2 parts
+  const [partsCount, setPartsCount] = useState<number>(3); // Default to 3 parts
   
   // State to store full objects
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
@@ -104,7 +104,7 @@ export default function Checkout() {
     defaultValues: {
       deliveryMethod: 'nova-poshta',
       paymentMethod: 'cash-on-delivery',
-      partsCount: 2,
+      partsCount: 3,
     },
   });
 
@@ -289,7 +289,7 @@ export default function Checkout() {
     setValue('paymentMethod', method);
     // Reset parts count when switching away from parts payment
     if (method !== 'monobank-parts') {
-      setValue('partsCount', 2);
+      setValue('partsCount', 3);
     }
   };
 
@@ -407,7 +407,7 @@ export default function Checkout() {
             amount: calculatedTotalPrice,
             orderId: orderResult.data.id,
             redirectUrl: `${window.location.origin}/payment/${orderResult.data.id}`,
-            partsCount: paymentMethod === 'monobank-parts' ? (data.partsCount || 2) : undefined
+            partsCount: paymentMethod === 'monobank-parts' ? (data.partsCount || 3) : undefined
           };
           
           // Invoke without custom headers
@@ -781,7 +781,7 @@ export default function Checkout() {
                 {paymentMethod === 'monobank-parts' && (
                   <div className="ml-7 mb-2">
                     <label className="block text-xs text-gray-600 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                      Кількість частин (2-12):
+                      Кількість частин (3-24):
                     </label>
                     <select 
                       value={partsCount}
@@ -793,7 +793,7 @@ export default function Checkout() {
                       className="border border-gray-300 rounded px-2 py-1 text-sm"
                       style={{ fontFamily: 'Montserrat, sans-serif' }}
                     >
-                      {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => (
+                      {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24].map(num => (
                         <option key={num} value={num}>{num} частин</option>
                       ))}
                     </select>

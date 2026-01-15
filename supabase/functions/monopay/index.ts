@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, logCorsAttempt } from "../_shared/cors.ts";
-import { createSign } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { Buffer } from "node:buffer";
 
 // Type definitions
@@ -60,16 +60,13 @@ function handleCors(req: Request): Response | null {
 // Helper function to create signature for Monobank API
 function createSignature(body: string, key: string): string {
   try {
-    // Convert key to PEM format if it's raw base64, or use as is
-    // For robustness, try-catch signing issues
-    const sign = createSign('SHA256');
-    sign.update(body);
-    sign.end();
-    // Assuming the key is a valid PEM private key
-    return sign.sign(key, 'base64');
+    // Use HMAC-SHA256 for UUID-based keys
+    const hmac = createHmac('sha256', key);
+    hmac.update(body);
+    return hmac.digest('base64');
   } catch (e) {
-    console.error("Signing failed. Key format might be wrong.", e);
-    return "signature_generation_failed";
+    console.error("HMAC Signing failed:", e);
+    throw new Error("Failed to generate HMAC signature");
   }
 }
 
@@ -210,10 +207,10 @@ async function handleCreatePart(
       );
     }
     
-    // Validate parts count (2-12 months)
-    if (partsCount < 2 || partsCount > 12) {
+    // Validate parts count (3-24 months)
+    if (partsCount < 3 || partsCount > 24) {
       return new Response(
-        JSON.stringify({ error: 'Parts count must be between 2 and 12' }),
+        JSON.stringify({ error: 'Parts count must be between 3 and 24' }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -482,20 +479,53 @@ serve(async (req) => {
         throw new Error("Missing MONOPAY_STORE_ID or MONOPAY_SIGN_KEY environment variables");
       }
 
-      // Prepare payload for Monobank API
+      // Fetch customer phone from orders table
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('customer_phone')
+        .eq('id', orderId)
+        .single();
+      
+      if (orderError || !orderData) {
+        throw new Error("Failed to fetch customer phone for order");
+      }
+      
+      if (!orderData.customer_phone) {
+        throw new Error("Customer phone is required for parts payment");
+      }
+
+      // Format phone number (ensure it starts with +380)
+      let formattedPhone = orderData.customer_phone.trim();
+      if (!formattedPhone.startsWith('+')) {
+        if (formattedPhone.startsWith('380')) {
+          formattedPhone = '+' + formattedPhone;
+        } else if (formattedPhone.startsWith('0')) {
+          formattedPhone = '+38' + formattedPhone;
+        } else {
+          formattedPhone = '+380' + formattedPhone;
+        }
+      }
+
+      // Prepare payload for Monobank Parts API
       const payload = {
-        store_id: MONOPAY_STORE_ID,
-        order_id: orderId,
-        amount: Math.round(amount * 100), // Convert to cents
-        parts_count: partsCount,
-        merchant_id: MONOPAY_STORE_ID,
-        products: [
-          { 
-            name: `Замовлення #${orderId}`, 
-            count: 1, 
-            sum: Math.round(amount * 100) 
-          }
-        ]
+        store_order_id: String(orderId),
+        client_phone: formattedPhone,
+        total_sum: amount, // Send exact float amount, not cents
+        invoice: {
+          date: new Date().toISOString().split('T')[0],
+          number: String(orderId),
+          point_id: Number(MONOPAY_STORE_ID),
+          source: "INTERNET"
+        },
+        available_programs: [{
+          available_parts_count: [partsCount],
+          type: "payment_installments"
+        }],
+        products: [{
+          name: `Замовлення #${orderId}`,
+          count: 1,
+          sum: amount
+        }]
       };
 
       const payloadString = JSON.stringify(payload);
@@ -505,16 +535,37 @@ serve(async (req) => {
         throw new Error("Failed to generate signature for Monobank API request");
       }
 
-      // Call Monobank Installments API
-      const monoResponse = await fetch('https://u.monobank.ua/api/order/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'store-id': MONOPAY_STORE_ID,
-          'signature': signature
-        },
-        body: payloadString
-      });
+      // Use correct production URL for Monobank Parts API
+      const MONOBANK_PARTS_URL = 'https://u2.monobank.com.ua/api/order/create';
+      
+      console.log(`Sending request to: ${MONOBANK_PARTS_URL}`);
+      console.log(`Store ID: ${MONOPAY_STORE_ID}`);
+      console.log(`Formatted Phone: ${formattedPhone}`);
+      console.log(`Payload:`, payload);
+
+      // Call Monobank Installments API with explicit error handling
+      let monoResponse;
+      try {
+        monoResponse = await fetch(MONOBANK_PARTS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'store-id': MONOPAY_STORE_ID,
+            'signature': signature
+            // NO X-Token header needed for this endpoint
+          },
+          body: payloadString
+        });
+      } catch (fetchError) {
+        console.error('Network error during Monobank Parts API call:', fetchError);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Failed to connect to Monobank Parts API', 
+            details: fetchError instanceof Error ? fetchError.message : String(fetchError) 
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       if (!monoResponse.ok) {
         const errorText = await monoResponse.text();
