@@ -208,7 +208,7 @@ async function handleCreatePart(
     }
     
     // Validate parts count (3-24 months)
-    if (partsCount < 3 || partsCount > 24) {
+    if (partsCount < 3 || partsCount > 12) {
       return new Response(
         JSON.stringify({ error: 'Parts count must be between 3 and 24' }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -575,23 +575,42 @@ serve(async (req) => {
 
       const monoData = await monoResponse.json();
       
-      // Update order with parts payment info
+      // Log full bank response for debugging
+      console.log('Full Monobank Parts API Response:', JSON.stringify(monoData, null, 2));
+      
+      // For Monobank Parts payment, success is indicated by order_id presence
+      // Monobank sends push notifications to user's app for confirmation
+      if (!monoData.order_id && !monoData.store_order_id) {
+        console.error('No order ID found in Monobank response');
+        console.error('Available fields in response:', Object.keys(monoData));
+        throw new Error(`Monobank API response missing order identifier. Available fields: ${Object.keys(monoData).join(', ')}. Full response: ${JSON.stringify(monoData)}`);
+      }
+      
+      // Success - we got the order_id, which means the request was accepted
+      const orderIdFromResponse = monoData.order_id || monoData.store_order_id;
+      
+      // Update order with parts payment info and set status to pending
       await supabase.from('orders').update({
         invoice_id: `parts_${orderId}`,
         payment_type: 'monobank_parts',
+        payment_status: 'pending', // Set initial status to pending
         monobank_data: {
           invoiceId: `parts_${orderId}`,
-          pageUrl: monoData.url,
+          orderId: orderIdFromResponse, // Store the Monobank order ID
           amount: Math.round(amount * 100),
           partsCount: partsCount,
           type: 'parts',
-          monobankResponse: monoData
+          monobankResponse: monoData,
+          status: 'pending_signature' // Status indicating waiting for signature
         }
       }).eq('id', orderId);
 
+      // Return success response indicating pending signature
       return new Response(JSON.stringify({ 
-        pageUrl: monoData.url,
-        success: true 
+        success: true,
+        orderId: orderIdFromResponse,
+        status: 'pending_signature',
+        message: 'Запит надіслано! Відкрийте додаток Monobank.'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });

@@ -73,6 +73,8 @@ export default function Checkout() {
   }, [subtotal, shippingCost]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isWaitingForSignature, setIsWaitingForSignature] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
   const [warehouses, setWarehouses] = useState<WarehouseOption[]>([]);
   const [showLiqPay, setShowLiqPay] = useState(false);
   const [liqPayOrderData, setLiqPayOrderData] = useState<{ orderId: string; amount: number; description: string } | null>(null);
@@ -89,6 +91,45 @@ export default function Checkout() {
   useEffect(() => {
     if (items.length === 0) navigate('/catalog');
   }, [items, navigate]);
+
+  // Polling for Monobank Parts signature confirmation
+  useEffect(() => {
+    if (!isWaitingForSignature || !currentOrderId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('payment_status')
+          .eq('id', currentOrderId)
+          .single();
+
+        if (error) throw error;
+
+        // If payment is confirmed, navigate to success
+        if (data.payment_status === 'paid' || data.payment_status === 'success') {
+          clearInterval(interval);
+          setIsWaitingForSignature(false);
+          setCurrentOrderId(null);
+          clearCart();
+          navigate('/order-success', { state: { orderId: currentOrderId } });
+        }
+        // If payment failed, stop polling and show error
+        else if (data.payment_status === 'failed') {
+          clearInterval(interval);
+          setIsWaitingForSignature(false);
+          setCurrentOrderId(null);
+          alert('Оплата скасована або не підтверджена у додатку Monobank');
+        }
+      } catch (error) {
+        console.error('Error polling payment status:', error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isWaitingForSignature, currentOrderId, navigate, clearCart]);
 
           // Track begin checkout on mount
           const analyticsItems = useMemo(() => formatCartItemsForAnalytics(items), [items]);
@@ -416,14 +457,31 @@ export default function Checkout() {
           });
           
           if (monoError) throw monoError;
-          if (!monoData?.pageUrl) throw new Error('Invalid response from payment service');
           
-          window.location.href = monoData.pageUrl;
+          // Handle Monobank Parts payment (waiting for signature)
+          if (paymentMethod === 'monobank-parts') {
+            if (monoData?.status === 'pending_signature') {
+              // Set waiting state and start polling
+              setIsWaitingForSignature(true);
+              setCurrentOrderId(orderResult.data.id);
+              alert('Запит надіслано! Відкрийте додаток Monobank.');
+              return; // Don't redirect, stay on page to show waiting UI
+            } else {
+              throw new Error('Invalid response from parts payment service');
+            }
+          }
+          
+          // Handle Monobank Card payment (redirect to payment page)
+          if (paymentMethod === 'monobank-card') {
+            if (!monoData?.pageUrl) throw new Error('Invalid response from payment service');
+            window.location.href = monoData.pageUrl;
+            return;
+          }
 
         } catch (paymentError) {
           console.error('Monobank payment error:', paymentError);
           alert('Помилка створення платежу. Спробуйте ще раз.');
-          navigate('/order-success', { state: { orderId: orderResult.data.id } });
+          // Don't navigate to success on error
         }
         return; // Stop execution here
       } else {
@@ -1085,15 +1143,33 @@ export default function Checkout() {
           Натиснувши на кнопку Оплатити, Ви погоджуєтесь з Політикою конфіденційності, Умовами обслуговування і Медичними рекомендаціями
         </p>
 
+          {/* Waiting for Signature Message */}
+          {isWaitingForSignature && (
+            <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 text-center">
+              <p 
+                className="text-yellow-800 font-medium"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Очікуємо підтвердження в додатку Monobank...
+              </p>
+              <p 
+                className="text-yellow-600 text-sm mt-1"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Відкрийте додаток Monobank та підтвердіть платіж
+              </p>
+            </div>
+          )}
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isWaitingForSignature}
             className="w-full bg-black text-white py-3 md:py-4 text-sm md:text-base font-bold uppercase tracking-[2px] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
             {isSubmitting && <Spinner size="sm" className="text-white" />}
-            {isSubmitting ? 'Обробка...' : 'ОФОРМИТИ'}
+            {isSubmitting ? 'Обробка...' : isWaitingForSignature ? 'ОЧІКУЄМО ПІДТВЕРДЖЕННЯ...' : 'ОФОРМИТИ'}
           </button>
 
           {/* Back Link */}
