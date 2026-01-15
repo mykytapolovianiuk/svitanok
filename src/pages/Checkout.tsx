@@ -12,7 +12,6 @@ import AsyncSelect from '@/components/ui/AsyncSelect';
 import { searchSettlements, getWarehouses, CityOption, WarehouseOption } from '@/services/novaPoshta';
 import { searchCities as searchUkrposhtaCities, searchWarehouses } from '@/services/ukrPoshta';
 import LiqPayRedirect from '@/components/checkout/LiqPayRedirect';
-import { sendOrderNotification } from '@/services/notifications';
 import { X, Plus, Minus, Check, Tag } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 
@@ -387,46 +386,7 @@ export default function Checkout() {
         appliedCode?.code || undefined  // coupon
       );
 
-      // 8. Send Telegram notification (before redirecting)
-      try {
-        // Include items in the notification data
-        const notificationData = {
-          ...orderData,
-          id: orderResult.data.id,
-          items: orderItems
-        };
-        await sendOrderNotification(orderResult.data.id, notificationData);
-      } catch (notificationError) {
-        console.error('Failed to send Telegram notification:', notificationError);
-        // Continue with the flow even if notification fails
-      }
 
-      // 8.1. Send order confirmation email
-      if (orderData.customer_email) {
-        try {
-          const { sendOrderConfirmation } = await import('../services/email');
-          await sendOrderConfirmation({
-            orderId: orderResult.data.id.toString(),
-            customerName: orderData.customer_name || 'Користувач',
-            customerEmail: orderData.customer_email,
-            items: items.map(item => ({
-              name: item.product.name,
-              quantity: item.quantity,
-              price: item.product.price * item.quantity,
-            })),
-            totalPrice: calculatedTotalPrice,
-            deliveryMethod: deliveryMethod || '',
-            deliveryInfo: orderData.delivery_info || undefined,
-            paymentMethod: paymentMethod === 'liqpay' ? 'Онлайн оплата (LiqPay)' : 
-                          paymentMethod === 'monobank-card' ? 'Онлайн оплата (Monobank)' : 
-                          paymentMethod === 'monobank-parts' ? `Купівля частинами (${data.partsCount || 2} частин)` : 'Накладений платіж',
-            orderDate: new Date().toISOString(),
-          });
-        } catch (emailError) {
-          console.error('Failed to send order confirmation email:', emailError);
-          // Continue even if email fails
-        }
-      }
 
       // 9. Handle payment method
       if (paymentMethod === 'liqpay') {
