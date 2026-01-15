@@ -2,6 +2,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, logCorsAttempt } from "../_shared/cors.ts";
+import { createSign } from "node:crypto";
+import { Buffer } from "node:buffer";
 
 // Type definitions
 interface CreateInvoiceRequest {
@@ -53,6 +55,22 @@ function handleCors(req: Request): Response | null {
     });
   }
   return null;
+}
+
+// Helper function to create signature for Monobank API
+function createSignature(body: string, key: string): string {
+  try {
+    // Convert key to PEM format if it's raw base64, or use as is
+    // For robustness, try-catch signing issues
+    const sign = createSign('SHA256');
+    sign.update(body);
+    sign.end();
+    // Assuming the key is a valid PEM private key
+    return sign.sign(key, 'base64');
+  } catch (e) {
+    console.error("Signing failed. Key format might be wrong.", e);
+    return "signature_generation_failed";
+  }
 }
 
 // Handle standard payment invoice creation
@@ -455,17 +473,73 @@ serve(async (req) => {
       });
     }
 
-    // --- HANDLER: Parts (Mock) ---
+    // --- HANDLER: Parts (Real Monobank API) ---
     if (action === 'create-part') {
-       // Mock response for Parts to avoid signature complexity in this step
-       // In prod, you would implement the full signature logic here
-       await supabase.from('orders').update({
+      const MONOPAY_STORE_ID = Deno.env.get('MONOPAY_STORE_ID');
+      const MONOPAY_SIGN_KEY = Deno.env.get('MONOPAY_SIGN_KEY');
+      
+      if (!MONOPAY_STORE_ID || !MONOPAY_SIGN_KEY) {
+        throw new Error("Missing MONOPAY_STORE_ID or MONOPAY_SIGN_KEY environment variables");
+      }
+
+      // Prepare payload for Monobank API
+      const payload = {
+        store_id: MONOPAY_STORE_ID,
+        order_id: orderId,
+        amount: Math.round(amount * 100), // Convert to cents
+        parts_count: partsCount,
+        merchant_id: MONOPAY_STORE_ID,
+        products: [
+          { 
+            name: `Замовлення #${orderId}`, 
+            count: 1, 
+            sum: Math.round(amount * 100) 
+          }
+        ]
+      };
+
+      const payloadString = JSON.stringify(payload);
+      const signature = createSignature(payloadString, MONOPAY_SIGN_KEY);
+      
+      if (signature === "signature_generation_failed") {
+        throw new Error("Failed to generate signature for Monobank API request");
+      }
+
+      // Call Monobank Installments API
+      const monoResponse = await fetch('https://u.monobank.ua/api/order/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'store-id': MONOPAY_STORE_ID,
+          'signature': signature
+        },
+        body: payloadString
+      });
+
+      if (!monoResponse.ok) {
+        const errorText = await monoResponse.text();
+        console.error('Monobank Parts API error:', errorText);
+        throw new Error(`Monobank Parts API error: ${errorText}`);
+      }
+
+      const monoData = await monoResponse.json();
+      
+      // Update order with parts payment info
+      await supabase.from('orders').update({
+        invoice_id: `parts_${orderId}`,
         payment_type: 'monobank_parts',
-        monobank_data: { partsCount, status: 'initiated_mock' }
+        monobank_data: {
+          invoiceId: `parts_${orderId}`,
+          pageUrl: monoData.url,
+          amount: Math.round(amount * 100),
+          partsCount: partsCount,
+          type: 'parts',
+          monobankResponse: monoData
+        }
       }).eq('id', orderId);
 
       return new Response(JSON.stringify({ 
-        pageUrl: 'https://chastyny.monobank.ua', // Mock redirect
+        pageUrl: monoData.url,
         success: true 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
