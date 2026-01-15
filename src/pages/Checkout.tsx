@@ -438,33 +438,34 @@ export default function Checkout() {
         });
         setShowLiqPay(true);
       } else if (paymentMethod === 'monobank-card' || paymentMethod === 'monobank-parts') {
-        // For Monobank payments, call the edge function
         try {
-          const functionName = paymentMethod === 'monobank-card' ? 'create' : 'create-part';
+          const actionName = paymentMethod === 'monobank-card' ? 'create' : 'create-part';
+          
+          // FIX: Send action INSIDE the body
           const payload = {
+            action: actionName, 
             amount: calculatedTotalPrice,
             orderId: orderResult.data.id,
             redirectUrl: `${window.location.origin}/payment/${orderResult.data.id}`,
-            ...(paymentMethod === 'monobank-parts' && { partsCount: data.partsCount || 2 })
+            partsCount: paymentMethod === 'monobank-parts' ? (data.partsCount || 2) : undefined
           };
           
+          // Invoke without custom headers
           const { data: monoData, error: monoError } = await supabase.functions.invoke('monopay', {
-            body: payload,
-            headers: { 'action': functionName }
+            body: payload
           });
           
           if (monoError) throw monoError;
           if (!monoData?.pageUrl) throw new Error('Invalid response from payment service');
           
-          // Redirect to Monobank payment page
           window.location.href = monoData.pageUrl;
+
         } catch (paymentError) {
           console.error('Monobank payment error:', paymentError);
-          alert('Помилка створення платежу. Спробуйте інший спосіб оплати.');
-          // Fall back to success page
-          clearCart();
+          alert('Помилка створення платежу. Спробуйте ще раз.');
           navigate('/order-success', { state: { orderId: orderResult.data.id } });
         }
+        return; // Stop execution here
       } else {
         // For cash on delivery, proceed as before
         clearCart();
