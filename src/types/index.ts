@@ -138,4 +138,7 @@ export interface WarehouseOption {
   value: string;
   label: string;
   ref?: string; // Made ref optional to match AsyncSelect expectations
+  street?: string; // Street name for advanced search
+  number?: string; // Building/house number
+  postcode?: string; // Postal code
 }

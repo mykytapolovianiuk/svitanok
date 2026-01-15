@@ -10,7 +10,7 @@ import { useAnalytics, formatCartItemsForAnalytics } from '@/hooks/useAnalytics'
 import { usePromoCode } from '@/hooks/usePromoCode';
 import AsyncSelect from '@/components/ui/AsyncSelect';
 import { searchSettlements, getWarehouses, CityOption, WarehouseOption } from '@/services/novaPoshta';
-import { searchCities as searchUkrposhtaCities, getWarehouses as getUkrposhtaWarehouses } from '@/services/ukrPoshta';
+import { searchCities as searchUkrposhtaCities, searchWarehouses } from '@/services/ukrPoshta';
 import LiqPayRedirect from '@/components/checkout/LiqPayRedirect';
 import { sendOrderNotification } from '@/services/notifications';
 import { X, Plus, Minus, Check, Tag } from 'lucide-react';
@@ -239,7 +239,7 @@ export default function Checkout() {
           let results: WarehouseOption[] = [];
           
           if (deliveryMethod === 'ukrposhta') {
-            results = await getUkrposhtaWarehouses(selectedCity.ref!);
+            results = await searchWarehouses(selectedCity.ref!, '');
           } else {
             results = await getWarehouses(selectedCity.ref!);
           }
@@ -293,12 +293,13 @@ export default function Checkout() {
     setIsSubmitting(true);
 
     try {
-      // 1. CRITICAL VALIDATION FOR NOVA POSHTA
+      // 1. CRITICAL VALIDATION FOR DELIVERY METHODS
       const finalCityRef = data.cityRef || selectedCity?.ref || '';
       const finalWarehouseRef = data.warehouseRef || selectedWarehouse?.ref || '';
 
-      if (deliveryMethod === 'nova-poshta' && !finalCityRef) {
-        alert('Помилка: Не вдалося визначити код міста для Нової Пошти. Спробуйте обрати місто зі списку ще раз.');
+      if ((deliveryMethod === 'nova-poshta' || deliveryMethod === 'ukrposhta') && !finalCityRef) {
+        const deliveryName = deliveryMethod === 'nova-poshta' ? 'Нової Пошти' : 'Укрпошти';
+        alert(`Помилка: Не вдалося визначити код міста для ${deliveryName}. Спробуйте обрати місто зі списку ще раз.`);
         return;
       }
 
@@ -594,6 +595,27 @@ export default function Checkout() {
                   </span>
                 </div>
               </label>
+              
+              <label className="flex items-start cursor-pointer">
+                <input 
+                  type="radio" 
+                  value="ukrposhta" 
+                  checked={deliveryMethod === 'ukrposhta'}
+                  onChange={() => handleDeliveryMethodChange('ukrposhta')}
+                  className="mt-1 mr-3 w-4 h-4 border-2 border-gray-300 text-black focus:ring-black" 
+                />
+                <div className="flex-1">
+                  <span 
+                    className="block uppercase tracking-[1px] font-medium text-sm md:text-base"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    У відділенні "Укрпошта"
+                  </span>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                    до 5-ти робочих днів
+                  </p>
+                </div>
+              </label>
             </div>
 
             {/* Dynamic Fields */}
@@ -620,12 +642,21 @@ export default function Checkout() {
                     <AsyncSelect
                       placeholder={selectedCity ? "Склад*" : "Спочатку оберіть місто"}
                       loadOptions={async (input) => {
-                        if (!input) return warehouses;
+                        if (!selectedCity?.ref) return [];
+                        
+                        // For Ukrposhta, enable immediate search with minimal input
+                        if (deliveryMethod === 'ukrposhta') {
+                          return await searchWarehouses(selectedCity.ref, input);
+                        }
+                        
+                        // For Nova Poshta, use existing logic
+                        if (input.length < 2) return [];
                         return warehouses.filter(w => w.label.toLowerCase().includes(input.toLowerCase()));
                       }}
                       onChange={handleWarehouseChange}
                       value={selectedWarehouse}
                       isLoading={isLoadingWarehouses}
+                      minInputLength={deliveryMethod === 'ukrposhta' ? 1 : 2}
                     />
                   </div>
                   {errors.warehouse && (

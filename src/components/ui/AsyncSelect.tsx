@@ -32,6 +32,7 @@ interface AsyncSelectProps {
   placeholder?: string;
   error?: string;
   isLoading?: boolean;
+  minInputLength?: number; // Minimum input length to trigger search (default: 2)
 }
 
 export default function AsyncSelect({
@@ -41,6 +42,7 @@ export default function AsyncSelect({
   placeholder = 'Оберіть...',
   error,
   isLoading: externalIsLoading = false,
+  minInputLength = 2, // Default to 2 characters
 }: AsyncSelectProps) {
   // Production logging removed
   const [inputValue, setInputValue] = useState('');
@@ -51,7 +53,7 @@ export default function AsyncSelect({
   const isLoading = externalIsLoading || internalIsLoading;
 
   const debouncedLoadOptions = useAsyncDebounce(async (input: string) => {
-    if (input.length < 2) {
+    if (input.length < minInputLength) {
       setOptions([]);
       return;
     }
@@ -136,7 +138,7 @@ export default function AsyncSelect({
                 </div>
               ))}
             </div>
-          ) : inputValue.length >= 2 ? (
+          ) : inputValue.length >= minInputLength ? (
             <div className="px-4 py-2 text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               Нічого не знайдено
             </div>
