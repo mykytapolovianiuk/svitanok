@@ -28,7 +28,8 @@ const checkoutSchema = z.object({
   warehouse: z.string().optional(),
   warehouseRef: z.string().optional(),
   address: z.string().optional(),
-  paymentMethod: z.enum(['cash-on-delivery', 'liqpay']),
+  paymentMethod: z.enum(['cash-on-delivery', 'liqpay', 'monobank-card', 'monobank-parts']),
+  partsCount: z.number().min(2).max(12).optional(),
   comment: z.string().optional(),
 });
 
@@ -76,6 +77,7 @@ export default function Checkout() {
   const [warehouses, setWarehouses] = useState<WarehouseOption[]>([]);
   const [showLiqPay, setShowLiqPay] = useState(false);
   const [liqPayOrderData, setLiqPayOrderData] = useState<{ orderId: string; amount: number; description: string } | null>(null);
+  const [partsCount, setPartsCount] = useState<number>(2); // Default to 2 parts
   
   // State to store full objects
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
@@ -103,6 +105,7 @@ export default function Checkout() {
     defaultValues: {
       deliveryMethod: 'nova-poshta',
       paymentMethod: 'cash-on-delivery',
+      partsCount: 2,
     },
   });
 
@@ -283,8 +286,12 @@ export default function Checkout() {
   };
 
   // Handle payment method change
-  const handlePaymentMethodChange = (method: 'cash-on-delivery' | 'liqpay') => {
+  const handlePaymentMethodChange = (method: 'cash-on-delivery' | 'liqpay' | 'monobank-card' | 'monobank-parts') => {
     setValue('paymentMethod', method);
+    // Reset parts count when switching away from parts payment
+    if (method !== 'monobank-parts') {
+      setValue('partsCount', 2);
+    }
   };
 
   // Обробка замовлення: валідація -> база -> ТТН
@@ -332,7 +339,9 @@ export default function Checkout() {
           warehouseRef: finalWarehouseRef,
           comment: data.comment || '',
         },
-        payment_method: paymentMethod === 'liqpay' ? 'liqpay' : 'cash',
+        payment_method: paymentMethod === 'liqpay' ? 'liqpay' : 
+                       paymentMethod === 'monobank-card' ? 'monobank_card' : 
+                       paymentMethod === 'monobank-parts' ? 'monobank_parts' : 'cash',
         status: 'new',
         total_price: calculatedTotalPrice,
         promo_code: appliedCode?.code || null,
@@ -408,7 +417,9 @@ export default function Checkout() {
             totalPrice: calculatedTotalPrice,
             deliveryMethod: deliveryMethod || '',
             deliveryInfo: orderData.delivery_info || undefined,
-            paymentMethod: paymentMethod === 'liqpay' ? 'Онлайн оплата' : 'Накладений платіж',
+            paymentMethod: paymentMethod === 'liqpay' ? 'Онлайн оплата (LiqPay)' : 
+                          paymentMethod === 'monobank-card' ? 'Онлайн оплата (Monobank)' : 
+                          paymentMethod === 'monobank-parts' ? `Купівля частинами (${data.partsCount || 2} частин)` : 'Накладений платіж',
             orderDate: new Date().toISOString(),
           });
         } catch (emailError) {
@@ -426,6 +437,34 @@ export default function Checkout() {
           description: `Оплата замовлення #${orderResult.data.id}`
         });
         setShowLiqPay(true);
+      } else if (paymentMethod === 'monobank-card' || paymentMethod === 'monobank-parts') {
+        // For Monobank payments, call the edge function
+        try {
+          const functionName = paymentMethod === 'monobank-card' ? 'create' : 'create-part';
+          const payload = {
+            amount: calculatedTotalPrice,
+            orderId: orderResult.data.id,
+            redirectUrl: `${window.location.origin}/payment/${orderResult.data.id}`,
+            ...(paymentMethod === 'monobank-parts' && { partsCount: data.partsCount || 2 })
+          };
+          
+          const { data: monoData, error: monoError } = await supabase.functions.invoke('monopay', {
+            body: payload,
+            headers: { 'action': functionName }
+          });
+          
+          if (monoError) throw monoError;
+          if (!monoData?.pageUrl) throw new Error('Invalid response from payment service');
+          
+          // Redirect to Monobank payment page
+          window.location.href = monoData.pageUrl;
+        } catch (paymentError) {
+          console.error('Monobank payment error:', paymentError);
+          alert('Помилка створення платежу. Спробуйте інший спосіб оплати.');
+          // Fall back to success page
+          clearCart();
+          navigate('/order-success', { state: { orderId: orderResult.data.id } });
+        }
       } else {
         // For cash on delivery, proceed as before
         clearCart();
@@ -741,6 +780,65 @@ export default function Checkout() {
                   Оплата LiqPay
                 </span>
               </label>
+              
+              {/* Monobank Card Option */}
+              <label className="flex items-start cursor-pointer">
+                <input 
+                  type="radio" 
+                  value="monobank-card" 
+                  checked={paymentMethod === 'monobank-card'}
+                  onChange={() => handlePaymentMethodChange('monobank-card')}
+                  className="mt-1 mr-3 w-4 h-4 border-2 border-gray-300 text-black focus:ring-black" 
+                />
+                <span 
+                  className="block uppercase tracking-[1px] font-medium text-sm md:text-base"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Оплата карткою (Monobank)
+                </span>
+              </label>
+              
+              {/* Monobank Parts Option */}
+              <div>
+                <label className="flex items-start cursor-pointer mb-2">
+                  <input 
+                    type="radio" 
+                    value="monobank-parts" 
+                    checked={paymentMethod === 'monobank-parts'}
+                    onChange={() => handlePaymentMethodChange('monobank-parts')}
+                    className="mt-1 mr-3 w-4 h-4 border-2 border-gray-300 text-black focus:ring-black" 
+                  />
+                  <span 
+                    className="block uppercase tracking-[1px] font-medium text-sm md:text-base"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    Купівля частинами (Monobank)
+                  </span>
+                </label>
+                
+                {/* Parts Count Selector - shown when parts payment is selected */}
+                {paymentMethod === 'monobank-parts' && (
+                  <div className="ml-7 mb-2">
+                    <label className="block text-xs text-gray-600 mb-1" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      Кількість частин (2-12):
+                    </label>
+                    <select 
+                      value={partsCount}
+                      onChange={(e) => {
+                        const newPartsCount = parseInt(e.target.value);
+                        setPartsCount(newPartsCount);
+                        setValue('partsCount', newPartsCount);
+                      }}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => (
+                        <option key={num} value={num}>{num} частин</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           </div>

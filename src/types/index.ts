@@ -32,7 +32,7 @@ export interface Order {
   total_price: number;
   delivery_info: DeliveryInfo | null;
   delivery_method: 'nova_poshta_dept' | 'nova_poshta_courier' | 'ukrposhta' | 'quick_order' | null;
-  payment_method: 'cash' | 'card' | 'on_receipt';
+  payment_method: 'cash' | 'card' | 'on_receipt' | 'monobank_card' | 'monobank_parts';
   customer_name: string | null;
   customer_phone: string | null;
   customer_email: string | null;
@@ -43,6 +43,9 @@ export interface Order {
   payment_transaction_id: string | null;
   discount_amount: number | null;
   promo_code: string | null;
+  invoice_id: string | null;
+  payment_type: 'monobank_card' | 'monobank_parts' | null;
+  monobank_data: Record<string, any> | null;
 }
 
 export interface OrderItem {
