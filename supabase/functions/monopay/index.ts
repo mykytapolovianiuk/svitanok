@@ -385,7 +385,10 @@ async function handleWebhook(
 serve(async (req) => {
   // 1. CORS Preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 204, headers: getCorsHeaders(req.headers.get('origin')) });
+    return new Response(null, { // FIXED: Must be null for 204 status
+      status: 204, 
+      headers: getCorsHeaders(req.headers.get('origin')) 
+    });
   }
 
   const corsHeaders = getCorsHeaders(req.headers.get('origin'));
