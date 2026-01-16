@@ -6,7 +6,7 @@ import { PROBLEM_SOLVER_ITEMS, translateProblemToDB } from '@/lib/constants';
 // Update the first item to use acne image
 const UPDATED_PROBLEM_SOLVER_ITEMS = PROBLEM_SOLVER_ITEMS.map((item, index) => 
   index === 0 
-    ? { ...item, image: '/images/problems/problem-01.jpg' } // Acne image for first item
+    ? { ...item, image: '/images/problems/problem-02.jpg' } // Acne image for first item
     : item
 );
 
