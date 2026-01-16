@@ -17,6 +17,8 @@ export default function Catalog() {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
+  const [selectedSkinTypes, setSelectedSkinTypes] = useState<string[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
@@ -66,6 +68,8 @@ export default function Catalog() {
     searchQuery: urlSearchQuery, // Only use q parameter for search
     problemTags: problem ? [problem] : problemTags, // Use problem from URL if present
     ingredients: ingredient ? [ingredient] : [], // Use ingredient from URL if present
+    skinTypes: selectedSkinTypes, // Add skin types filter
+    cosmeticClasses: selectedClasses, // Add cosmetic classes filter
   });
 
   // Analytics tracking
@@ -139,6 +143,16 @@ export default function Catalog() {
 
   const handleProblemsChange = (problems: string[]) => {
     setSelectedProblems(problems);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const handleSkinTypesChange = (skinTypes: string[]) => {
+    setSelectedSkinTypes(skinTypes);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const handleClassesChange = (classes: string[]) => {
+    setSelectedClasses(classes);
     setCurrentPage(1); // Reset to first page
   };
 
@@ -233,9 +247,13 @@ export default function Catalog() {
               selectedBrands={selectedBrands}
               selectedCategories={selectedCategories}
               selectedProblems={selectedProblems}
+              selectedSkinTypes={selectedSkinTypes}
+              selectedClasses={selectedClasses}
               onBrandsChange={handleBrandsChange}
               onCategoriesChange={handleCategoriesChange}
               onProblemsChange={handleProblemsChange}
+              onSkinTypesChange={handleSkinTypesChange}
+              onClassesChange={handleClassesChange}
               minPrice={minPrice}
               maxPrice={maxPrice}
               onPriceChange={handlePriceChange}
@@ -252,9 +270,13 @@ export default function Catalog() {
               selectedBrands={selectedBrands}
               selectedCategories={selectedCategories}
               selectedProblems={selectedProblems}
+              selectedSkinTypes={selectedSkinTypes}
+              selectedClasses={selectedClasses}
               onBrandsChange={handleBrandsChange}
               onCategoriesChange={handleCategoriesChange}
               onProblemsChange={handleProblemsChange}
+              onSkinTypesChange={handleSkinTypesChange}
+              onClassesChange={handleClassesChange}
               minPrice={minPrice}
               maxPrice={maxPrice}
               onPriceChange={handlePriceChange}

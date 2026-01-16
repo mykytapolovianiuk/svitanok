@@ -29,6 +29,16 @@ interface Product {
   attributes: Record<string, any>;
   description: string;
   in_stock: boolean;
+  brand_id?: number; // Add brand_id from new schema
+  category_id?: string; // Add category_id from new schema
+  brands?: {
+    id: number;
+    name: string;
+  };
+  categories?: {
+    id: string;
+    name: string;
+  };
 }
 
 export default function ProductPage() {
@@ -41,8 +51,6 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
-  const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'description' | 'attributes'>('description');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCartStore();
@@ -79,7 +87,11 @@ export default function ProductPage() {
       // Try to find product by decoded slug first
       let { data, error: fetchError } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          brands (id, name),
+          categories (id, name)
+        `)
         .eq('slug', decodedSlug)
         .single();
 
@@ -87,7 +99,11 @@ export default function ProductPage() {
       if (fetchError && slug !== decodedSlug) {
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('products')
-          .select('*')
+          .select(`
+            *,
+            brands (id, name),
+            categories (id, name)
+          `)
           .eq('slug', slug)
           .single();
         
@@ -112,8 +128,7 @@ export default function ProductPage() {
         brand: data.attributes?.Виробник || data.attributes?.Brand,
       });
       
-      // Fetch recommended products
-      await fetchRecommendedProducts(data.id, data.attributes?.['Назва_групи']);
+      // Note: We no longer fetch recommended products here since RecommendedProducts component handles it
     } catch (err: any) {
       setError(err.message || 'Failed to load product');
     } finally {
@@ -135,51 +150,8 @@ export default function ProductPage() {
   const isFavorite = product ? favoriteIds.has(product.id) : false;
 
   const fetchRecommendedProducts = async (productId: number, productGroup: string) => {
-    try {
-      setRecommendationsLoading(true);
-      
-      let data = [];
-      let error = null;
-      
-      // If we have a product group, find products in the same group
-      if (productGroup) {
-        const result = await supabase
-          .from('products')
-          .select('*')
-          .neq('id', productId) // Exclude current product
-          // Check multiple keys for category matching
-          .or(`attributes->>Назва_групи.ilike.%${productGroup}%,attributes->>Category.ilike.%${productGroup}%`)
-          .limit(10);
-          
-        data = result.data || [];
-        error = result.error;
-      }
-      
-      // If no products found in the same group or no group, get random products
-      if (!data || data.length === 0) {
-        const result = await supabase
-          .from('products')
-          .select('*')
-          .neq('id', productId) // Still exclude current product
-          .limit(10);
-          
-        data = result.data || [];
-        error = result.error;
-      }
-      
-      if (error) throw error;
-      
-      // Shuffle array and pick first 3
-      const shuffled = [...data].sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 3);
-      
-      setRecommendedProducts(selected);
-    } catch (err) {
-      console.error('Error fetching recommendations:', err);
-      setRecommendedProducts([]);
-    } finally {
-      setRecommendationsLoading(false);
-    }
+    // This function is no longer needed since RecommendedProducts component handles recommendations internally
+    return;
   };
 
   const handleAddToCart = async () => {
@@ -298,7 +270,7 @@ export default function ProductPage() {
           <div className="lg:col-span-6">
             <div className="relative">
               <div 
-                className="bg-[#F5F5F5] aspect-square flex items-center justify-center relative group cursor-zoom-in"
+                className="aspect-square flex items-center justify-center relative group cursor-zoom-in"
                 onClick={() => setIsLightboxOpen(true)}
               >
                 <ImageZoom
@@ -372,25 +344,6 @@ export default function ProductPage() {
                 ))}
               </div>
             )}
-            
-            {/* Description under the photo but not full width */}
-            <div className="mt-8">
-              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
-                <div className="p-5">
-                  <h3 
-                    className="font-medium uppercase tracking-wider mb-3"
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  >
-                    Опис
-                  </h3>
-                  <div
-                    className="prose max-w-none text-gray-600 text-sm"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
           
           {/* Product Info and Characteristics Column - Right */}
@@ -503,31 +456,63 @@ export default function ProductPage() {
                     Купити в 1 клік
                   </button>
                 </div>
-              </div>
-              
-              {/* Characteristics - Fixed at the top when scrolling */}
-              <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
-                <div className="p-5">
-                  <h3 
-                    className="font-medium uppercase tracking-wider mb-3"
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  >
-                    Характеристики
-                  </h3>
-                  <div className="border border-gray-200 rounded-lg">
-                    {Object.entries(filteredAttributes).map(([key, value]) => (
-                      <div 
-                        key={key} 
-                        className="grid grid-cols-2 gap-4 p-4 border-b border-gray-200 last:border-b-0"
-                        style={{ fontFamily: 'Montserrat, sans-serif' }}
-                      >
-                        <span className="font-medium">{key}:</span>
-                        <span>{String(value)}</span>
-                      </div>
-                    ))}
+                
+                {/* Characteristics moved here - below cart buttons */}
+                <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
+                  <div className="p-5">
+                    <h3 
+                      className="font-medium uppercase tracking-wider mb-3"
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      Характеристики
+                    </h3>
+                    <div className="space-y-3">
+                      {Object.entries(filteredAttributes).map(([key, value]) => (
+                        <div key={key} className="flex flex-wrap gap-2">
+                          <span 
+                            className="font-medium text-sm min-w-[120px]"
+                            style={{ fontFamily: 'Montserrat, sans-serif' }}
+                          >
+                            {key}:
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {Array.isArray(value) ? (
+                              value.map((item, idx) => (
+                                <span 
+                                  key={idx}
+                                  className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
+                                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                                >
+                                  {String(item)}
+                                </span>
+                              ))
+                            ) : typeof value === 'string' && value.includes('|') ? (
+                              value.split('|').map((item, idx) => (
+                                <span 
+                                  key={idx}
+                                  className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
+                                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                                >
+                                  {item.trim()}
+                                </span>
+                              ))
+                            ) : (
+                              <span 
+                                className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
+                                style={{ fontFamily: 'Montserrat, sans-serif' }}
+                              >
+                                {String(value)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+              
+              {/* Removed characteristics section from here since it's moved above */}
             </div>
           </div>
         </div>
@@ -536,10 +521,32 @@ export default function ProductPage() {
         {product && <FrequentlyBoughtTogether productId={product.id} />}
 
         {/* Recommendations Section */}
-        <RecommendedProducts 
-          products={recommendedProducts} 
-          loading={recommendationsLoading}
-        />
+        {product && product.brand_id && product.category_id && (
+          <RecommendedProducts 
+            currentProduct={{
+              id: product.id,
+              brand_id: product.brand_id,
+              category_id: product.category_id
+            }}
+          />
+        )}
+
+        {/* Full-width Description Section at Bottom */}
+        <div className="mt-12 border border-[#FFF8F1] bg-[#FFF8F1]">
+          <div className="p-8">
+            <h2 
+              className="font-medium uppercase tracking-wider mb-4 text-center"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              Опис
+            </h2>
+            <div
+              className="prose max-w-none text-gray-600 text-sm text-center mx-auto max-w-3xl"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            />
+          </div>
+        </div>
 
         {/* Product Reviews */}
         <div className="mt-12">

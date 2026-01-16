@@ -1,280 +1,129 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useFilterData } from '@/hooks/useFilterData';
 
 interface FilterSidebarProps {
   selectedBrands: string[];
   selectedCategories: string[];
+  selectedSkinTypes: string[];
   selectedProblems: string[];
-  onBrandsChange: (brands: string[]) => void;
-  onCategoriesChange: (categories: string[]) => void;
-  onProblemsChange: (problems: string[]) => void;
+  selectedClasses: string[];
   minPrice: number;
   maxPrice: number;
+  onBrandsChange: (brands: string[]) => void;
+  onCategoriesChange: (categories: string[]) => void;
+  onSkinTypesChange: (skinTypes: string[]) => void;
+  onProblemsChange: (problems: string[]) => void;
+  onClassesChange: (classes: string[]) => void;
   onPriceChange: (min: number, max: number) => void;
 }
 
 export default function FilterSidebar({
   selectedBrands,
   selectedCategories,
+  selectedSkinTypes,
   selectedProblems,
-  onBrandsChange,
-  onCategoriesChange,
-  onProblemsChange,
+  selectedClasses,
   minPrice,
   maxPrice,
+  onBrandsChange,
+  onCategoriesChange,
+  onSkinTypesChange,
+  onProblemsChange,
+  onClassesChange,
   onPriceChange,
 }: FilterSidebarProps) {
   const [brandsOpen, setBrandsOpen] = useState(true);
-  const [priceOpen, setPriceOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(true);
+  const [skinTypeOpen, setSkinTypeOpen] = useState(true);
   const [problemsOpen, setProblemsOpen] = useState(true);
+  const [classesOpen, setClassesOpen] = useState(true);
+  const [priceOpen, setPriceOpen] = useState(true);
   
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
   
-  // Dynamic data from database
-  const [brands, setBrands] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [problems, setProblems] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    availableBrands,
+    availableCategories,
+    skinTypes,
+    problems,
+    cosmeticClasses,
+    loading,
+    getAvailableCategories,
+    getAvailableBrands
+  } = useFilterData();
 
-  // Check if brand cache is older than 1 day and trigger refresh in background
-  useEffect(() => {
-    const checkCacheAge = () => {
-      const cacheTimestamp = localStorage.getItem('svitanok_brands_cache_timestamp');
-      if (cacheTimestamp) {
-        const age = Date.now() - parseInt(cacheTimestamp);
-        // If cache is older than 1 day (86400000 ms), refresh in background
-        if (age > 86400000) {
-          handleRefreshBrands();
-        }
-      }
-    };
-    
-    // Check cache age when component mounts
-    checkCacheAge();
-    
-    // Also fetch initial filter data
-    fetchFilterData();
-    
-    // Check cache age every 6 hours
-    const interval = setInterval(checkCacheAge, 21600000); // 6 hours
-    
-    return () => clearInterval(interval);
-  }, []);
+  // Convert string IDs to numbers for the hook
+  const selectedBrandIds = useMemo(() => 
+    selectedBrands.map(id => parseInt(id)).filter(id => !isNaN(id)), 
+    [selectedBrands]
+  );
+  
+  const selectedCategoryIds = selectedCategories;
 
-  const fetchFilterData = async () => {
-    try {
-      // Fetch unique brands from products with caching
-      let brandsData: string[] = [];
-      
-      // Check if we have cached brand data (less than 1 hour old)
-      const cachedBrands = localStorage.getItem('svitanok_brands_cache');
-      const cacheTimestamp = localStorage.getItem('svitanok_brands_cache_timestamp');
-      const cacheValid = cachedBrands && cacheTimestamp && 
-        (Date.now() - parseInt(cacheTimestamp)) < 3600000; // 1 hour
-      
-      if (cacheValid) {
-        brandsData = JSON.parse(cachedBrands);
-        // If we have cached data, don't show loading spinner
-        setLoading(false);
-      } else {
-        // Only show loading spinner when fetching from database
-        setLoading(true);
-        
-        // Fetch brands from database
-        const { data: brandData, error: brandError } = await supabase
-          .from('products')
-          .select('attributes')
-          .not('attributes', 'is', null);
-        
-        if (brandError) {
-          console.error('Error fetching brand data:', brandError);
-        }
-        
-        if (brandData) {
-          const uniqueBrands = new Set<string>();
-          brandData.forEach((product: any) => {
-            // Debug log to see what attributes look like
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Product attributes:', product.attributes);
-            }
-            
-            // Try multiple possible brand keys
-            const brand = product.attributes?.Виробник || 
-                         product.attributes?.Brand || 
-                         product.attributes?.brand || 
-                         product.attributes?.vendor || 
-                         product.attributes?.Виробитель ||
-                         product.attributes?.Manufacturer;
-            
-            if (brand && typeof brand === 'string' && brand.trim()) {
-              uniqueBrands.add(brand.trim());
-            } else if (brand && Array.isArray(brand) && brand.length > 0) {
-              // Handle case where brand might be an array
-              const firstBrand = brand[0];
-              if (firstBrand && typeof firstBrand === 'string' && firstBrand.trim()) {
-                uniqueBrands.add(firstBrand.trim());
-              }
-            }
-          });
-          brandsData = Array.from(uniqueBrands).sort();
-          
-          // Cache the results
-          localStorage.setItem('svitanok_brands_cache', JSON.stringify(brandsData));
-          localStorage.setItem('svitanok_brands_cache_timestamp', Date.now().toString());
-          
-          // Debug log to see what brands were extracted
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Extracted brands:', brandsData);
-          }
-        }
-      }
-      
-      setBrands(brandsData);
-      
-      // Fetch categories
-      const { data: categoryData, error: categoryError } = await supabase
-        .from('categories')
-        .select('name')
-        .order('name');
-      
-      if (!categoryError && categoryData) {
-        setCategories(categoryData.map((cat: any) => cat.name));
-      }
-      
-      // Fetch unique problems from products
-      const { data: problemData, error: problemError } = await supabase
-        .from('products')
-        .select('attributes')
-        .not('attributes', 'is', null);
-      
-      if (!problemError && problemData) {
-        const uniqueProblems = new Set<string>();
-        problemData.forEach((product: any) => {
-          // Check multiple keys for problems
-          const problemKeys = ['Проблема шкіри', 'Значення_Проблеми', 'Назва_Проблеми', 'Призначення'];
-          problemKeys.forEach(key => {
-            const problemValue = product.attributes?.[key];
-            if (problemValue) {
-              if (typeof problemValue === 'string') {
-                // Handle pipe-separated values
-                if (problemValue.includes('|')) {
-                  const parts = problemValue.split('|');
-                  parts.forEach(p => {
-                    if (p.trim()) uniqueProblems.add(p.trim());
-                  });
-                } else {
-                  uniqueProblems.add(problemValue.trim());
-                }
-              } else if (Array.isArray(problemValue)) {
-                // Handle array values
-                problemValue.forEach(p => {
-                  if (p && typeof p === 'string' && p.trim()) {
-                    uniqueProblems.add(p.trim());
-                  }
-                });
-              }
-            }
-          });
-        });
-        setProblems(Array.from(uniqueProblems).sort());
-      }
-    } catch (error) {
-      console.error('Error fetching filter data:', error);
-    } finally {
-      // Only hide loading if we were actually loading
-      if (loading) {
-        setLoading(false);
-      }
+  // Get dynamically filtered options
+  const filteredCategories = useMemo(() => {
+    if (selectedBrandIds.length > 0) {
+      return getAvailableCategories(selectedBrandIds);
     }
-  };
+    return availableCategories;
+  }, [selectedBrandIds, availableCategories, getAvailableCategories]);
 
-  const handleRefreshBrands = async () => {
-    try {
-      // Don't show loading spinner for background refresh
-      
-      // Clear cache
-      localStorage.removeItem('svitanok_brands_cache');
-      localStorage.removeItem('svitanok_brands_cache_timestamp');
-      
-      // Fetch fresh brands from database
-      const { data: brandData, error: brandError } = await supabase
-        .from('products')
-        .select('attributes')
-        .not('attributes', 'is', null);
-      
-      if (brandError) {
-        console.error('Error refreshing brand data:', brandError);
-      }
-      
-      if (brandData) {
-        const uniqueBrands = new Set<string>();
-        brandData.forEach((product: any) => {
-          // Try multiple possible brand keys
-          const brand = product.attributes?.Виробник || 
-                       product.attributes?.Brand || 
-                       product.attributes?.brand || 
-                       product.attributes?.vendor || 
-                       product.attributes?.Виробитель ||
-                       product.attributes?.Manufacturer;
-          
-          if (brand && typeof brand === 'string' && brand.trim()) {
-            uniqueBrands.add(brand.trim());
-          } else if (brand && Array.isArray(brand) && brand.length > 0) {
-            // Handle case where brand might be an array
-            const firstBrand = brand[0];
-            if (firstBrand && typeof firstBrand === 'string' && firstBrand.trim()) {
-              uniqueBrands.add(firstBrand.trim());
-            }
-          }
-        });
-        const brandsData = Array.from(uniqueBrands).sort();
-        
-        // Update cache
-        localStorage.setItem('svitanok_brands_cache', JSON.stringify(brandsData));
-        localStorage.setItem('svitanok_brands_cache_timestamp', Date.now().toString());
-        
-        setBrands(brandsData);
-      }
-    } catch (error) {
-      console.error('Error refreshing brand data:', error);
+  const filteredBrands = useMemo(() => {
+    if (selectedCategoryIds.length > 0) {
+      return getAvailableBrands(selectedCategoryIds);
     }
-  };
+    return availableBrands;
+  }, [selectedCategoryIds, availableBrands, getAvailableBrands]);
 
-  const handleBrandToggle = (brand: string) => {
-    if (selectedBrands.includes(brand)) {
-      onBrandsChange(selectedBrands.filter((b) => b !== brand));
+  // Handle filter changes
+  const handleBrandToggle = (brandId: string) => {
+    if (selectedBrands.includes(brandId)) {
+      onBrandsChange(selectedBrands.filter(id => id !== brandId));
     } else {
-      onBrandsChange([...selectedBrands, brand]);
+      onBrandsChange([...selectedBrands, brandId]);
     }
   };
 
-  const handleCategoryToggle = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      onCategoriesChange(selectedCategories.filter((c) => c !== category));
+  const handleCategoryToggle = (categoryId: string) => {
+    if (selectedCategories.includes(categoryId)) {
+      onCategoriesChange(selectedCategories.filter(id => id !== categoryId));
     } else {
-      onCategoriesChange([...selectedCategories, category]);
+      onCategoriesChange([...selectedCategories, categoryId]);
+    }
+  };
+
+  const handleSkinTypeToggle = (skinType: string) => {
+    if (selectedSkinTypes.includes(skinType)) {
+      onSkinTypesChange(selectedSkinTypes.filter(st => st !== skinType));
+    } else {
+      onSkinTypesChange([...selectedSkinTypes, skinType]);
     }
   };
 
   const handleProblemToggle = (problem: string) => {
     if (selectedProblems.includes(problem)) {
-      onProblemsChange(selectedProblems.filter((p) => p !== problem));
+      onProblemsChange(selectedProblems.filter(p => p !== problem));
     } else {
       onProblemsChange([...selectedProblems, problem]);
     }
   };
 
+  const handleClassToggle = (cosmeticClass: string) => {
+    if (selectedClasses.includes(cosmeticClass)) {
+      onClassesChange(selectedClasses.filter(c => c !== cosmeticClass));
+    } else {
+      onClassesChange([...selectedClasses, cosmeticClass]);
+    }
+  };
+
   const handlePriceApply = () => {
-    // Validate price inputs
     let min = localMinPrice;
     let max = localMaxPrice;
     
-    // Ensure min is not greater than max
     if (min > max && max > 0) {
-      [min, max] = [max, min]; // Swap values
+      [min, max] = [max, min];
     }
     
     onPriceChange(min, max);
@@ -339,97 +188,6 @@ export default function FilterSidebar({
         ФІЛЬТРУВАТИ ЗА
       </h2>
 
-      {/* Brands Filter */}
-      <div className="pb-4">
-        <button
-          onClick={() => setBrandsOpen(!brandsOpen)}
-          className="flex items-center justify-between w-full py-2"
-        >
-          <span
-            className="text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            БРЕНД
-          </span>
-          {brandsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {brandsOpen && (
-          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
-            {brands.length > 0 ? (
-              brands.map((brand) => (
-                <CustomCheckbox
-                  key={brand}
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() => handleBrandToggle(brand)}
-                  label={brand}
-                />
-              ))
-            ) : (
-              <p className="text-xs text-gray-500">Бренди не знайдено</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Categories Filter */}
-      <div className="pb-4">
-        <button
-          onClick={() => setCategoriesOpen(!categoriesOpen)}
-          className="flex items-center justify-between w-full py-2"
-        >
-          <span
-            className="text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            ТИП
-          </span>
-          {categoriesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {categoriesOpen && (
-          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
-            {categories.map((category) => (
-              <CustomCheckbox
-                key={category}
-                checked={selectedCategories.includes(category)}
-                onChange={() => handleCategoryToggle(category)}
-                label={category}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Problems Filter */}
-      <div className="pb-4">
-        <button
-          onClick={() => setProblemsOpen(!problemsOpen)}
-          className="flex items-center justify-between w-full py-2"
-        >
-          <span
-            className="text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            ПРОБЛЕМА
-          </span>
-          {problemsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {problemsOpen && (
-          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
-            {problems.map((problem) => (
-              <CustomCheckbox
-                key={problem}
-                checked={selectedProblems.includes(problem)}
-                onChange={() => handleProblemToggle(problem)}
-                label={problem}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Price Filter */}
       <div className="pb-4">
         <button
@@ -478,16 +236,173 @@ export default function FilterSidebar({
         )}
       </div>
 
+      {/* Brands Filter */}
+      <div className="pb-4">
+        <button
+          onClick={() => setBrandsOpen(!brandsOpen)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            БРЕНД
+          </span>
+          {brandsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {brandsOpen && (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {filteredBrands.length > 0 ? (
+              filteredBrands.map((brand) => (
+                <CustomCheckbox
+                  key={brand.id}
+                  checked={selectedBrands.includes(brand.id)}
+                  onChange={() => handleBrandToggle(brand.id)}
+                  label={brand.name}
+                />
+              ))
+            ) : (
+              <p className="text-xs text-gray-500">Бренди не знайдено</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Categories Filter */}
+      <div className="pb-4">
+        <button
+          onClick={() => setCategoriesOpen(!categoriesOpen)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            КАТЕГОРІЯ
+          </span>
+          {categoriesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {categoriesOpen && (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((category) => (
+                <CustomCheckbox
+                  key={category.id}
+                  checked={selectedCategories.includes(category.id)}
+                  onChange={() => handleCategoryToggle(category.id)}
+                  label={category.name}
+                />
+              ))
+            ) : (
+              <p className="text-xs text-gray-500">Категорії не знайдено</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Skin Type Filter */}
+      <div className="pb-4">
+        <button
+          onClick={() => setSkinTypeOpen(!skinTypeOpen)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            ТИП ШКІРИ
+          </span>
+          {skinTypeOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {skinTypeOpen && (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {skinTypes.map((skinType) => (
+              <CustomCheckbox
+                key={skinType}
+                checked={selectedSkinTypes.includes(skinType)}
+                onChange={() => handleSkinTypeToggle(skinType)}
+                label={skinType}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Problems Filter */}
+      <div className="pb-4">
+        <button
+          onClick={() => setProblemsOpen(!problemsOpen)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            ПРОБЛЕМА
+          </span>
+          {problemsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {problemsOpen && (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {problems.map((problem) => (
+              <CustomCheckbox
+                key={problem}
+                checked={selectedProblems.includes(problem)}
+                onChange={() => handleProblemToggle(problem)}
+                label={problem}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Cosmetic Class Filter */}
+      <div className="pb-4">
+        <button
+          onClick={() => setClassesOpen(!classesOpen)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <span
+            className="text-xs font-medium uppercase tracking-widest"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            КЛАС КОСМЕТИКИ
+          </span>
+          {classesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {classesOpen && (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+            {cosmeticClasses.map((cosmeticClass) => (
+              <CustomCheckbox
+                key={cosmeticClass}
+                checked={selectedClasses.includes(cosmeticClass)}
+                onChange={() => handleClassToggle(cosmeticClass)}
+                label={cosmeticClass}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Clear Filters Button */}
       {(selectedBrands.length > 0 || 
         selectedCategories.length > 0 || 
+        selectedSkinTypes.length > 0 ||
         selectedProblems.length > 0 || 
+        selectedClasses.length > 0 ||
         minPrice > 0 || maxPrice > 0) && (
         <button
           onClick={() => {
             onBrandsChange([]);
             onCategoriesChange([]);
+            onSkinTypesChange([]);
             onProblemsChange([]);
+            onClassesChange([]);
             onPriceChange(0, 0);
             setLocalMinPrice(0);
             setLocalMaxPrice(0);
@@ -498,14 +413,6 @@ export default function FilterSidebar({
           ОЧИСТИТИ ФІЛЬТРИ
         </button>
       )}
-            
-      {/* Refresh Brands Button - Hidden but accessible for debugging */}
-      <button
-        onClick={handleRefreshBrands}
-        className="hidden"
-        aria-label="Refresh brands"
-        id="refresh-brands-button"
-      />
     </div>
   );
 }

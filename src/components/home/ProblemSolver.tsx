@@ -45,7 +45,7 @@ const skinProblems = [
 // Типи продуктів (опціонально)
 const productTypes = [
   { value: '', label: 'Всі типи' },
-  { value: 'serum', label: 'Сирівки' },
+  { value: 'serum', label: 'Сироватки' },
   { value: 'cream', label: 'Креми' },
   { value: 'mask', label: 'Маски' },
   { value: 'cleanser', label: 'Очищення' },
@@ -109,11 +109,11 @@ export default function ProblemSolver() {
                 onClick={() => handleProblemSelect(problem.id)}
                 className="bg-white rounded-none border border-black overflow-hidden hover:shadow-lg transition-all duration-300 group relative"
               >
-                <div className="relative aspect-square overflow-hidden bg-gray-100 flex items-center justify-center">
+                <div className="relative aspect-square overflow-hidden bg-gray-100">
                   <img
                     src={problem.image}
                     alt={problem.name}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover object-center scale-130 group-hover:scale-125 transition-transform duration-300"
                     loading="lazy"
                   />
                   {isSelected && (

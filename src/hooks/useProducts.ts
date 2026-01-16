@@ -27,6 +27,8 @@ interface UseProductsParams {
   searchQuery?: string;
   problemTags?: string[];
   ingredients?: string[]; // For ingredient filtering
+  skinTypes?: string[]; // For skin type filtering
+  cosmeticClasses?: string[]; // For cosmetic class filtering
 }
 
 interface UseProductsResult {
@@ -50,6 +52,8 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
     searchQuery,
     problemTags = [],
     ingredients = [],
+    skinTypes = [], // New parameter
+    cosmeticClasses = [], // New parameter
   } = params;
 
   // Стабілізуємо масиви для queryKey (щоб уникнути зайвих ререндерів)
@@ -57,16 +61,20 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
   const problemsKey = useMemo(() => [...problems].sort().join(','), [problems]);
   const problemTagsKey = useMemo(() => [...problemTags].sort().join(','), [problemTags]);
   const ingredientsKey = useMemo(() => [...ingredients].sort().join(','), [ingredients]);
+  const skinTypesKey = useMemo(() => [...skinTypes].sort().join(','), [skinTypes]); // New key
+  const cosmeticClassesKey = useMemo(() => [...cosmeticClasses].sort().join(','), [cosmeticClasses]); // New key
 
   // Стабілізуємо масиви для використання в queryFn
   const stableBrands = useMemo(() => brands, [brandsKey]);
   const stableProblems = useMemo(() => problems, [problemsKey]);
   const stableProblemTags = useMemo(() => problemTags, [problemTagsKey]);
   const stableIngredients = useMemo(() => ingredients, [ingredientsKey]);
+  const stableSkinTypes = useMemo(() => skinTypes, [skinTypesKey]); // New stable array
+  const stableCosmeticClasses = useMemo(() => cosmeticClasses, [cosmeticClassesKey]); // New stable array
 
   // Використовуємо React Query для кешування та дедуплікації запитів
   const { data, isLoading, error } = useQuery({
-    queryKey: ['products', category, minPrice, maxPrice, brandsKey, problemsKey, sortBy, page, pageSize, searchQuery, problemTagsKey, ingredientsKey],
+    queryKey: ['products', category, minPrice, maxPrice, brandsKey, problemsKey, sortBy, page, pageSize, searchQuery, problemTagsKey, ingredientsKey, skinTypesKey, cosmeticClassesKey],
     queryFn: async () => {
       // Build query
       let query = supabase
@@ -101,16 +109,19 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
       }
 
       // Database-level filtering for JSONB attributes
-      // Brand filter - check multiple keys with exact match for better performance
+      // Brand filter - convert string IDs to numbers and use foreign key
       if (stableBrands.length > 0) {
-        // Use exact match instead of ilike for better performance when possible
-        const brandConditions = stableBrands.map(brand => 
-          `attributes->>Виробник.eq.${brand},attributes->>Brand.eq.${brand}`
-        ).join(',');
-        query = query.or(brandConditions);
+        // Convert string brand IDs to numbers
+        const brandIds = stableBrands
+          .map(id => parseInt(id, 10))
+          .filter(id => !isNaN(id));
+        
+        if (brandIds.length > 0) {
+          query = query.in('brand_id', brandIds);
+        }
       }
 
-      // Categories filter (mapped from problems in Catalog.tsx) - check multiple keys
+      // Categories filter (mapped from problems in Catalog.tsx) - now using foreign key
       if (stableProblems.length > 0) {
         // First try to match with category table
         const { data: categoryIds } = await supabase
@@ -121,21 +132,18 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         if (categoryIds && categoryIds.length > 0) {
           const ids = categoryIds.map(cat => cat.id);
           query = query.in('category_id', ids);
-        } else {
-          // Fallback to old method
-          const categoryConditions = stableProblems.map(problem => 
-            `attributes->>Назва_групи.ilike.%${problem}%,attributes->>Category.ilike.%${problem}%`
-          ).join(',');
-          query = query.or(categoryConditions);
         }
+        // Note: Removed fallback to old method since we're using foreign keys now
       }
 
-      // Problems filter - check multiple keys with ilike for pipe-separated values
+      // Problems filter - check multiple keys with JSONB contains for arrays
       if (stableProblemTags.length > 0) {
-        const problemConditions = stableProblemTags.map(problem => 
-          `attributes->>Проблема шкіри.ilike.%${problem}%,attributes->>Значення_Проблеми.ilike.%${problem}%,attributes->>Назва_Проблеми.ilike.%${problem}%,attributes->>Призначення.ilike.%${problem}%`
+        // Use JSONB contains operator for array values
+        // This will find products where the 'Проблема шкіри' array contains ANY of the selected tags
+        const conditions = stableProblemTags.map(problem => 
+          `attributes->'Проблема шкіри' @> '["${problem}"]'`
         ).join(',');
-        query = query.or(problemConditions);
+        query = query.or(conditions);
       }
 
       // Ingredients filter - check ingredients array or string fields
@@ -144,6 +152,22 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
           `attributes->>Інгредієнти.ilike.%${ingredient}%,attributes->>Ingredient.ilike.%${ingredient}%,attributes->>Ingredients.ilike.%${ingredient}%,attributes->>Ключові_інгредієнти.ilike.%${ingredient}%`
         ).join(',');
         query = query.or(ingredientConditions);
+      }
+      
+      // Skin Types filter - check skin type attributes with JSONB contains for arrays
+      if (stableSkinTypes.length > 0) {
+        const skinTypeConditions = stableSkinTypes.map(skinType => 
+          `attributes->'Тип шкіри' @> '["${skinType}"]'`
+        ).join(',');
+        query = query.or(skinTypeConditions);
+      }
+      
+      // Cosmetic Classes filter - check cosmetic class attributes with JSONB contains for arrays
+      if (stableCosmeticClasses.length > 0) {
+        const classConditions = stableCosmeticClasses.map(cosmeticClass => 
+          `attributes->'Клас косметики' @> '["${cosmeticClass}"]'`
+        ).join(',');
+        query = query.or(classConditions);
       }
       
       // Search query filter - search in name, description, and ingredients

@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 // @ts-expect-error
@@ -14,6 +15,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { useProductReviews } from '@/hooks/useProductReviews';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '@/utils/helpers';
+import { supabase } from '@/lib/supabase';
 
 interface Product {
   id: number;
@@ -25,12 +27,35 @@ interface Product {
   attributes: Record<string, any>;
   description: string;
   in_stock: boolean;
+  brand_id: number;
+  category_id: string;
+  brands?: {
+    id: number;
+    name: string;
+  };
+  categories?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface RecommendedProductsProps {
-  products: Product[];
-  loading: boolean;
+  currentProduct: Pick<Product, 'id' | 'brand_id' | 'category_id'>;
 }
+
+// Brands that use "Lines" (Category = Line) - Strategy A
+const LINE_BASED_BRANDS = [1, 2, 3]; // Smart4derma and similar brands
+
+// Check if brand uses line-based categorization
+const isLineBasedBrand = (brandId: number): boolean => {
+  return LINE_BASED_BRANDS.includes(brandId);
+};
+
+// Check if product belongs to a line-based brand via attributes
+const hasLineAttribute = (attributes: Record<string, any>): boolean => {
+  const cosmeticClass = attributes?.['Клас косметики']?.toLowerCase();
+  return cosmeticClass === 'професійна' || cosmeticClass === 'лінійна';
+};
 
 function RecommendedProductCard({ product }: { product: Product }) {
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -84,7 +109,7 @@ function RecommendedProductCard({ product }: { product: Product }) {
         className="block flex-1"
       >
         {/* Image Container */}
-        <div className="relative bg-[#F5F5F5] aspect-[3/4] overflow-hidden">
+        <div className="relative aspect-[3/4] overflow-hidden">
           {/* Discount Badge */}
           {discountPercent > 0 && (
             <div className="absolute top-2 left-2 z-10 bg-black text-white px-2 py-1 text-xs font-bold uppercase">
@@ -114,6 +139,13 @@ function RecommendedProductCard({ product }: { product: Product }) {
 
         {/* Content */}
         <div className="p-4 flex-1 flex flex-col">
+          {/* Brand Name */}
+          {product.brands?.name && (
+            <div className="text-[10px] text-gray-500 text-center uppercase tracking-wider mb-1">
+              {product.brands.name}
+            </div>
+          )}
+          
           {/* Product Name */}
           <h3
             className="text-sm font-medium uppercase text-center underline underline-offset-4 mb-2 line-clamp-2 min-h-[40px]"
@@ -173,7 +205,164 @@ function RecommendedProductCard({ product }: { product: Product }) {
   );
 }
 
-export default function RecommendedProducts({ products, loading }: RecommendedProductsProps) {
+export default function RecommendedProducts({ currentProduct }: RecommendedProductsProps) {
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!currentProduct?.id || !currentProduct?.brand_id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // Step 1: Fetch candidate products from the same brand
+        const { data: candidates, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            brands (*),
+            categories (*)
+          `)
+          .eq('brand_id', currentProduct.brand_id)
+          .neq('id', currentProduct.id)
+          .limit(20);
+
+        if (error) throw error;
+
+        // Step 2: Determine recommendation strategy
+        const isLineBrand = isLineBasedBrand(currentProduct.brand_id);
+        const hasLineAttr = candidates?.some(p => hasLineAttribute(p.attributes)) ?? false;
+        const useLineStrategy = isLineBrand || hasLineAttr;
+
+        // Step 3: Apply filtering strategy
+        let filteredProducts: Product[] = [];
+        
+        if (useLineStrategy && candidates) {
+          // Strategy A: Same Brand + Same Category (Line-based)
+          filteredProducts = candidates.filter(
+            product => product.category_id === currentProduct.category_id
+          );
+        } else if (candidates) {
+          // Strategy B: Same Brand + Different Categories (Cross-sell)
+          filteredProducts = candidates.filter(
+            product => product.category_id !== currentProduct.category_id
+          );
+        }
+
+        // Step 4: Sort by relevance (best sellers first, then by ID)
+        filteredProducts.sort((a, b) => {
+          const aIsBestSeller = a.attributes?.is_bestseller === true;
+          const bIsBestSeller = b.attributes?.is_bestseller === true;
+          
+          if (aIsBestSeller && !bIsBestSeller) return -1;
+          if (!aIsBestSeller && bIsBestSeller) return 1;
+          return a.id - b.id;
+        });
+
+        // Step 5: Get initial recommendations (limit to 6)
+        let finalProducts = filteredProducts.slice(0, 6);
+
+        // Step 6: Robust fallback logic
+        // If we don't have enough recommendations, fetch bestsellers
+        if (finalProducts.length < 6) {
+          const needed = 6 - finalProducts.length;
+          
+          // Try bestsellers first
+          const { data: bestsellers } = await supabase
+            .from('products')
+            .select(`
+              *,
+              brands (*),
+              categories (*)
+            `)
+            .neq('id', currentProduct.id)
+            .eq('attributes->>is_bestseller', 'true')
+            .limit(needed * 2); // Get more to have variety
+
+          if (bestsellers && bestsellers.length > 0) {
+            // Filter out any products we already have
+            const uniqueBestsellers = bestsellers.filter(
+              bs => !finalProducts.some(fp => fp.id === bs.id)
+            ).slice(0, needed);
+            
+            finalProducts = [...finalProducts, ...uniqueBestsellers];
+          }
+        }
+
+        // Step 7: Last resort fallback - newest products
+        if (finalProducts.length < 4) {
+          const needed = 4 - finalProducts.length;
+          
+          const { data: newestProducts } = await supabase
+            .from('products')
+            .select(`
+              *,
+              brands (*),
+              categories (*)
+            `)
+            .neq('id', currentProduct.id)
+            .order('created_at', { ascending: false })
+            .limit(needed * 2);
+
+          if (newestProducts && newestProducts.length > 0) {
+            // Filter out any products we already have
+            const uniqueNewest = newestProducts.filter(
+              np => !finalProducts.some(fp => fp.id === np.id)
+            ).slice(0, needed);
+            
+            finalProducts = [...finalProducts, ...uniqueNewest];
+          }
+        }
+
+        // Final safeguard - ensure we have at least some recommendations
+        if (finalProducts.length === 0) {
+          // Ultimate fallback - get any random products
+          const { data: randomProducts } = await supabase
+            .from('products')
+            .select(`
+              *,
+              brands (*),
+              categories (*)
+            `)
+            .neq('id', currentProduct.id)
+            .limit(6);
+
+          finalProducts = randomProducts || [];
+        }
+
+        setRecommendedProducts(finalProducts.slice(0, 6));
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        
+        // Emergency fallback - try to get some products anyway
+        try {
+          const { data: fallbackProducts } = await supabase
+            .from('products')
+            .select(`
+              *,
+              brands (*),
+              categories (*)
+            `)
+            .neq('id', currentProduct.id)
+            .limit(3);
+          
+          setRecommendedProducts(fallbackProducts || []);
+        } catch (fallbackError) {
+          console.error('Emergency fallback failed:', fallbackError);
+          setRecommendedProducts([]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, [currentProduct]);
+
   if (loading) {
     return (
       <section className="py-12 md:py-16 bg-white">
@@ -194,7 +383,7 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
     );
   }
 
-  if (products.length === 0) {
+  if (recommendedProducts.length === 0) {
     return null;
   }
 
@@ -210,7 +399,7 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
         
         {/* Desktop Grid View - Hidden on mobile */}
         <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
-          {products.map((product) => (
+          {recommendedProducts.map((product) => (
             <div key={product.id} className="h-full">
               <RecommendedProductCard product={product} />
             </div>
@@ -239,10 +428,10 @@ export default function RecommendedProducts({ products, loading }: RecommendedPr
               bulletActiveClass: 'swiper-pagination-bullet-active !bg-black',
             }}
             navigation={true}
-            loop={products.length > 2}
+            loop={recommendedProducts.length > 2}
             className="recommended-products-swiper"
           >
-            {products.map((product) => (
+            {recommendedProducts.map((product) => (
               <SwiperSlide key={product.id}>
                 <RecommendedProductCard product={product} />
               </SwiperSlide>

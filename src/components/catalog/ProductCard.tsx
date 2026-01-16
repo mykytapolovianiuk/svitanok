@@ -113,7 +113,7 @@ export default function ProductCard({
     <div className="group transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <Link to={`/product/${encodeURIComponent(slug)}`} className="block" onClick={handleProductClick}>
         {/* Image Container */}
-        <div className="relative bg-[#F5F5F5] aspect-[3/4] overflow-hidden">
+        <div className="relative aspect-[4/5] overflow-hidden flex items-center justify-center p-4">
           {/* Heart Icon */}
           <button
             onClick={handleToggleFavorite}
@@ -125,8 +125,8 @@ export default function ProductCard({
             />
           </button>
 
-          {/* Image with WebP support */}
-          <picture>
+          {/* Image with WebP support and proper sizing */}
+          <picture className="w-full h-full flex items-center justify-center">
             <source
               srcSet={image ? getImageSrcSet(image) : undefined}
               type="image/webp"
@@ -134,7 +134,7 @@ export default function ProductCard({
             <img
               src={image ? getOptimizedImageUrl(image, 300, 80) : '/placeholder-product.jpg'}
               alt={name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-contain max-h-full max-w-full"
               loading="lazy"
               decoding="async"
             />
