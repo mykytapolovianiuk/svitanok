@@ -26,7 +26,7 @@ export default function ProblemSolver() {
     const problemItem = UPDATED_PROBLEM_SOLVER_ITEMS.find(p => p.id === selectedProblem);
     if (!problemItem) return;
 
-    // Navigate to catalog with the translated DB value
+    // Navigate to catalog with the translated DB value using query parameter
     const dbValue = translateProblemToDB(selectedProblem);
     navigate(`/catalog?problem=${encodeURIComponent(dbValue)}`);
   };
@@ -36,7 +36,7 @@ export default function ProblemSolver() {
     : null;
 
   return (
-    <section className="py-12 md:py-16 bg-white">
+    <section className="py-12 md:py-16 bg-white flex justify-center">
       <div className="container mx-auto px-4 md:px-8 max-w-[1440px]">
         {/* Header with Dropdown */}
         <div className="mb-6 md:mb-8">
@@ -58,14 +58,14 @@ export default function ProblemSolver() {
         </div>
         
         {/* Problems Grid - Responsive for desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
           {UPDATED_PROBLEM_SOLVER_ITEMS.map((problem) => {
             const isSelected = selectedProblem === problem.id;
             return (
               <button
                 key={problem.id}
                 onClick={() => handleProblemSelect(problem.id)}
-                className="bg-white rounded-none border border-black overflow-hidden hover:shadow-lg transition-all duration-300 group relative"
+        
               >
                 <div className="relative aspect-square overflow-hidden bg-gray-100">
                   <img
@@ -112,23 +112,6 @@ export default function ProblemSolver() {
 
         {/* Footer with Product Type Dropdown and Button */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-          <div className="flex-1 relative border-b border-gray-300">
-            <select
-              value={selectedProductType}
-              onChange={(e) => setSelectedProductType(e.target.value)}
-              className="w-full bg-transparent py-2 md:py-3 px-0 pr-8 focus:outline-none focus:border-b-2 focus:border-black appearance-none cursor-pointer text-sm md:text-base"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              <option value="">Всі типи</option>
-              <option value="serum">Сироватки</option>
-              <option value="cream">Креми</option>
-              <option value="mask">Маски</option>
-              <option value="cleanser">Очищення</option>
-              <option value="toner">Тонери</option>
-              <option value="sunscreen">Сонцезахисні</option>
-            </select>
-            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" />
-          </div>
           <button
             onClick={handleApplyFilters}
             disabled={!selectedProblem}

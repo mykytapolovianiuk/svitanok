@@ -38,13 +38,6 @@ export const PROBLEM_SOLVER_ITEMS = [
     problem: 'Глубокие морщины'
   },
   { 
-    id: 'dryness', 
-    label: 'Сухість та зневоднення', 
-    image: '/images/problems/problem-02.jpg', 
-    dbValue: 'Сухость',
-    problem: 'Сухость'
-  },
-  { 
     id: 'pigmentation', 
     label: 'Пігментація', 
     image: '/images/problems/problem-04.jpg', 

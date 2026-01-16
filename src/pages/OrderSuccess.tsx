@@ -1,12 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { useAnalytics } from '../hooks/useAnalytics'; // Add analytics import
+import { useAnalytics } from '../hooks/useAnalytics';
+import { sendOrderNotification } from '../services/notifications';
+import { supabase } from '../lib/supabase';
 
 export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
   const { orderId, totalAmount } = location.state || {};
-  const { trackPurchase } = useAnalytics(); // Add analytics hook
+  const { trackPurchase } = useAnalytics();
+  const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [notificationSent, setNotificationSent] = useState(false);
 
   // If no order data, redirect to home
   useEffect(() => {
@@ -14,6 +18,68 @@ export default function OrderSuccess() {
       navigate('/');
     }
   }, [orderId, navigate]);
+
+  // Fetch order details for notification
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      if (!orderId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items(*, products(name))
+          `)
+          .eq('id', orderId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching order details:', error);
+          return;
+        }
+
+        setOrderDetails(data);
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [orderId]);
+
+  // Send Telegram notification
+  useEffect(() => {
+    const sendNotification = async () => {
+      if (orderDetails && !notificationSent) {
+        try {
+          const result = await sendOrderNotification(
+            orderDetails.id,
+            {
+              customer_name: orderDetails.customer_name,
+              customer_phone: orderDetails.customer_phone,
+              customer_email: orderDetails.customer_email,
+              delivery_method: orderDetails.delivery_method,
+              delivery_info: orderDetails.delivery_info,
+              total_price: orderDetails.total_price,
+              items: orderDetails.order_items || []
+            }
+          );
+          
+          if (result.success) {
+            setNotificationSent(true);
+            console.log('Telegram notification sent successfully');
+          } else {
+            console.error('Failed to send Telegram notification:', result.error);
+          }
+        } catch (error) {
+          console.error('Error sending Telegram notification:', error);
+        }
+      }
+    };
+
+    sendNotification();
+  }, [orderDetails, notificationSent]);
 
   // Track purchase event
   useEffect(() => {

@@ -94,12 +94,12 @@ export default function CategorySlider() {
           {categories.map((category) => (
             <SwiperSlide key={category.id}>
               <Link
-                to={`/catalog/${category.slug}`}
+                to={`/catalog?category=${encodeURIComponent(category.slug)}`}
                 className="block group cursor-pointer"
               >
                 <div className="bg-primary rounded-lg overflow-hidden transition-transform duration-300 hover:scale-105">
-                  {/* Image Container - 80% height */}
-                  <div className="aspect-[3/4] overflow-hidden">
+                  {/* Image Container - Fixed aspect ratio */}
+                  <div className="aspect-square overflow-hidden">
                     <img
                       src={category.image}
                       alt={category.name}

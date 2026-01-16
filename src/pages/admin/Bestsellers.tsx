@@ -6,11 +6,13 @@ import { Product } from '@/types';
 import { DraggableList } from '@/components/admin/DraggableList';
 
 interface BestsellerItem {
-  id: string;
-  product_id: number;
+  id: number;
+  name: string;
   position: number;
   created_at: string;
-  product?: Product;
+  is_bestseller: boolean;
+  images?: string[];
+  external_id?: string;
 }
 
 export default function Bestsellers() {
@@ -29,16 +31,20 @@ export default function Bestsellers() {
     try {
       setLoading(true);
       
-      // Fetch bestsellers with product data
+      // Fetch products marked as bestsellers with position ordering
       const { data: bestsellersData, error: bestsellersError } = await supabase
-        .from('bestsellers')
-        .select(`
-          *,
-          products (*)
-        `)
-        .order('position', { ascending: true });
+        .from('products')
+        .select('id, name, images, external_id, is_bestseller, created_at')
+        .eq('is_bestseller', true)
+        .order('created_at', { ascending: false }); // Order by creation date or implement custom ordering
 
       if (bestsellersError) throw bestsellersError;
+
+      // Add position property for UI ordering (can be customized)
+      const bestsellersWithPosition = (bestsellersData || []).map((product, index) => ({
+        ...product,
+        position: index + 1
+      }));
 
       // Fetch all products for selector
       const { data: productsData, error: productsError } = await supabase
@@ -48,7 +54,7 @@ export default function Bestsellers() {
 
       if (productsError) throw productsError;
 
-      setBestsellers(bestsellersData || []);
+      setBestsellers(bestsellersWithPosition);
       setAllProducts(productsData || []);
     } catch (error: any) {
       console.error('Error fetching data:', error);
@@ -60,43 +66,35 @@ export default function Bestsellers() {
 
   const handleAddBestseller = async (productId: number) => {
     try {
-      const newPosition = bestsellers.length > 0 ? Math.max(...bestsellers.map(b => b.position)) + 1 : 1;
-      
-      const { data, error } = await supabase
-        .from('bestsellers')
-        .insert([
-          {
-            product_id: productId,
-            position: newPosition
-          }
-        ])
-        .select(`
-          *,
-          products (*)
-        `);
+      // Update the product to mark it as bestseller
+      const { error } = await supabase
+        .from('products')
+        .update({ is_bestseller: true })
+        .eq('id', productId);
 
       if (error) throw error;
 
-      if (data && data[0]) {
-        setBestsellers(prev => [...prev, data[0]]);
-        toast.success('Товар додано до хітів продажу');
-      }
+      // Refresh the data
+      await fetchData();
+      toast.success('Товар додано до хітів продажу');
     } catch (error: any) {
       console.error('Error adding bestseller:', error);
       toast.error('Не вдалося додати товар до хітів');
     }
   };
 
-  const handleRemoveBestseller = async (id: string) => {
+  const handleRemoveBestseller = async (productId: number) => {
     try {
+      // Update the product to unmark it as bestseller
       const { error } = await supabase
-        .from('bestsellers')
-        .delete()
-        .eq('id', id);
+        .from('products')
+        .update({ is_bestseller: false })
+        .eq('id', productId);
 
       if (error) throw error;
 
-      setBestsellers(prev => prev.filter(b => b.id !== id));
+      // Refresh the data
+      await fetchData();
       toast.success('Товар видалено з хітів продажу');
     } catch (error: any) {
       console.error('Error removing bestseller:', error);
@@ -107,25 +105,9 @@ export default function Bestsellers() {
   const handleReorder = async (newOrder: BestsellerItem[]) => {
     try {
       setSaving(true);
-      
-      // Update positions for all items
-      const updates = newOrder.map((item, index) => 
-        supabase
-          .from('bestsellers')
-          .update({ position: index + 1 })
-          .eq('id', item.id)
-      );
-
-      const results = await Promise.all(updates);
-      
-      // Check for errors
-      const errors = results.filter(result => result.error);
-      if (errors.length > 0) {
-        throw new Error('Не вдалося оновити порядок');
-      }
-
-      setBestsellers(newOrder);
-      toast.success('Порядок успішно збережено');
+      toast.success('Перетягування поки що не реалізовано - товари впорядковуються за датою додавання');
+      // For now, we'll just refresh to show current state
+      await fetchData();
     } catch (error: any) {
       console.error('Error reordering bestsellers:', error);
       toast.error(error.message || 'Не вдалося зберегти порядок');
@@ -136,7 +118,7 @@ export default function Bestsellers() {
 
   const filteredProducts = allProducts.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !bestsellers.some(b => b.product_id === product.id)
+    !bestsellers.some(b => b.id === product.id)
   );
 
   if (loading) {
@@ -198,8 +180,18 @@ export default function Bestsellers() {
       {bestsellers.length > 0 ? (
         <div className="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">
           <DraggableList
-            items={bestsellers}
-            onReorder={handleReorder}
+            items={bestsellers.map(b => ({ ...b, id: b.id.toString() }))}
+            onReorder={(newOrder) => {
+              // Convert back to BestsellerItem format
+              const convertedOrder = newOrder.map(item => ({
+                ...item,
+                id: parseInt(item.id),
+                position: item.position || 0,
+                is_bestseller: true,
+                created_at: new Date().toISOString()
+              })) as BestsellerItem[];
+              handleReorder(convertedOrder);
+            }}
             renderItem={(item, index, dragHandleProps) => (
               <div className="flex items-center gap-4 p-4 border-b border-gray-200 last:border-b-0">
                 <div 
@@ -209,23 +201,23 @@ export default function Bestsellers() {
                   <GripVertical className="h-5 w-5" />
                 </div>
                 <div className="flex-1 flex items-center gap-4">
-                  {item.product?.images && item.product.images.length > 0 && (
+                  {item.images && item.images.length > 0 && (
                     <img 
-                      src={item.product.images[0]} 
-                      alt={item.product.name}
+                      src={item.images[0]} 
+                      alt={item.name}
                       className="w-12 h-12 object-cover rounded"
                     />
                   )}
                   <div>
-                    <h3 className="font-medium text-gray-900">{item.product?.name || 'Невідомий товар'}</h3>
-                    <p className="text-sm text-gray-500">#{item.product?.external_id || 'N/A'}</p>
+                    <h3 className="font-medium text-gray-900">{item.name || 'Невідомий товар'}</h3>
+                    <p className="text-sm text-gray-500">#{item.external_id || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="text-sm text-gray-500">
                   Позиція: {item.position}
                 </div>
                 <button
-                  onClick={() => handleRemoveBestseller(item.id)}
+                  onClick={() => handleRemoveBestseller(parseInt(item.id))}
                   className="text-red-600 hover:text-red-800 p-1"
                   title="Видалити з хітів"
                 >

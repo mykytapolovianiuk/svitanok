@@ -31,6 +31,20 @@ interface UseProductsParams {
   cosmeticClasses?: string[]; // For cosmetic class filtering
 }
 
+// Category slug to database value mapping
+const CATEGORY_MAP: Record<string, string> = {
+  'serums': 'Сироватки',
+  'creams': 'Креми',
+  'sunscreen': 'Сонцезахисні засоби',
+  'cleansing': 'Очищувачі',
+  'acids': 'Кислоти',
+  'masks': 'Маски',
+  'toners': 'Тонери',
+  'lotions': 'Лосьйони',
+  'peels': 'Пілінги',
+  'eye-care': 'Контурний крем'
+};
+
 interface UseProductsResult {
   products: Product[];
   loading: boolean;
@@ -83,20 +97,28 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
 
       // Search query filter - handled below with or() for better ingredient matching
 
-      // Category filter (if provided) - now using category_id
+      // Category filter - Handle both slug mapping and direct category matching
       if (category) {
-        // First get category ID from slug
-        const { data: categoryData } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('slug', category)
-          .single();
-
-        if (categoryData) {
-          query = query.eq('category_id', categoryData.id);
+        // First check if it's a mapped slug
+        const mappedCategory = CATEGORY_MAP[category];
+        if (mappedCategory) {
+          // Use JSONB containment for mapped categories
+          const jsonFilter = JSON.stringify({ "Препарати": mappedCategory });
+          query = query.or(`attributes.cs.${jsonFilter}`);
         } else {
-          // Fallback to old method if category not found
-          query = query.eq('category', category);
+          // Fallback to direct category matching (check categories table)
+          const { data: categoryData } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('slug', category)
+            .single();
+
+          if (categoryData) {
+            query = query.eq('category_id', categoryData.id);
+          } else {
+            // Last resort: try to match category name in attributes
+            query = query.or(`attributes->>Назва_групи.ilike.%${category}%,attributes->>Category.ilike.%${category}%`);
+          }
         }
       }
 
