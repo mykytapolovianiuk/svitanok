@@ -1,57 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Check } from 'lucide-react';
+import { PROBLEM_SOLVER_ITEMS, translateProblemToDB } from '@/lib/constants';
 
-// Проблеми шкіри, які ми вирішуємо
-const skinProblems = [
-  {
-    id: 'wrinkles',
-    name: 'Зморшки',
-    image: '/images/problems/problem-03.jpg',
-    problem: 'Глубокие морщины'
-  },
-  {
-    id: 'dryness',
-    name: 'Засоби для сухої шкіри обличчя',
-    image: '/images/problems/problem-02.jpg',
-    problem: 'Сухость'
-  },
-  {
-    id: 'acne',
-    name: 'Висипи',
-    image: '/images/problems/problem-01.jpg',
-    problem: 'Акне'
-  },
-  {
-    id: 'pigmentation',
-    name: 'Пігментація',
-    image: '/images/problems/problem-04.jpg',
-    problem: 'Пигментация'
-  },
-  {
-    id: 'couperose',
-    name: 'Купероз',
-    image: '/images/problems/problem-05.jpg',
-    problem: 'Купероз'
-  },
-  {
-    id: 'pores',
-    name: 'Розширені пори',
-    image: '/images/problems/problem-01.jpg',
-    problem: 'Расширенные поры'
-  }
-];
-
-// Типи продуктів (опціонально)
-const productTypes = [
-  { value: '', label: 'Всі типи' },
-  { value: 'serum', label: 'Сироватки' },
-  { value: 'cream', label: 'Креми' },
-  { value: 'mask', label: 'Маски' },
-  { value: 'cleanser', label: 'Очищення' },
-  { value: 'toner', label: 'Тонери' },
-  { value: 'sunscreen', label: 'Сонцезахисні' }
-];
+// Update the first item to use acne image
+const UPDATED_PROBLEM_SOLVER_ITEMS = PROBLEM_SOLVER_ITEMS.map((item, index) => 
+  index === 0 
+    ? { ...item, image: '/images/problems/problem-01.jpg' } // Acne image for first item
+    : item
+);
 
 export default function ProblemSolver() {
   const [selectedProblem, setSelectedProblem] = useState<string | null>(null);
@@ -66,16 +23,16 @@ export default function ProblemSolver() {
   const handleApplyFilters = () => {
     if (!selectedProblem) return;
 
-    const problem = skinProblems.find(p => p.id === selectedProblem);
-    if (!problem) return;
+    const problemItem = UPDATED_PROBLEM_SOLVER_ITEMS.find(p => p.id === selectedProblem);
+    if (!problemItem) return;
 
-    // Navigate to catalog with proper filter parameters
-    // Use the exact problem name as stored in database
-    navigate(`/catalog?problem=${encodeURIComponent(problem.problem)}`);
+    // Navigate to catalog with the translated DB value
+    const dbValue = translateProblemToDB(selectedProblem);
+    navigate(`/catalog?problem=${encodeURIComponent(dbValue)}`);
   };
 
   const selectedProblemData = selectedProblem 
-    ? skinProblems.find(p => p.id === selectedProblem)
+    ? UPDATED_PROBLEM_SOLVER_ITEMS.find(p => p.id === selectedProblem)
     : null;
 
   return (
@@ -88,7 +45,7 @@ export default function ProblemSolver() {
               className="text-xl md:text-2xl lg:text-3xl font-medium uppercase tracking-[0.2em]"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              {selectedProblemData?.name || 'Вирішуємо проблеми шкіри'}
+              {selectedProblemData?.label || 'Вирішуємо проблеми шкіри'}
             </h2>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -102,7 +59,7 @@ export default function ProblemSolver() {
         
         {/* Problems Grid - Responsive for desktop */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-6 md:mb-8">
-          {skinProblems.map((problem) => {
+          {UPDATED_PROBLEM_SOLVER_ITEMS.map((problem) => {
             const isSelected = selectedProblem === problem.id;
             return (
               <button
@@ -113,8 +70,8 @@ export default function ProblemSolver() {
                 <div className="relative aspect-square overflow-hidden bg-gray-100">
                   <img
                     src={problem.image}
-                    alt={problem.name}
-                    className="w-full h-full object-cover object-center scale-130 group-hover:scale-125 transition-transform duration-300"
+                    alt={problem.label}
+                    className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
                     loading="lazy"
                   />
                   {isSelected && (
@@ -128,7 +85,7 @@ export default function ProblemSolver() {
                     className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
-                    {problem.name}
+                    {problem.label}
                   </h3>
                 </div>
               </button>
@@ -145,9 +102,9 @@ export default function ProblemSolver() {
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
             <option value="">Виберіть проблему</option>
-            {skinProblems.map((problem) => (
+            {UPDATED_PROBLEM_SOLVER_ITEMS.map((problem) => (
               <option key={problem.id} value={problem.id}>
-                {problem.name}
+                {problem.label}
               </option>
             ))}
           </select>
@@ -162,11 +119,13 @@ export default function ProblemSolver() {
               className="w-full bg-transparent py-2 md:py-3 px-0 pr-8 focus:outline-none focus:border-b-2 focus:border-black appearance-none cursor-pointer text-sm md:text-base"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              {productTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
+              <option value="">Всі типи</option>
+              <option value="serum">Сироватки</option>
+              <option value="cream">Креми</option>
+              <option value="mask">Маски</option>
+              <option value="cleanser">Очищення</option>
+              <option value="toner">Тонери</option>
+              <option value="sunscreen">Сонцезахисні</option>
             </select>
             <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" />
           </div>

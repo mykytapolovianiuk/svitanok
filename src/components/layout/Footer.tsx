@@ -28,9 +28,9 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="bg-white text-black mt-16 border-t border-gray-200">
+    <footer className="text-black mt-16 border-t border-gray-200" style={{ backgroundColor: 'rgba(255, 200, 140, 0.7)' }}>
       <div className="container mx-auto px-4 md:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {/* Column 1: Logo & Contact */}
           <div className="space-y-4">
             <h3 
@@ -65,66 +65,8 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Shop */}
-          <div className="space-y-4">
-            <h4 
-              className="font-semibold text-lg"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Магазин
-            </h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link 
-                  to="/catalog" 
-                  className="hover:text-gray-600 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Каталог
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/catalog?category=Набори" 
-                  className="hover:text-gray-600 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Набори
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/catalog?category=Обличчя" 
-                  className="hover:text-gray-600 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Обличчя
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/catalog?category=Тіло" 
-                  className="hover:text-gray-600 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Тіло
-                </Link>
-              </li>
-              {categories.slice(0, 2).map((category) => (
-                <li key={category.id}>
-                  <Link 
-                    to={`/catalog?category=${encodeURIComponent(category.name)}`} 
-                    className="hover:text-gray-600 transition"
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  >
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          {/* Column 3: Information */}
+          {/* Column 2: Information */}
           <div className="space-y-4">
             <h4 
               className="font-semibold text-lg"
@@ -162,15 +104,6 @@ export default function Footer() {
               </li>
               <li>
                 <Link 
-                  to="/offer" 
-                  className="hover:text-gray-600 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Публічна оферта
-                </Link>
-              </li>
-              <li>
-                <Link 
                   to="/privacy" 
                   className="hover:text-gray-600 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -181,7 +114,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Client */}
+          {/* Column 3: Client */}
           <div className="space-y-4">
             <h4 
               className="font-semibold text-lg"
@@ -197,15 +130,6 @@ export default function Footer() {
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   Мій акаунт
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/orders" 
-                  className="hover:text-gray-600 transition"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Історія замовлень
                 </Link>
               </li>
               <li>

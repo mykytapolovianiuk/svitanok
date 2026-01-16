@@ -56,15 +56,15 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
     cosmeticClasses = [], // New parameter
   } = params;
 
-  // Стабілізуємо масиви для queryKey (щоб уникнути зайвих ререндерів)
-  const brandsKey = useMemo(() => [...brands].sort().join(','), [brands]);
-  const problemsKey = useMemo(() => [...problems].sort().join(','), [problems]);
-  const problemTagsKey = useMemo(() => [...problemTags].sort().join(','), [problemTags]);
-  const ingredientsKey = useMemo(() => [...ingredients].sort().join(','), [ingredients]);
-  const skinTypesKey = useMemo(() => [...skinTypes].sort().join(','), [skinTypes]); // New key
-  const cosmeticClassesKey = useMemo(() => [...cosmeticClasses].sort().join(','), [cosmeticClasses]); // New key
+  // Create stable keys for arrays to prevent unnecessary re-renders
+  const brandsKey = useMemo(() => brands.sort().join(','), [brands]);
+  const problemsKey = useMemo(() => problems.sort().join(','), [problems]);
+  const problemTagsKey = useMemo(() => problemTags.sort().join(','), [problemTags]);
+  const ingredientsKey = useMemo(() => ingredients.sort().join(','), [ingredients]);
+  const skinTypesKey = useMemo(() => skinTypes.sort().join(','), [skinTypes]); // New stable key
+  const cosmeticClassesKey = useMemo(() => cosmeticClasses.sort().join(','), [cosmeticClasses]); // New stable key
 
-  // Стабілізуємо масиви для використання в queryFn
+  // Stable arrays for use in query function
   const stableBrands = useMemo(() => brands, [brandsKey]);
   const stableProblems = useMemo(() => problems, [problemsKey]);
   const stableProblemTags = useMemo(() => problemTags, [problemTagsKey]);

@@ -1,20 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useFilterData } from '@/hooks/useFilterData';
+import { formatAttributeValue } from '@/lib/constants';
 
 interface FilterSidebarProps {
   selectedBrands: string[];
   selectedCategories: string[];
   selectedSkinTypes: string[];
-  selectedProblems: string[];
-  selectedClasses: string[];
   minPrice: number;
   maxPrice: number;
   onBrandsChange: (brands: string[]) => void;
   onCategoriesChange: (categories: string[]) => void;
   onSkinTypesChange: (skinTypes: string[]) => void;
-  onProblemsChange: (problems: string[]) => void;
-  onClassesChange: (classes: string[]) => void;
   onPriceChange: (min: number, max: number) => void;
 }
 
@@ -22,22 +19,16 @@ export default function FilterSidebar({
   selectedBrands,
   selectedCategories,
   selectedSkinTypes,
-  selectedProblems,
-  selectedClasses,
   minPrice,
   maxPrice,
   onBrandsChange,
   onCategoriesChange,
   onSkinTypesChange,
-  onProblemsChange,
-  onClassesChange,
   onPriceChange,
 }: FilterSidebarProps) {
   const [brandsOpen, setBrandsOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(true);
   const [skinTypeOpen, setSkinTypeOpen] = useState(true);
-  const [problemsOpen, setProblemsOpen] = useState(true);
-  const [classesOpen, setClassesOpen] = useState(true);
   const [priceOpen, setPriceOpen] = useState(true);
   
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
@@ -47,8 +38,6 @@ export default function FilterSidebar({
     availableBrands,
     availableCategories,
     skinTypes,
-    problems,
-    cosmeticClasses,
     loading,
     getAvailableCategories,
     getAvailableBrands
@@ -99,22 +88,6 @@ export default function FilterSidebar({
       onSkinTypesChange(selectedSkinTypes.filter(st => st !== skinType));
     } else {
       onSkinTypesChange([...selectedSkinTypes, skinType]);
-    }
-  };
-
-  const handleProblemToggle = (problem: string) => {
-    if (selectedProblems.includes(problem)) {
-      onProblemsChange(selectedProblems.filter(p => p !== problem));
-    } else {
-      onProblemsChange([...selectedProblems, problem]);
-    }
-  };
-
-  const handleClassToggle = (cosmeticClass: string) => {
-    if (selectedClasses.includes(cosmeticClass)) {
-      onClassesChange(selectedClasses.filter(c => c !== cosmeticClass));
-    } else {
-      onClassesChange([...selectedClasses, cosmeticClass]);
     }
   };
 
@@ -324,65 +297,7 @@ export default function FilterSidebar({
                 key={skinType}
                 checked={selectedSkinTypes.includes(skinType)}
                 onChange={() => handleSkinTypeToggle(skinType)}
-                label={skinType}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Problems Filter */}
-      <div className="pb-4">
-        <button
-          onClick={() => setProblemsOpen(!problemsOpen)}
-          className="flex items-center justify-between w-full py-2"
-        >
-          <span
-            className="text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            ПРОБЛЕМА
-          </span>
-          {problemsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {problemsOpen && (
-          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
-            {problems.map((problem) => (
-              <CustomCheckbox
-                key={problem}
-                checked={selectedProblems.includes(problem)}
-                onChange={() => handleProblemToggle(problem)}
-                label={problem}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Cosmetic Class Filter */}
-      <div className="pb-4">
-        <button
-          onClick={() => setClassesOpen(!classesOpen)}
-          className="flex items-center justify-between w-full py-2"
-        >
-          <span
-            className="text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            КЛАС КОСМЕТИКИ
-          </span>
-          {classesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {classesOpen && (
-          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
-            {cosmeticClasses.map((cosmeticClass) => (
-              <CustomCheckbox
-                key={cosmeticClass}
-                checked={selectedClasses.includes(cosmeticClass)}
-                onChange={() => handleClassToggle(cosmeticClass)}
-                label={cosmeticClass}
+                label={formatAttributeValue('Тип шкіри', skinType)}
               />
             ))}
           </div>
@@ -390,28 +305,29 @@ export default function FilterSidebar({
       </div>
 
       {/* Clear Filters Button */}
-      {(selectedBrands.length > 0 || 
+      {(
+        selectedBrands.length > 0 || 
         selectedCategories.length > 0 || 
         selectedSkinTypes.length > 0 ||
-        selectedProblems.length > 0 || 
-        selectedClasses.length > 0 ||
-        minPrice > 0 || maxPrice > 0) && (
-        <button
-          onClick={() => {
-            onBrandsChange([]);
-            onCategoriesChange([]);
-            onSkinTypesChange([]);
-            onProblemsChange([]);
-            onClassesChange([]);
-            onPriceChange(0, 0);
-            setLocalMinPrice(0);
-            setLocalMaxPrice(0);
-          }}
-          className="w-full text-xs tracking-wider underline"
-          style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-        >
-          ОЧИСТИТИ ФІЛЬТРИ
-        </button>
+        minPrice > 0 || 
+        maxPrice > 0
+      ) && (
+        <div className="pt-4 border-t border-gray-200">
+          <button
+            onClick={() => {
+              onBrandsChange([]);
+              onCategoriesChange([]);
+              onSkinTypesChange([]);
+              onPriceChange(0, 0);
+              setLocalMinPrice(0);
+              setLocalMaxPrice(0);
+            }}
+            className="w-full py-2 text-xs uppercase tracking-wider text-gray-600 hover:text-black transition-colors"
+            style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}
+          >
+            ОЧИСТИТИ ВСІ ФІЛЬТРИ
+          </button>
+        </div>
       )}
     </div>
   );

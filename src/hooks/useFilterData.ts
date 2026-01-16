@@ -18,8 +18,6 @@ interface UseFilterDataReturn {
   availableBrands: FilterOption[];
   availableCategories: FilterOption[];
   skinTypes: string[];
-  problems: string[];
-  cosmeticClasses: string[];
   
   // Loading state
   loading: boolean;
@@ -156,15 +154,11 @@ export function useFilterData(): UseFilterDataReturn {
   const availableBrands = useMemo(() => brands, [brands]);
   const availableCategories = useMemo(() => categories, [categories]);
   const skinTypes = useMemo(() => extractAttributeValues('Тип шкіри'), [extractAttributeValues]);
-  const problems = useMemo(() => extractAttributeValues('Проблема шкіри'), [extractAttributeValues]);
-  const cosmeticClasses = useMemo(() => extractAttributeValues('Клас косметики'), [extractAttributeValues]);
 
   return {
     availableBrands,
     availableCategories,
     skinTypes,
-    problems,
-    cosmeticClasses,
     loading,
     getAvailableCategories,
     getAvailableBrands,

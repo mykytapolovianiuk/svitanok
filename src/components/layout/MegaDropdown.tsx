@@ -112,7 +112,7 @@ export default function MegaDropdown({ label, to }: MegaDropdownProps) {
           product.attributes?.Ingredients ||
           product.attributes?.Ключові_інгредієнти ||
           product.attributes?.['Ключові інгредієнти'] ||
-          product.attributes?.['Ключові_інгредієнти'];
+          product.attributes?.['Ключові інгредієнти'];
         
         if (ingredients) {
           const ingredientList = Array.isArray(ingredients) 

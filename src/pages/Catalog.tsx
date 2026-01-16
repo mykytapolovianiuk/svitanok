@@ -16,9 +16,7 @@ export default function Catalog() {
   // Filter states
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
   const [selectedSkinTypes, setSelectedSkinTypes] = useState<string[]>([]);
-  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
@@ -38,11 +36,9 @@ export default function Catalog() {
   useEffect(() => {
     if (problem) {
       setProblemTags([problem]);
-      setSelectedProblems([problem]);
     } else if (!problem && problemTags.length > 0) {
       // Clear if problem param is removed
       setProblemTags([]);
-      setSelectedProblems([]);
     }
   }, [problem]);
 
@@ -69,7 +65,8 @@ export default function Catalog() {
     problemTags: problem ? [problem] : problemTags, // Use problem from URL if present
     ingredients: ingredient ? [ingredient] : [], // Use ingredient from URL if present
     skinTypes: selectedSkinTypes, // Add skin types filter
-    cosmeticClasses: selectedClasses, // Add cosmetic classes filter
+    // Removed cosmeticClasses filter as per client request
+    // cosmeticClasses: selectedClasses,
   });
 
   // Analytics tracking
@@ -90,13 +87,10 @@ export default function Catalog() {
     if (selectedCategories.length > 0) {
       trackFilter('category', selectedCategories);
     }
-    if (selectedProblems.length > 0) {
-      trackFilter('problem', selectedProblems);
-    }
     if (minPrice > 0 || maxPrice > 0) {
       trackFilter('price', `${minPrice}-${maxPrice}`);
     }
-  }, [selectedBrands, selectedCategories, selectedProblems, minPrice, maxPrice, trackFilter]);
+  }, [selectedBrands, selectedCategories, minPrice, maxPrice, trackFilter]);
 
   // Track pagination
   useEffect(() => {
@@ -142,7 +136,6 @@ export default function Catalog() {
   };
 
   const handleProblemsChange = (problems: string[]) => {
-    setSelectedProblems(problems);
     setCurrentPage(1); // Reset to first page
   };
 
@@ -152,7 +145,6 @@ export default function Catalog() {
   };
 
   const handleClassesChange = (classes: string[]) => {
-    setSelectedClasses(classes);
     setCurrentPage(1); // Reset to first page
   };
 
@@ -246,14 +238,10 @@ export default function Catalog() {
             <FilterSidebar
               selectedBrands={selectedBrands}
               selectedCategories={selectedCategories}
-              selectedProblems={selectedProblems}
               selectedSkinTypes={selectedSkinTypes}
-              selectedClasses={selectedClasses}
               onBrandsChange={handleBrandsChange}
               onCategoriesChange={handleCategoriesChange}
-              onProblemsChange={handleProblemsChange}
               onSkinTypesChange={handleSkinTypesChange}
-              onClassesChange={handleClassesChange}
               minPrice={minPrice}
               maxPrice={maxPrice}
               onPriceChange={handlePriceChange}
@@ -269,14 +257,10 @@ export default function Catalog() {
             <FilterSidebar
               selectedBrands={selectedBrands}
               selectedCategories={selectedCategories}
-              selectedProblems={selectedProblems}
               selectedSkinTypes={selectedSkinTypes}
-              selectedClasses={selectedClasses}
               onBrandsChange={handleBrandsChange}
               onCategoriesChange={handleCategoriesChange}
-              onProblemsChange={handleProblemsChange}
               onSkinTypesChange={handleSkinTypesChange}
-              onClassesChange={handleClassesChange}
               minPrice={minPrice}
               maxPrice={maxPrice}
               onPriceChange={handlePriceChange}

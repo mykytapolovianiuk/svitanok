@@ -44,17 +44,13 @@ interface RecommendedProductsProps {
 }
 
 // Brands that use "Lines" (Category = Line) - Strategy A
-const LINE_BASED_BRANDS = [1, 2, 3]; // Smart4derma and similar brands
+// Add extensible list of line-based brands by name
+const LINE_BASED_BRAND_NAMES = ['Smart4derma', 'Christina']; // Add more as needed
 
-// Check if brand uses line-based categorization
-const isLineBasedBrand = (brandId: number): boolean => {
-  return LINE_BASED_BRANDS.includes(brandId);
-};
-
-// Check if product belongs to a line-based brand via attributes
-const hasLineAttribute = (attributes: Record<string, any>): boolean => {
-  const cosmeticClass = attributes?.['Клас косметики']?.toLowerCase();
-  return cosmeticClass === 'професійна' || cosmeticClass === 'лінійна';
+// Check if brand uses line-based categorization by name
+const isLineBasedBrand = (brandName: string | undefined): boolean => {
+  if (!brandName) return false;
+  return LINE_BASED_BRAND_NAMES.includes(brandName);
 };
 
 function RecommendedProductCard({ product }: { product: Product }) {
@@ -219,8 +215,21 @@ export default function RecommendedProducts({ currentProduct }: RecommendedProdu
       try {
         setLoading(true);
         
-        // Step 1: Fetch candidate products from the same brand
-        const { data: candidates, error } = await supabase
+        // Step 1: Fetch current product with brand relationship to determine strategy
+        const { data: currentProductData } = await supabase
+          .from('products')
+          .select(`
+            *,
+            brands (name)
+          `)
+          .eq('id', currentProduct.id)
+          .single();
+
+        const brandName = currentProductData?.brands?.name;
+        const isLineBrand = isLineBasedBrand(brandName);
+
+        // Step 2: Fetch candidate products from the same brand
+        let query = supabase
           .from('products')
           .select(`
             *,
@@ -228,33 +237,24 @@ export default function RecommendedProducts({ currentProduct }: RecommendedProdu
             categories (*)
           `)
           .eq('brand_id', currentProduct.brand_id)
-          .neq('id', currentProduct.id)
-          .limit(20);
+          .neq('id', currentProduct.id);
+
+        if (isLineBrand) {
+          // Strategy A: Same Brand + Same Category (Line-based brands)
+          // Allow user to complete their care routine within the specific line
+          query = query.eq('category_id', currentProduct.category_id);
+        } else {
+          // Strategy B: Same Brand + Different Category (Cross-sell)
+          // Recommend complementary products from the same brand but different categories
+          query = query.neq('category_id', currentProduct.category_id);
+        }
+
+        const { data: candidates, error } = await query.limit(20);
 
         if (error) throw error;
 
-        // Step 2: Determine recommendation strategy
-        const isLineBrand = isLineBasedBrand(currentProduct.brand_id);
-        const hasLineAttr = candidates?.some(p => hasLineAttribute(p.attributes)) ?? false;
-        const useLineStrategy = isLineBrand || hasLineAttr;
-
-        // Step 3: Apply filtering strategy
-        let filteredProducts: Product[] = [];
-        
-        if (useLineStrategy && candidates) {
-          // Strategy A: Same Brand + Same Category (Line-based)
-          filteredProducts = candidates.filter(
-            product => product.category_id === currentProduct.category_id
-          );
-        } else if (candidates) {
-          // Strategy B: Same Brand + Different Categories (Cross-sell)
-          filteredProducts = candidates.filter(
-            product => product.category_id !== currentProduct.category_id
-          );
-        }
-
-        // Step 4: Sort by relevance (best sellers first, then by ID)
-        filteredProducts.sort((a, b) => {
+        // Step 3: Sort by relevance (best sellers first, then by ID)
+        const sortedCandidates = (candidates || []).sort((a, b) => {
           const aIsBestSeller = a.attributes?.is_bestseller === true;
           const bIsBestSeller = b.attributes?.is_bestseller === true;
           
@@ -263,11 +263,11 @@ export default function RecommendedProducts({ currentProduct }: RecommendedProdu
           return a.id - b.id;
         });
 
-        // Step 5: Get initial recommendations (limit to 6)
-        let finalProducts = filteredProducts.slice(0, 6);
+        // Step 4: Get initial recommendations (limit to 6)
+        let finalProducts = sortedCandidates.slice(0, 6);
 
-        // Step 6: Robust fallback logic
-        // If we don't have enough recommendations, fetch bestsellers
+        // Step 5: Robust fallback logic
+        // If we don't have enough recommendations, fill with bestsellers
         if (finalProducts.length < 6) {
           const needed = 6 - finalProducts.length;
           
@@ -293,7 +293,7 @@ export default function RecommendedProducts({ currentProduct }: RecommendedProdu
           }
         }
 
-        // Step 7: Last resort fallback - newest products
+        // Step 6: Last resort fallback - newest products
         if (finalProducts.length < 4) {
           const needed = 4 - finalProducts.length;
           
