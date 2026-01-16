@@ -187,7 +187,7 @@ export default function Catalog() {
   return (
     <>
       <Breadcrumbs />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pt-8 pb-4">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 
@@ -339,7 +339,7 @@ export default function Catalog() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-12">
+                <div className="flex items-center justify-center gap-2 mt-8 mb-4">
                   {/* Previous */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}

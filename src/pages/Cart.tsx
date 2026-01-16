@@ -1,4 +1,4 @@
-import { useCartStore } from '@/store/cartStore';
+import { useCartStore, useCartTotalPrice } from '@/store/cartStore';
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, X } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
@@ -9,7 +9,8 @@ const FREE_SHIPPING_THRESHOLD = 4000;
 const SHIPPING_COST = 150;
 
 export default function Cart() {
-  const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCartStore();
+  const { items, updateQuantity, removeItem, clearCart } = useCartStore();
+  const totalPrice = useCartTotalPrice();
   const [promoCode, setPromoCode] = useState('');
   const { trackViewCart, trackRemoveFromCart } = useAnalytics();
   const { appliedCode, applyCode, removeCode, isLoading: promoLoading } = usePromoCode();
@@ -80,92 +81,95 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-[#FFF2E1]">
-      <div className="container mx-auto px-4 md:px-8 max-w-[1440px] py-8">
+      <div className="container mx-auto px-4 md:px-8 max-w-[1440px] py-8 h-[calc(100vh-140px)] flex flex-col">
         <h1 
-          className="text-2xl font-light mb-8 text-center uppercase tracking-[2px]"
+          className="text-2xl font-light mb-8 text-center uppercase tracking-[2px] flex-shrink-0"
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           КОШИК
         </h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 bg-[#FAF4EB] p-6 md:p-[60px_40px]">
-            <div className="space-y-4">
-              {items.map((item) => (
-                <div key={item.product.id} className="bg-white rounded-sm border border-black p-6 relative">
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 bg-gray-200 rounded flex-shrink-0 border border-black overflow-hidden">
-                      <img 
-                        src={item.product.images[0] || '/placeholder-product.jpg'} 
-                        alt={item.product.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 
-                        className="font-medium text-sm uppercase tracking-[0.5px] mb-1 line-clamp-2"
-                        style={{ fontFamily: 'Montserrat, sans-serif' }}
-                      >
-                        {item.product.name}
-                      </h3>
-                      <p 
-                        className="text-black font-medium text-base mb-3"
-                        style={{ fontFamily: 'Montserrat, sans-serif' }}
-                      >
-                        {item.product.price.toFixed(2)} ₴
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        trackRemoveFromCart({
-                          id: item.product.id,
-                          name: item.product.name,
-                          price: item.product.price,
-                          quantity: item.quantity,
-                        });
-                        removeItem(item.product.id);
-                      }}
-                      className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                  <div className="flex justify-center mt-3">
-                    <div className="flex items-center gap-4">
+        <div className="flex flex-col lg:flex-row gap-0 flex-1 overflow-hidden">
+          {/* Cart Items - Scrollable Area */}
+          <div className="lg:w-2/3 bg-[#FAF4EB] p-6 md:p-[60px_40px] overflow-y-auto flex flex-col">
+            <div className="flex-1 overflow-y-auto pr-2">
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div key={item.product.id} className="bg-white rounded-sm border border-black p-6 relative">
+                    <div className="flex gap-4">
+                      <div className="w-20 h-20 bg-gray-200 rounded flex-shrink-0 border border-black overflow-hidden">
+                        <img 
+                          src={item.product.images[0] || '/placeholder-product.jpg'} 
+                          alt={item.product.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 
+                          className="font-medium text-sm uppercase tracking-[0.5px] mb-1 line-clamp-2"
+                          style={{ fontFamily: 'Montserrat, sans-serif' }}
+                        >
+                          {item.product.name}
+                        </h3>
+                        <p 
+                          className="text-black font-medium text-base mb-3"
+                          style={{ fontFamily: 'Montserrat, sans-serif' }}
+                        >
+                          {item.product.price.toFixed(2)} ₴
+                        </p>
+                      </div>
                       <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center bg-[#FBE3C8] border border-[rgba(226,201,174,0.5)] hover:opacity-90 text-lg font-light text-black"
+                        onClick={() => {
+                          trackRemoveFromCart({
+                            id: item.product.id,
+                            name: item.product.name,
+                            price: item.product.price,
+                            quantity: item.quantity,
+                          });
+                          removeItem(item.product.id);
+                        }}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
                       >
-                        <Minus size={16} />
-                      </button>
-                      <span 
-                        className="text-base font-medium"
-                        style={{ fontFamily: 'Montserrat, sans-serif' }}
-                      >
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center bg-[#FBE3C8] border border-[rgba(226,201,174,0.5)] hover:opacity-90 text-lg font-light text-black"
-                      >
-                        <Plus size={16} />
+                        <Trash2 size={20} />
                       </button>
                     </div>
+                    <div className="flex justify-center mt-3">
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-[#FBE3C8] border border-[rgba(226,201,174,0.5)] hover:opacity-90 text-lg font-light text-black"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span 
+                          className="text-base font-medium"
+                          style={{ fontFamily: 'Montserrat, sans-serif' }}
+                        >
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-[#FBE3C8] border border-[rgba(226,201,174,0.5)] hover:opacity-90 text-lg font-light text-black"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1 bg-[#FAF4EB] p-6 md:p-[60px_40px] lg:sticky lg:top-0 h-fit lg:h-screen lg:overflow-y-auto">
-            <h2 
-              className="text-xl font-light mb-6 uppercase tracking-[2px] border-b border-black pb-4"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              Разом
-            </h2>
+          {/* Order Summary - Sticky Footer */}
+          <div className="lg:w-1/3 bg-[#FAF4EB] border-t lg:border-t-0 lg:border-l border-black flex flex-col">
+            <div className="p-6 md:p-[60px_40px] flex-1 overflow-y-auto">
+              <h2 
+                className="text-xl font-light mb-6 uppercase tracking-[2px] border-b border-black pb-4"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Разом
+              </h2>
             
             {/* Promo Code */}
             <div className="mb-6">
@@ -310,6 +314,7 @@ export default function Cart() {
               Очистити кошик
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

@@ -336,7 +336,8 @@ export default function Checkout() {
 
   // Обробка замовлення: валідація -> база -> ТТН
   const onSubmit = async (data: CheckoutFormData) => {
-    if (!session) return;
+    console.log('🚀 Початок оформлення замовлення:', data);
+    
     setIsSubmitting(true);
 
     try {
@@ -365,7 +366,7 @@ export default function Checkout() {
 
       // 4. Prepare Payload (without items array since it's stored in a separate table)
       const orderData = {
-        user_id: session.user.id,
+        user_id: session?.user?.id || null,
         customer_name: `${data.firstName} ${data.lastName}`,
         customer_phone: data.phone,
         customer_email: data.email || '',
@@ -491,8 +492,8 @@ export default function Checkout() {
       }
 
     } catch (error: any) {
-      console.error('Checkout Error:', error);
-      alert('Виникла помилка з\'єднання. Спробуйте ще раз');
+      console.error('❌ Checkout Error:', error);
+      alert(`Виникла помилка з'єднання. Спробуйте ще раз`);
     } finally {
       setIsSubmitting(false);
     }
@@ -511,7 +512,7 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-[#FFF2E1]">
-      <form onSubmit={handleSubmit(onSubmit)} className="container mx-auto px-4 md:px-8 max-w-[1440px] flex flex-col lg:flex-row gap-0">
+      <form onSubmit={handleSubmit(onSubmit, (errors) => console.error('❌ Помилки валідації:', errors))} className="container mx-auto px-4 md:px-8 max-w-[1440px] flex flex-col lg:flex-row gap-0">
         {/* Left Column - Form (60% width, White Background) */}
         <div className="w-full lg:w-[60%] bg-white p-6 md:p-8 lg:p-12">
           {/* Page Title */}

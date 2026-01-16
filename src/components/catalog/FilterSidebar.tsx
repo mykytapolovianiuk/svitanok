@@ -73,6 +73,11 @@ export default function FilterSidebar({
     } else {
       onBrandsChange([...selectedBrands, brandId]);
     }
+    // Smooth scroll to top of product list
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handleCategoryToggle = (categoryId: string) => {
@@ -81,6 +86,11 @@ export default function FilterSidebar({
     } else {
       onCategoriesChange([...selectedCategories, categoryId]);
     }
+    // Smooth scroll to top of product list
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handleSkinTypeToggle = (skinType: string) => {
@@ -89,6 +99,11 @@ export default function FilterSidebar({
     } else {
       onSkinTypesChange([...selectedSkinTypes, skinType]);
     }
+    // Smooth scroll to top of product list
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handlePriceApply = () => {
@@ -100,6 +115,11 @@ export default function FilterSidebar({
     }
     
     onPriceChange(min, max);
+    // Smooth scroll to top of product list
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   // Custom checkbox component

@@ -25,23 +25,17 @@ const categories: Category[] = [
   {
     id: '3',
     name: 'СОНЦЕЗАХИСТ',
-    slug: 'sunscreen',
+    slug: 'sontsezahist-136846292',
     image: '/images/categories/03.png',
   },
   {
     id: '4',
     name: 'ОЧИЩЕННЯ',
-    slug: 'cleansing',
+    slug: 'vmivannya-ta-ochischennya-oblichchya-121050305',
     image: '/images/categories/04.png',
   },
   {
     id: '5',
-    name: 'КИСЛОТИ',
-    slug: 'acids',
-    image: '/images/categories/05.png',
-  },
-  {
-    id: '6',
     name: 'МАСКИ',
     slug: 'masks',
     image: '/images/categories/06.png',

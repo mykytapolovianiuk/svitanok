@@ -104,7 +104,8 @@ export default function CartDrawer() {
         </div>
         
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto p-4">
           {items.length === 0 ? (
             <div className="text-center py-12">
               <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -310,6 +311,7 @@ export default function CartDrawer() {
               </div>
             </>
           )}
+        </div>
         </div>
       </div>
     </div>
