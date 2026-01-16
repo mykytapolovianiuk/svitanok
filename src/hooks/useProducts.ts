@@ -35,14 +35,10 @@ interface UseProductsParams {
 const CATEGORY_MAP: Record<string, string> = {
   'serums': 'Сироватки',
   'creams': 'Креми',
-  'sunscreen': 'Сонцезахисні засоби',
-  'cleansing': 'Очищувачі',
+  'sunscreen': 'Сонцезахист',
+  'cleansing': 'Очищення',
   'acids': 'Кислоти',
-  'masks': 'Маски',
-  'toners': 'Тонери',
-  'lotions': 'Лосьйони',
-  'peels': 'Пілінги',
-  'eye-care': 'Контурний крем'
+  'masks': 'Маски'
 };
 
 interface UseProductsResult {
@@ -104,7 +100,7 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         if (mappedCategory) {
           // Use JSONB containment for mapped categories
           const jsonFilter = JSON.stringify({ "Препарати": mappedCategory });
-          query = query.or(`attributes.cs.${jsonFilter}`);
+          query = query.or(`attributes.cs.{"Препарати":"${mappedCategory}"}`);
         } else {
           // Fallback to direct category matching (check categories table)
           const { data: categoryData } = await supabase
