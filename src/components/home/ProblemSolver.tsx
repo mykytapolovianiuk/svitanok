@@ -8,37 +8,37 @@ const skinProblems = [
     id: 'wrinkles',
     name: 'Зморшки',
     image: '/images/problems/problem-03.jpg',
-    problem: 'зморшки'
+    problem: 'Глубокие морщины'
   },
   {
     id: 'dryness',
     name: 'Засоби для сухої шкіри обличчя',
     image: '/images/problems/problem-02.jpg',
-    problem: 'сухість'
+    problem: 'Сухость'
   },
   {
     id: 'acne',
     name: 'Висипи',
     image: '/images/problems/problem-01.jpg',
-    problem: 'акне'
+    problem: 'Акне'
   },
   {
     id: 'pigmentation',
     name: 'Пігментація',
     image: '/images/problems/problem-04.jpg',
-    problem: 'пігментація'
+    problem: 'Пигментация'
   },
   {
     id: 'couperose',
     name: 'Купероз',
     image: '/images/problems/problem-05.jpg',
-    problem: 'купероз'
+    problem: 'Купероз'
   },
   {
     id: 'pores',
     name: 'Розширені пори',
     image: '/images/problems/problem-01.jpg',
-    problem: 'пори'
+    problem: 'Расширенные поры'
   }
 ];
 
@@ -70,6 +70,7 @@ export default function ProblemSolver() {
     if (!problem) return;
 
     // Navigate to catalog with proper filter parameters
+    // Use the exact problem name as stored in database
     navigate(`/catalog?problem=${encodeURIComponent(problem.problem)}`);
   };
 

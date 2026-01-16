@@ -9,14 +9,15 @@ export default function Footer() {
   const instagramUrl = useSiteSetting('instagram_url', 'https://www.instagram.com/pava.beauty.ua/');
   const address = useSiteSetting('address', 'м. Київ');
   const email = useSiteSetting('email', 'svitanok@gmail.com');
-  const [categories, setCategories] = useState<{name: string}[]>([]);
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       const { data, error } = await supabase
         .from('categories')
-        .select('name')
-        .order('name');
+        .select('id, name')
+        .order('name')
+        .limit(5);
       
       if (!error && data) {
         setCategories(data);
@@ -27,44 +28,93 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="mt-16 font-sans" style={{ backgroundColor: 'rgba(255, 200, 140, 0.7)' }}>
-      <div className="container mx-auto px-4 md:px-8 py-8 md:py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {/* Column 1: Brand & Social */}
-          <div className="col-span-2 md:col-span-1">
+    <footer className="bg-white text-black mt-16 border-t border-gray-200">
+      <div className="container mx-auto px-4 md:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          {/* Column 1: Logo & Contact */}
+          <div className="space-y-4">
             <h3 
-              className="text-lg md:text-xl font-bold text-text-main mb-3 md:mb-4 tracking-wider"
+              className="text-xl font-bold tracking-wider"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               SVITANOK
             </h3>
-            <div className="flex gap-3 md:gap-4 mt-3 md:mt-4">
+            <div className="space-y-2 text-sm">
+              <p>{address}</p>
+              <p>
+                <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="hover:text-gray-600 transition">
+                  {phone}
+                </a>
+              </p>
+              <p>
+                <a href={`mailto:${email}`} className="hover:text-gray-600 transition">
+                  {email}
+                </a>
+              </p>
+            </div>
+            <div className="flex gap-4 pt-2">
               <a
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-text-main hover:opacity-70 transition"
+                className="hover:text-gray-600 transition"
                 aria-label="Instagram"
               >
-                <Instagram size={20} className="md:w-6 md:h-6" />
+                <Instagram size={20} />
               </a>
             </div>
           </div>
 
-          {/* Column 2: Категорії */}
-          <div className="col-span-1">
+          {/* Column 2: Shop */}
+          <div className="space-y-4">
             <h4 
-              className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
+              className="font-semibold text-lg"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              Категорії
+              Магазин
             </h4>
-            <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-              {categories.map((category) => (
-                <li key={category.name}>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link 
+                  to="/catalog" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Каталог
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/catalog?category=Набори" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Набори
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/catalog?category=Обличчя" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Обличчя
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/catalog?category=Тіло" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Тіло
+                </Link>
+              </li>
+              {categories.slice(0, 2).map((category) => (
+                <li key={category.id}>
                   <Link 
                     to={`/catalog?category=${encodeURIComponent(category.name)}`} 
-                    className="text-text-main hover:opacity-70 transition"
+                    className="hover:text-gray-600 transition"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
                     {category.name}
@@ -74,82 +124,129 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Допомога */}
-          <div className="col-span-1">
+          {/* Column 3: Information */}
+          <div className="space-y-4">
             <h4 
-              className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
+              className="font-semibold text-lg"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              Допомога
+              Інформація
             </h4>
-            <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link 
-                  to="/delivery" 
-                  className="text-text-main hover:opacity-70 transition"
+                  to="/about" 
+                  className="hover:text-gray-600 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Доставка
+                  Про нас
                 </Link>
               </li>
               <li>
                 <Link 
-                  to="/faq" 
-                  className="text-text-main hover:opacity-70 transition"
+                  to="/delivery" 
+                  className="hover:text-gray-600 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  Питання та відповіді
+                  Доставка та оплата
                 </Link>
               </li>
               <li>
                 <Link 
                   to="/returns" 
-                  className="text-text-main hover:opacity-70 transition"
+                  className="hover:text-gray-600 transition"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   Обмін та повернення
                 </Link>
               </li>
+              <li>
+                <Link 
+                  to="/offer" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Публічна оферта
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/privacy" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Політика конфіденційності
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Column 4: Контакти */}
-          <div className="col-span-2 md:col-span-1">
+          {/* Column 4: Client */}
+          <div className="space-y-4">
             <h4 
-              className="font-semibold text-text-main mb-3 md:mb-4 text-sm md:text-base"
+              className="font-semibold text-lg"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              Контакти
+              Клієнтам
             </h4>
-            <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm text-text-main" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-              <li>{address}</li>
+            <ul className="space-y-2 text-sm">
               <li>
-                <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="hover:underline">
-                  {phone}
-                </a>
+                <Link 
+                  to="/account" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Мій акаунт
+                </Link>
               </li>
-              <li>{email}</li>
+              <li>
+                <Link 
+                  to="/orders" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Історія замовлень
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/favorites" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Обране
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/faq" 
+                  className="hover:text-gray-600 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Часті питання
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright & Policies */}
-        <div className="border-t border-gray-400 mt-6 md:mt-8 pt-4 md:pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 text-xs md:text-sm text-text-main">
+        {/* Copyright */}
+        <div className="border-t border-gray-200 pt-6 mt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-600">
             <p style={{ fontFamily: 'Montserrat, sans-serif' }}>
               © 2025 SVITANOK. Всі права захищені.
             </p>
-            <div className="flex flex-wrap justify-center gap-2 md:gap-4 lg:gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               <Link 
                 to="/privacy" 
-                className="hover:underline"
+                className="hover:text-gray-800 transition"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
                 Політика конфіденційності
               </Link>
               <Link 
                 to="/terms" 
-                className="hover:underline"
+                className="hover:text-gray-800 transition"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
                 Умови використання

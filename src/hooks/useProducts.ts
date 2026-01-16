@@ -138,11 +138,12 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
 
       // Problems filter - check multiple keys with JSONB contains for arrays
       if (stableProblemTags.length > 0) {
-        // Use JSONB contains operator for array values
-        // This will find products where the 'Проблема шкіри' array contains ANY of the selected tags
-        const conditions = stableProblemTags.map(problem => 
-          `attributes->'Проблема шкіри' @> '["${problem}"]'`
-        ).join(',');
+        // Use JSON containment operator on root object for robust filtering
+        // Format: attributes.cs.{"Проблема шкіри": ["Value"]}
+        const conditions = stableProblemTags.map(problem => {
+          const jsonFilter = JSON.stringify({ "Проблема шкіри": [problem] });
+          return `attributes.cs.${jsonFilter}`;
+        }).join(',');
         query = query.or(conditions);
       }
 
@@ -154,19 +155,23 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         query = query.or(ingredientConditions);
       }
       
-      // Skin Types filter - check skin type attributes with JSONB contains for arrays
+      // Skin Types filter - check skin type attributes with JSON containment
       if (stableSkinTypes.length > 0) {
-        const skinTypeConditions = stableSkinTypes.map(skinType => 
-          `attributes->'Тип шкіри' @> '["${skinType}"]'`
-        ).join(',');
+        // Use JSON containment operator on root object for robust filtering
+        const skinTypeConditions = stableSkinTypes.map(skinType => {
+          const jsonFilter = JSON.stringify({ "Тип шкіри": [skinType] });
+          return `attributes.cs.${jsonFilter}`;
+        }).join(',');
         query = query.or(skinTypeConditions);
       }
       
-      // Cosmetic Classes filter - check cosmetic class attributes with JSONB contains for arrays
+      // Cosmetic Classes filter - check cosmetic class attributes with JSON containment
       if (stableCosmeticClasses.length > 0) {
-        const classConditions = stableCosmeticClasses.map(cosmeticClass => 
-          `attributes->'Клас косметики' @> '["${cosmeticClass}"]'`
-        ).join(',');
+        // Use JSON containment operator on root object for robust filtering
+        const classConditions = stableCosmeticClasses.map(cosmeticClass => {
+          const jsonFilter = JSON.stringify({ "Клас косметики": [cosmeticClass] });
+          return `attributes.cs.${jsonFilter}`;
+        }).join(',');
         query = query.or(classConditions);
       }
       

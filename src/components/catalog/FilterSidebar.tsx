@@ -139,14 +139,14 @@ export default function FilterSidebar({
     onChange: () => void;
     label: string;
   }) => (
-    <label className="flex items-center cursor-pointer group">
+    <label className="flex items-start cursor-pointer group">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
         className="sr-only"
       />
-      <div className="w-4 h-4 border border-black mr-3 flex items-center justify-center">
+      <div className="w-4 h-4 border border-black mr-3 flex items-center justify-center shrink-0 mt-0.5">
         {checked && <div className="w-2 h-2 bg-black"></div>}
       </div>
       <span 

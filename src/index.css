@@ -33,3 +33,58 @@ body {
 .header-container {
     background-color: #FFF2E1;
 }
+
+/* Custom Swiper Navigation Styles */
+.recommended-products-swiper {
+  padding: 0 40px;
+  position: relative;
+}
+
+.recommended-products-swiper .swiper-button-prev,
+.recommended-products-swiper .swiper-button-next {
+  width: 32px !important;
+  height: 32px !important;
+  background: white !important;
+  border: 1px solid #000 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  top: 40% !important;
+  margin-top: 0 !important;
+  z-index: 10 !important;
+}
+
+.recommended-products-swiper .swiper-button-prev::after,
+.recommended-products-swiper .swiper-button-next::after {
+  font-size: 14px !important;
+  font-weight: bold !important;
+  color: #000 !important;
+}
+
+.recommended-products-swiper .swiper-button-prev {
+  left: 8px !important;
+}
+
+.recommended-products-swiper .swiper-button-next {
+  right: 8px !important;
+}
+
+.recommended-products-swiper .swiper-button-disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* Ensure proper spacing for navigation buttons */
+@media (min-width: 1024px) {
+  .recommended-products-swiper {
+    padding: 0 50px;
+  }
+  
+  .recommended-products-swiper .swiper-button-prev {
+    left: 12px !important;
+  }
+  
+  .recommended-products-swiper .swiper-button-next {
+    right: 12px !important;
+  }
+}

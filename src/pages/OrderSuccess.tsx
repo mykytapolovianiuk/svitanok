@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useAnalytics } from '../hooks/useAnalytics'; // Add analytics import
 
 export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
   const { orderId, totalAmount } = location.state || {};
+  const { trackPurchase } = useAnalytics(); // Add analytics hook
 
   // If no order data, redirect to home
   useEffect(() => {
@@ -12,6 +14,20 @@ export default function OrderSuccess() {
       navigate('/');
     }
   }, [orderId, navigate]);
+
+  // Track purchase event
+  useEffect(() => {
+    if (orderId && totalAmount) {
+      trackPurchase(
+        orderId.toString(),
+        [], // items array (empty for now)
+        totalAmount,
+        undefined, // tax
+        undefined, // shipping
+        undefined  // coupon
+      );
+    }
+  }, [orderId, totalAmount, trackPurchase]);
 
   if (!orderId) {
     return null;

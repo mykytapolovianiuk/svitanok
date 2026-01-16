@@ -410,15 +410,23 @@ export default function RecommendedProducts({ currentProduct }: RecommendedProdu
         <div className="md:hidden">
           <Swiper
             modules={[Navigation, Pagination]}
-            spaceBetween={20}
-            slidesPerView={2}
+            spaceBetween={16}
+            slidesPerView={1.2}
             breakpoints={{
               640: {
-                slidesPerView: 2,
+                slidesPerView: 1.5,
+                spaceBetween: 20,
+              },
+              768: {
+                slidesPerView: 3,
                 spaceBetween: 20,
               },
               1024: {
-                slidesPerView: 2,
+                slidesPerView: 4,
+                spaceBetween: 24,
+              },
+              1280: {
+                slidesPerView: 5,
                 spaceBetween: 24,
               },
             }}
@@ -427,16 +435,24 @@ export default function RecommendedProducts({ currentProduct }: RecommendedProdu
               bulletClass: 'swiper-pagination-bullet !bg-black',
               bulletActiveClass: 'swiper-pagination-bullet-active !bg-black',
             }}
-            navigation={true}
+            navigation={{
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+            }}
             loop={recommendedProducts.length > 2}
             className="recommended-products-swiper"
           >
             {recommendedProducts.map((product) => (
-              <SwiperSlide key={product.id}>
-                <RecommendedProductCard product={product} />
+              <SwiperSlide key={product.id} className="h-full">
+                <div className="h-full">
+                  <RecommendedProductCard product={product} />
+                </div>
               </SwiperSlide>
             ))}
           </Swiper>
+          {/* Custom Navigation Buttons */}
+          <div className="swiper-button-prev !text-black !w-8 !h-8 after:!text-sm after:!font-bold"></div>
+          <div className="swiper-button-next !text-black !w-8 !h-8 after:!text-sm after:!font-bold"></div>
         </div>
       </div>
     </section>

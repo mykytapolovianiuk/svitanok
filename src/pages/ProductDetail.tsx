@@ -14,6 +14,7 @@ import RecommendedProducts from '../components/product/RecommendedProducts';
 import ImageLightbox from '../components/product/ImageLightbox';
 import { useFavorites } from '../hooks/useFavorites';
 import { useProductReviews } from '../hooks/useProductReviews';
+import { useAnalytics } from '../hooks/useAnalytics'; // Add analytics import
 import Spinner from '../components/ui/Spinner';
 import SEOHead from '../components/seo/SEOHead';
 import { ProductStructuredData } from '../components/seo/StructuredData';
@@ -54,7 +55,7 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState<'description' | 'attributes'>('description');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCartStore();
-  const { trackViewItem, trackAddToCart, trackFavorite } = useAnalytics();
+  const { trackViewItem, trackAddToCart, trackFavorite } = useAnalytics(); // Add analytics hook
   const { favoriteIds, toggleFavorite } = useFavorites();
   
   // Get product reviews stats
@@ -69,6 +70,19 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [slug]);
+
+  // Add analytics tracking when product loads
+  useEffect(() => {
+    if (product) {
+      trackViewItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        category: product.attributes?.Назва_групи || product.attributes?.Category,
+        brand: product.attributes?.Виробник || product.attributes?.Brand,
+      });
+    }
+  }, [product, trackViewItem]);
 
   const fetchProduct = async () => {
     try {
@@ -118,15 +132,6 @@ export default function ProductDetail() {
 
       setProduct(data);
       setSelectedImage(0);
-      
-      // Track product view
-      trackViewItem({
-        id: data.id,
-        name: data.name,
-        price: data.price,
-        category: data.attributes?.Назва_групи || data.attributes?.Category,
-        brand: data.attributes?.Виробник || data.attributes?.Brand,
-      });
       
     } catch (err: any) {
       setError(err.message || 'Failed to load product');
@@ -462,19 +467,19 @@ export default function ProductDetail() {
                     </h3>
                     <div className="space-y-3">
                       {Object.entries(filteredAttributes).map(([key, value]) => (
-                        <div key={key} className="flex flex-wrap gap-2">
+                        <div key={key} className="flex flex-wrap items-center gap-3">
                           <span 
-                            className="font-medium text-sm min-w-[120px]"
+                            className="font-medium text-sm min-w-[120px] text-stone-700"
                             style={{ fontFamily: 'Montserrat, sans-serif' }}
                           >
                             {key}:
                           </span>
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-2">
                             {Array.isArray(value) ? (
                               value.map((item, idx) => (
                                 <span 
                                   key={idx}
-                                  className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
+                                  className="bg-stone-50 text-stone-700 border border-stone-200 px-3 py-1.5 rounded-full text-xs uppercase tracking-wide font-medium"
                                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                                 >
                                   {String(item)}
@@ -484,7 +489,7 @@ export default function ProductDetail() {
                               value.split('|').map((item, idx) => (
                                 <span 
                                   key={idx}
-                                  className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
+                                  className="bg-stone-50 text-stone-700 border border-stone-200 px-3 py-1.5 rounded-full text-xs uppercase tracking-wide font-medium"
                                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                                 >
                                   {item.trim()}
@@ -492,7 +497,7 @@ export default function ProductDetail() {
                               ))
                             ) : (
                               <span 
-                                className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
+                                className="bg-stone-50 text-stone-700 border border-stone-200 px-3 py-1.5 rounded-full text-xs uppercase tracking-wide font-medium"
                                 style={{ fontFamily: 'Montserrat, sans-serif' }}
                               >
                                 {String(value)}
