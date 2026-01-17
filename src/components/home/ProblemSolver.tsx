@@ -1,14 +1,41 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Check } from 'lucide-react';
-import { PROBLEM_SOLVER_ITEMS, translateProblemToDB } from '@/lib/constants';
+import { translateProblemToDB } from '@/lib/constants';
 
-// Update the first item to use acne image
-const UPDATED_PROBLEM_SOLVER_ITEMS = PROBLEM_SOLVER_ITEMS.map((item, index) => 
-  index === 0 
-    ? { ...item, image: '/images/problems/problem-01.jpg' } // Acne image for first item
-    : item
-);
+// Static problem items with direct image assignments
+const PROBLEM_ITEMS = [
+  { 
+    id: 'acne', 
+    label: 'Акне та висипання', 
+    image: '/images/problems/problem-01.jpg', 
+    dbValue: 'Прыщи'
+  },
+  { 
+    id: 'dryness', 
+    label: 'Сухість', 
+    image: '/images/problems/problem-02.jpg', 
+    dbValue: 'Сухость'
+  },
+  { 
+    id: 'aging', 
+    label: 'Вікові зміни', 
+    image: '/images/problems/problem-03.jpg', 
+    dbValue: 'Возрастные изменения'
+  },
+  { 
+    id: 'pigmentation', 
+    label: 'Пігментація', 
+    image: '/images/problems/problem-04.jpg', 
+    dbValue: 'Пигментация'
+  },
+  { 
+    id: 'couperose', 
+    label: 'Купероз', 
+    image: '/images/problems/problem-05.jpg', 
+    dbValue: 'Купероз'
+  }
+];
 
 export default function ProblemSolver() {
   const [selectedProblem, setSelectedProblem] = useState<string | null>(null);
@@ -23,16 +50,15 @@ export default function ProblemSolver() {
   const handleApplyFilters = () => {
     if (!selectedProblem) return;
 
-    const problemItem = UPDATED_PROBLEM_SOLVER_ITEMS.find(p => p.id === selectedProblem);
+    const problemItem = PROBLEM_ITEMS.find(p => p.id === selectedProblem);
     if (!problemItem) return;
 
-    // Navigate to catalog with the translated DB value using query parameter
-    const dbValue = translateProblemToDB(selectedProblem);
-    navigate(`/catalog?problem=${encodeURIComponent(dbValue)}`);
+    // Navigate to catalog with the DB value
+    navigate(`/catalog?problem=${encodeURIComponent(problemItem.dbValue)}`);
   };
 
   const selectedProblemData = selectedProblem 
-    ? UPDATED_PROBLEM_SOLVER_ITEMS.find(p => p.id === selectedProblem)
+    ? PROBLEM_ITEMS.find(p => p.id === selectedProblem)
     : null;
 
   return (
@@ -57,40 +83,147 @@ export default function ProblemSolver() {
           </div>
         </div>
         
-        {/* Problems Grid - Responsive for desktop */}
+        {/* Problems Grid - Static list of problems */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
-          {UPDATED_PROBLEM_SOLVER_ITEMS.map((problem) => {
-            const isSelected = selectedProblem === problem.id;
-            return (
-              <button
-                key={problem.id}
-                onClick={() => handleProblemSelect(problem.id)}
-        
+          {/* Problem 1: Acne */}
+          <button
+            onClick={() => handleProblemSelect('acne')}
+            className={`group ${selectedProblem === 'acne' ? 'ring-2 ring-black' : ''}`}
+          >
+            <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <img
+                src="/images/problems/problem-01.jpg"
+                alt="Акне та висипання"
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+              />
+              {selectedProblem === 'acne' && (
+                <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </div>
+            <div className="p-3 md:p-4 text-center">
+              <h3 
+                className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                <div className="relative aspect-square overflow-hidden bg-gray-100">
-                  <img
-                    src={problem.image}
-                    alt={problem.label}
-                    className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  {isSelected && (
-                    <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                  )}
+                Акне та висипання
+              </h3>
+            </div>
+          </button>
+
+          {/* Problem 2: Dryness */}
+          <button
+            onClick={() => handleProblemSelect('dryness')}
+            className={`group ${selectedProblem === 'dryness' ? 'ring-2 ring-black' : ''}`}
+          >
+            <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <img
+                src="/images/problems/problem-02.jpg"
+                alt="Сухість"
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+              />
+              {selectedProblem === 'dryness' && (
+                <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">
+                  <Check className="h-4 w-4 text-white" />
                 </div>
-                <div className="p-3 md:p-4 text-center">
-                  <h3 
-                    className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
-                    style={{ fontFamily: 'Montserrat, sans-serif' }}
-                  >
-                    {problem.label}
-                  </h3>
+              )}
+            </div>
+            <div className="p-3 md:p-4 text-center">
+              <h3 
+                className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Сухість
+              </h3>
+            </div>
+          </button>
+
+          {/* Problem 3: Aging */}
+          <button
+            onClick={() => handleProblemSelect('aging')}
+            className={`group ${selectedProblem === 'aging' ? 'ring-2 ring-black' : ''}`}
+          >
+            <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <img
+                src="/images/problems/problem-03.jpg"
+                alt="Вікові зміни"
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+              />
+              {selectedProblem === 'aging' && (
+                <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">
+                  <Check className="h-4 w-4 text-white" />
                 </div>
-              </button>
-            );
-          })}
+              )}
+            </div>
+            <div className="p-3 md:p-4 text-center">
+              <h3 
+                className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Вікові зміни
+              </h3>
+            </div>
+          </button>
+
+          {/* Problem 4: Pigmentation */}
+          <button
+            onClick={() => handleProblemSelect('pigmentation')}
+            className={`group ${selectedProblem === 'pigmentation' ? 'ring-2 ring-black' : ''}`}
+          >
+            <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <img
+                src="/images/problems/problem-04.jpg"
+                alt="Пігментація"
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+              />
+              {selectedProblem === 'pigmentation' && (
+                <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </div>
+            <div className="p-3 md:p-4 text-center">
+              <h3 
+                className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Пігментація
+              </h3>
+            </div>
+          </button>
+
+          {/* Problem 5: Couperose */}
+          <button
+            onClick={() => handleProblemSelect('couperose')}
+            className={`group ${selectedProblem === 'couperose' ? 'ring-2 ring-black' : ''}`}
+          >
+            <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <img
+                src="/images/problems/problem-05.jpg"
+                alt="Купероз"
+                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+              />
+              {selectedProblem === 'couperose' && (
+                <div className="absolute bottom-2 left-2 w-6 h-6 bg-black flex items-center justify-center">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+              )}
+            </div>
+            <div className="p-3 md:p-4 text-center">
+              <h3 
+                className="text-xs md:text-sm font-medium uppercase tracking-wide line-clamp-2"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Купероз
+              </h3>
+            </div>
+          </button>
         </div>
 
         {/* Mobile Dropdown */}
@@ -102,15 +235,15 @@ export default function ProblemSolver() {
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
             <option value="">Виберіть проблему</option>
-            {UPDATED_PROBLEM_SOLVER_ITEMS.map((problem) => (
-              <option key={problem.id} value={problem.id}>
-                {problem.label}
-              </option>
-            ))}
+            <option value="acne">Акне та висипання</option>
+            <option value="dryness">Сухість</option>
+            <option value="aging">Вікові зміни</option>
+            <option value="pigmentation">Пігментація</option>
+            <option value="couperose">Купероз</option>
           </select>
         </div>
 
-        {/* Footer with Product Type Dropdown and Button */}
+        {/* Footer with centered Button */}
         <div className="flex justify-center">
           <button
             onClick={handleApplyFilters}
