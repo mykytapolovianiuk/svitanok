@@ -2,6 +2,10 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Link } from 'react-router-dom';
 
+// 👇 1. Переконайтесь, що стилі імпортовані (можна видалити, якщо вони є в main.tsx)
+import 'swiper/css';
+import 'swiper/css/navigation';
+
 interface Category {
   id: string;
   name: string;
@@ -57,42 +61,37 @@ export default function CategorySlider() {
         {/* Swiper Slider */}
         <Swiper
           modules={[Autoplay, Navigation]}
-          spaceBetween={20}
-          slidesPerView={2}
-          loop={true}
+          spaceBetween={24}
+          slidesPerView="auto"
+          
+          // 👇 Цей параметр центрує слайди, якщо їх мало і вони не займають весь екран
+          centerInsufficientSlides={true}
+          
+          // 👇 Цей параметр ВИМИКАЄ слайдер (блокує свайпи), якщо всі слайди вмістились
+          watchOverflow={true} 
+          
+          loop={false}
           autoplay={{
             delay: 2500,
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
           breakpoints={{
-            480: {
-              slidesPerView: 3,
-              spaceBetween: 16,
-            },
-            640: {
-              slidesPerView: 4,
-              spaceBetween: 20,
-            },
             768: {
-              slidesPerView: 5,
-              spaceBetween: 24,
-            },
-            1024: {
-              slidesPerView: 6,
-              spaceBetween: 24,
+              // На десктопі забороняємо тягати мишкою, якщо слайдів мало
+              allowTouchMove: false, 
             },
           }}
-          className="category-slider"
+          className="category-slider mx-auto"
         >
           {categories.map((category) => (
-            <SwiperSlide key={category.id}>
+            <SwiperSlide key={category.id} className="min-w-[160px] md:min-w-[180px] max-w-[180px]">
               <Link
                 to={`/catalog?category=${encodeURIComponent(category.slug)}`}
                 className="block group cursor-pointer"
               >
                 <div className="bg-primary rounded-lg overflow-hidden transition-transform duration-300 hover:scale-105">
-                  {/* Image Container - Fixed aspect ratio */}
+                  {/* Image Container */}
                   <div className="aspect-square overflow-hidden">
                     <img
                       src={category.image}
@@ -100,8 +99,8 @@ export default function CategorySlider() {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
-
-                  {/* Text Label - 20% height */}
+                          
+                  {/* Text Label */}
                   <div className="py-3 md:py-4 text-center">
                     <h3 
                       className="text-xs md:text-sm font-medium text-text-main uppercase tracking-wide"

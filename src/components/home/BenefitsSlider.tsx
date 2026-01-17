@@ -14,7 +14,7 @@ const benefits = [
     ],
     rightColumn: [
       { title: 'ПІДТВЕРДЖЕНО', subtitle: 'КЛІНІЧНИМИ\nТЕСТУВАННЯМИ' },
-      { title: 'ВИРОБЛЕНО', subtitle: 'B UA' },
+      { title: 'UA БІЗНЕС', subtitle: '' },
     ],
   },
 ];

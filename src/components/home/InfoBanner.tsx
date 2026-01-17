@@ -17,8 +17,8 @@ export default function InfoBanner() {
     },
     {
       id: '4',
-      title: 'ВИРОБЛЕНО',
-      subtitle: 'В UA',
+      title: 'УКРАЇНСЬКИЙ',
+      subtitle: 'БІЗНЕС',
     },
     {
       id: '5',
@@ -36,7 +36,7 @@ export default function InfoBanner() {
               key={feature.id}
               className="text-center px-2 md:px-4"
               style={{
-                borderRight: index < features.length - 1 && index !== 1 && index !== 3 ? '1px solid #000000' : 'none',
+                borderRight: index < features.length - 1 && index !== 1 ? '1px solid #000000' : 'none',
               }}
             >
               <h3

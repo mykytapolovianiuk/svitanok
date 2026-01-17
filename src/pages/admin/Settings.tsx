@@ -15,7 +15,7 @@ export default function Settings() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-const handleDownloadFeed = async (format: 'xml' | 'xlsx' | 'txt' = 'xml') => {
+const handleDownloadFeed = async (format: 'xml' | 'xlsx' | 'txt' | 'csv' = 'xml') => {
     try {
       setDownloading(true);
       const urlWithParams = `${FEED_URL}?format=${format}`;
@@ -30,26 +30,32 @@ const handleDownloadFeed = async (format: 'xml' | 'xlsx' | 'txt' = 'xml') => {
       let blob;
 
       if (format === 'xlsx') {
-        // 1. Get Base64 string
+        // --- XLSX Handling (Base64) ---
         const base64Data = await response.text();
         
-        // Check for server errors returned as text
-        if (base64Data.trim().startsWith('{') && base64Data.includes('error')) {
-            throw new Error('Server returned an error: ' + base64Data);
+        // SAFEGUARD: Check if response is JSON error or plain text before decoding
+        if (base64Data.trim().startsWith('{') || base64Data.includes('error') || base64Data.includes('Error')) {
+             throw new Error('Server Error: ' + base64Data.slice(0, 100));
         }
 
-        // 2. Decode Base64 -> Binary Array
-        const binaryString = window.atob(base64Data);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+        try {
+            const binaryString = window.atob(base64Data.replace(/\s/g, ''));
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        } catch (e) {
+            // If atob fails, it means the server returned non-base64 text (likely a Cyrillic error message)
+            throw new Error(`Помилка отримання файлу: ${base64Data.slice(0, 200)}...`);
         }
-        
-        // 3. Create Blob
-        blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      } else if (format === 'csv') {
+        // --- CSV Handling (Text) ---
+        const textData = await response.text();
+        blob = new Blob([textData], { type: "text/csv; charset=utf-8;" });
       } else {
-        // Standard handling for XML/TXT
+        // --- XML/TXT Handling ---
         blob = await response.blob();
       }
       
@@ -133,6 +139,15 @@ const handleDownloadFeed = async (format: 'xml' | 'xlsx' | 'txt' = 'xml') => {
               className="flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               <FileDown className="h-4 w-4 mr-2" /> XLSX
+            </button>
+
+            {/* Кнопка CSV */}
+            <button
+              onClick={() => handleDownloadFeed('csv')}
+              disabled={downloading}
+              className="flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+            >
+              <FileDown className="h-4 w-4 mr-2" /> CSV
             </button>
             
             {/* Кнопка TXT */}
