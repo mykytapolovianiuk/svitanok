@@ -92,6 +92,10 @@ export default function About() {
                   <span className="font-medium w-full md:w-64 mb-1 md:mb-0">Кількість співробітників:</span>
                   <span className="font-light">5-10 осіб</span>
                 </div>
+                <div className="flex flex-col md:flex-row">
+                  <span className="font-medium w-full md:w-64 mb-1 md:mb-0">ЄДРПОУ:</span>
+                  <span className="font-light">3732604734</span>
+                </div>
               </div>
             </div>
 
@@ -192,7 +196,7 @@ export default function About() {
                 </div>
                 <div>
                   <span className="font-medium block mb-1">Адреса:</span>
-                  <span className="font-light">м. Київ</span>
+                  <span className="font-light">м. Київ, вулиця Січових стрільців, 14</span>
                 </div>
               </div>
             </div>

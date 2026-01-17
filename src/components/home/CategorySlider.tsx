@@ -48,7 +48,7 @@ export default function CategorySlider() {
       <div className="container mx-auto px-4 md:px-8 max-w-[1440px]">
         {/* Section Title */}
         <h2 
-          className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium text-center text-text-main mb-6 md:mb-8 lg:mb-12 uppercase tracking-[0.2em]"
+          className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium text-center text-text-main mb-5 md:mb-8 lg:mb-12 uppercase tracking-[0.2em]"
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           Оберіть категорію

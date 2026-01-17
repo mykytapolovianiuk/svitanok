@@ -224,7 +224,7 @@ export default function Header() {
                 className="text-text-main hover:opacity-70 transition text-sm xl:text-base"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                Доставка
+                Доставка і оплата
               </Link>
               <Link 
                 to="/returns" 
