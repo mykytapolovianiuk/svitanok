@@ -6,6 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import ScrollToTop from './components/common/ScrollToTop';
 import CartDrawer from './components/cart/CartDrawer';
 import AnalyticsProvider from './components/marketing/AnalyticsProvider';
+import GTM from './components/marketing/GTM';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -63,6 +64,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <HelmetProvider>
+            <GTM />
             <AnalyticsProvider />
             <ScrollToTop />
             <CartDrawer />
