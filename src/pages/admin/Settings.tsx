@@ -6,7 +6,7 @@ export default function Settings() {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   
-  const FEED_URL = "https://zoezuvdsebnnbrwziosb.supabase.co/functions/v1/export-yml";
+  const FEED_URL = "https://www.svtnk.com.ua/feed";
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(FEED_URL);

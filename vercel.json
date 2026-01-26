@@ -5,6 +5,14 @@
   "installCommand": "npm install",
   "rewrites": [
     {
+      "source": "/feed",
+      "destination": "https://zoezuvdsebnnbrwziosb.supabase.co/functions/v1/export-yml"
+    },
+    {
+      "source": "/feed/:format",
+      "destination": "https://zoezuvdsebnnbrwziosb.supabase.co/functions/v1/export-yml?format=:format"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
