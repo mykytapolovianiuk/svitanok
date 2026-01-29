@@ -36,6 +36,8 @@ import SkincareRegimen from './pages/SkincareRegimen';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import NotFound from './pages/NotFound';
+import ForgotPassword from './pages/ForgotPassword';
+import UpdatePassword from './pages/UpdatePassword';
 
 // Admin Components
 import AdminLayout from './components/admin/AdminLayout';
@@ -70,82 +72,84 @@ function App() {
             <CartDrawer />
             <Toaster position="top-right" />
             <Routes>
-            {/* Checkout route without header/footer */}
-            <Route path="/checkout" element={
-              <CheckoutLayout>
-                <Checkout />
-              </CheckoutLayout>
-            } />
-            
-            {/* Temporary test route */}
-            <Route path="/ukrposhta-test" element={
-              <CheckoutLayout>
-                {React.createElement(() => {
-                  const UkrposhtaTest = React.lazy(() => import('./test/UkrposhtaTest'));
-                  return (
-                    <React.Suspense fallback={<div>Loading...</div>}>
-                      <UkrposhtaTest />
-                    </React.Suspense>
-                  );
-                })}
-              </CheckoutLayout>
-            } />
-            
-            {/* Admin routes without header/footer */}
-            <Route
-              path="admin"
-              element={
-                <ProtectedRoute requireAdmin>
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Admin />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="promocodes" element={<AdminPromoCodes />} />
-              <Route path="reviews" element={<AdminReviews />} />
-              <Route path="customers" element={<AdminCustomers />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="bestsellers" element={<Bestsellers />} />
-            </Route>
-            
-            {/* All other routes with normal layout */}
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path="catalog" element={<Catalog />} />
-              <Route path="catalog/:category" element={<Catalog />} />
-              <Route path="product/:slug" element={<ProductPage />} />
-              <Route path="cart" element={<Cart />} />
-              <Route path="order-success" element={<OrderSuccess />} />
-              <Route path="payment/:orderId" element={<PaymentPage />} />
-              <Route path="checkout/success" element={<CheckoutSuccess />} />
-              <Route path="auth" element={<Auth />} />
-              <Route path="favorites" element={<Favorites />} />
-              <Route path="about" element={<About />} />
-              <Route path="contacts" element={<Contacts />} />
-              <Route path="faq" element={<FAQ />} />
-              <Route path="delivery" element={<Delivery />} />
-              <Route path="returns" element={<Returns />} />
-              <Route path="autumn-care" element={<AutumnCare />} />
-              <Route path="skincare-regimen" element={<SkincareRegimen />} />
-              <Route path="privacy" element={<Privacy />} />
-              <Route path="terms" element={<Terms />} />
-              
-              {/* Protected Routes */}
+              {/* Checkout route without header/footer */}
+              <Route path="/checkout" element={
+                <CheckoutLayout>
+                  <Checkout />
+                </CheckoutLayout>
+              } />
+
+              {/* Temporary test route */}
+              <Route path="/ukrposhta-test" element={
+                <CheckoutLayout>
+                  {React.createElement(() => {
+                    const UkrposhtaTest = React.lazy(() => import('./test/UkrposhtaTest'));
+                    return (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <UkrposhtaTest />
+                      </React.Suspense>
+                    );
+                  })}
+                </CheckoutLayout>
+              } />
+
+              {/* Admin routes without header/footer */}
               <Route
-                path="account"
+                path="admin"
                 element={
-                  <ProtectedRoute>
-                    <Account />
+                  <ProtectedRoute requireAdmin>
+                    <AdminLayout />
                   </ProtectedRoute>
                 }
-              />
-              
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+              >
+                <Route index element={<Admin />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="promocodes" element={<AdminPromoCodes />} />
+                <Route path="reviews" element={<AdminReviews />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="bestsellers" element={<Bestsellers />} />
+              </Route>
+
+              {/* All other routes with normal layout */}
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="catalog" element={<Catalog />} />
+                <Route path="catalog/:category" element={<Catalog />} />
+                <Route path="product/:slug" element={<ProductPage />} />
+                <Route path="cart" element={<Cart />} />
+                <Route path="order-success" element={<OrderSuccess />} />
+                <Route path="payment/:orderId" element={<PaymentPage />} />
+                <Route path="checkout/success" element={<CheckoutSuccess />} />
+                <Route path="auth" element={<Auth />} />
+                <Route path="forgot-password" element={<ForgotPassword />} />
+                <Route path="update-password" element={<UpdatePassword />} />
+                <Route path="favorites" element={<Favorites />} />
+                <Route path="about" element={<About />} />
+                <Route path="contacts" element={<Contacts />} />
+                <Route path="faq" element={<FAQ />} />
+                <Route path="delivery" element={<Delivery />} />
+                <Route path="returns" element={<Returns />} />
+                <Route path="autumn-care" element={<AutumnCare />} />
+                <Route path="skincare-regimen" element={<SkincareRegimen />} />
+                <Route path="privacy" element={<Privacy />} />
+                <Route path="terms" element={<Terms />} />
+
+                {/* Protected Routes */}
+                <Route
+                  path="account"
+                  element={
+                    <ProtectedRoute>
+                      <Account />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
           </HelmetProvider>
         </AuthProvider>
       </QueryClientProvider>

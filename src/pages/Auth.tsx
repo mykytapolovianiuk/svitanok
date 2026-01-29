@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -42,7 +42,7 @@ export default function Auth() {
       // Note: Supabase automatically handles session persistence based on browser settings
       // The "Remember Me" functionality is handled by the browser's session storage vs local storage
       // We don't need to manually set the session here
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password,
@@ -163,6 +163,16 @@ export default function Auth() {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
+              </div>
+
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-[10px] md:text-xs text-gray-500 hover:text-black uppercase tracking-[1px] transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Забули пароль?
+                </Link>
               </div>
 
               {/* Запам'ятати мене */}
