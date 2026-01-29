@@ -14,11 +14,30 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     // Set initial loading state
     setIsLoading(true);
 
+    // Event Listener for Tab Focus (Fixes background throttling timeout issue)
+    const handleFocus = async () => {
+      if (document.visibilityState === 'visible') {
+        const { data: { session } } = await supabase.auth.getSession();
+        // The getSession() call forces Supabase to check/refresh token if needed.
+        // It triggers onAuthStateChange with TOKEN_REFRESHED if refreshed.
+        // So we might not need to manually setSession here if the listener catches it,
+        // but setting it strictly doesn't hurt.
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
           navigate('/update-password');
+        }
+
+        // Handle Token Refresh explicitly to ensure UI stays in sync
+        if (event === 'TOKEN_REFRESHED') {
+          // just let it fall through to update session
         }
 
         try {
@@ -74,6 +93,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     // Clean up listener on unmount
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
     };
   }, []); // Run only once on mount
 

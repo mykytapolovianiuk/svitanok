@@ -13,8 +13,8 @@ if (!supabaseAnonKey) {
 }
 
 // Determine cookie settings based on environment
-const isProduction = import.meta.env.PROD;
-const siteUrl = import.meta.env.VITE_SITE_URL || 'http://localhost:5173';
+// const isProduction = import.meta.env.PROD;
+// const siteUrl = import.meta.env.VITE_SITE_URL || 'http://localhost:5173';
 
 // Create a single, shared instance of the Supabase client
 // This ensures we have exactly one client across the entire application
@@ -23,16 +23,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    // Configure cookie settings for production
-    ...(isProduction && siteUrl ? {
-      cookieOptions: {
-        name: 'sb-auth-token',
-        lifetime: 60 * 60 * 24 * 7, // 7 days
-        domain: siteUrl.replace('https://', '').replace('http://', '').split('/')[0],
-        sameSite: 'Lax',
-        secure: siteUrl.startsWith('https'),
-      }
-    } : {})
+    storage: window.localStorage,
   },
   global: {
     headers: {
