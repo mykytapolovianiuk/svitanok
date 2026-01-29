@@ -10,16 +10,33 @@ export default function UpdatePassword() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [isSessionReady, setIsSessionReady] = useState(false);
     const navigate = useNavigate();
 
     // Check if we have a valid session (user arrived from email link)
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                toast.error('Недійсне або застаріле посилання для відновлення');
-                navigate('/auth');
+        const checkSession = async () => {
+            // First check
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                setIsSessionReady(true);
+                return;
             }
-        });
+
+            // Retry after 500ms (Supabase might need time to parse URL hash)
+            setTimeout(async () => {
+                const { data: { session: retrySession } } = await supabase.auth.getSession();
+                if (retrySession) {
+                    setIsSessionReady(true);
+                } else {
+                    toast.error('Недійсне або застаріле посилання для відновлення');
+                    navigate('/auth');
+                }
+            }, 500);
+        };
+
+        checkSession();
     }, [navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +64,14 @@ export default function UpdatePassword() {
             setLoading(false);
         }
     };
+
+    if (!isSessionReady) {
+        return (
+            <div className="min-h-[60vh] flex items-center justify-center">
+                <Spinner size="lg" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
