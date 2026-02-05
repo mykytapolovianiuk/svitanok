@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import CartItem from '@/components/cart/CartItem';
 import { usePromoCode, usePromoCodeDiscount } from '@/hooks/usePromoCode';
 import ShippingProgressBar from './ShippingProgressBar';
-import CartUpsell from './CartUpsell';
+
 
 const FREE_SHIPPING_THRESHOLD = 4000;
 
@@ -187,8 +187,7 @@ export default function CartDrawer() {
                   )}
                 </div>
 
-                {/* Upsell Block */}
-                <CartUpsell items={items} />
+
 
                 {/* Footer */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
