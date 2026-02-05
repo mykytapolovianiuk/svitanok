@@ -30,7 +30,7 @@ export default function Bestsellers() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch products marked as bestsellers with position ordering
       const { data: bestsellersData, error: bestsellersError } = await supabase
         .from('products')
@@ -116,7 +116,7 @@ export default function Bestsellers() {
     }
   };
 
-  const filteredProducts = allProducts.filter(product => 
+  const filteredProducts = allProducts.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     !bestsellers.some(b => b.id === product.id)
   );
@@ -129,7 +129,7 @@ export default function Bestsellers() {
             Хіти продажу
           </h1>
         </div>
-        
+
         <div className="bg-white shadow rounded-lg border border-gray-200 p-8">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/3"></div>
@@ -194,7 +194,7 @@ export default function Bestsellers() {
             }}
             renderItem={(item, index, dragHandleProps) => (
               <div className="flex items-center gap-4 p-4 border-b border-gray-200 last:border-b-0">
-                <div 
+                <div
                   {...dragHandleProps}
                   className="cursor-move text-gray-400 hover:text-gray-600"
                 >
@@ -202,8 +202,8 @@ export default function Bestsellers() {
                 </div>
                 <div className="flex-1 flex items-center gap-4">
                   {item.images && item.images.length > 0 && (
-                    <img 
-                      src={item.images[0]} 
+                    <img
+                      src={item.images[0]}
                       alt={item.name}
                       className="w-12 h-12 object-cover rounded"
                     />
@@ -269,7 +269,7 @@ export default function Bestsellers() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               {/* Search */}
               <div className="mt-4 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -284,7 +284,7 @@ export default function Bestsellers() {
                 />
               </div>
             </div>
-            
+
             {/* Products List */}
             <div className="flex-1 overflow-y-auto">
               {filteredProducts.length > 0 ? (
@@ -293,8 +293,8 @@ export default function Bestsellers() {
                     <div key={product.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
                       <div className="flex items-center gap-4">
                         {product.images && product.images.length > 0 && (
-                          <img 
-                            src={product.images[0]} 
+                          <img
+                            src={product.images[0]}
                             alt={product.name}
                             className="w-12 h-12 object-cover rounded"
                           />
@@ -324,7 +324,7 @@ export default function Bestsellers() {
                 </div>
               )}
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => setShowProductSelector(false)}

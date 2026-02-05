@@ -79,20 +79,6 @@ function App() {
                 </CheckoutLayout>
               } />
 
-              {/* Temporary test route */}
-              <Route path="/ukrposhta-test" element={
-                <CheckoutLayout>
-                  {React.createElement(() => {
-                    const UkrposhtaTest = React.lazy(() => import('./test/UkrposhtaTest'));
-                    return (
-                      <React.Suspense fallback={<div>Loading...</div>}>
-                        <UkrposhtaTest />
-                      </React.Suspense>
-                    );
-                  })}
-                </CheckoutLayout>
-              } />
-
               {/* Admin routes without header/footer */}
               <Route
                 path="admin"

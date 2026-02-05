@@ -1,69 +1,76 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 
-interface FilterOption {
-  id: string;
-  name: string;
-}
-
-interface ProductMeta {
-  id: number;
+interface ProductFilterData {
   brand_id: number;
   category_id: string;
   attributes: Record<string, any>;
   price: number;
 }
 
+interface FilterOption {
+  id: string;
+  name: string;
+}
+
 interface UseFilterDataReturn {
+  // Available options based on selections
   availableBrands: FilterOption[];
   availableCategories: FilterOption[];
   skinTypes: string[];
+
+  // Loading state
   loading: boolean;
-  getAvailableCategories: (selectedBrandIds: string[]) => FilterOption[];
+
+  // Helper functions
+  getAvailableCategories: (selectedBrandIds: number[]) => FilterOption[];
   getAvailableBrands: (selectedCategoryIds: string[]) => FilterOption[];
+  getAllAttributeValues: (attributeKey: string) => string[];
 }
 
-export function useFilterData(
-  selectedBrandIdsStr: string[] = [],
-  selectedCategoryIds: string[] = []
-): UseFilterDataReturn {
-  const [products, setProducts] = useState<ProductMeta[]>([]);
-  const [allBrands, setAllBrands] = useState<FilterOption[]>([]);
-  const [allCategories, setAllCategories] = useState<FilterOption[]>([]);
+export function useFilterData(): UseFilterDataReturn {
+  const [products, setProducts] = useState<ProductFilterData[]>([]);
+  const [brands, setBrands] = useState<FilterOption[]>([]);
+  const [categories, setCategories] = useState<FilterOption[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Initial Data Fetch
+  // Fetch all filter data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Fetch Brands
-        const { data: brandsData } = await supabase
+        // Fetch products with brand_id, category_id, attributes, and price
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('brand_id, category_id, attributes, price')
+          .gt('price', 0) // Only products with valid prices
+          .limit(10000); // Reasonable limit for performance
+
+        if (productError) throw productError;
+
+        // Fetch brands
+        const { data: brandData, error: brandError } = await supabase
           .from('brands')
           .select('id, name')
           .order('name');
 
-        // Fetch Categories
-        const { data: categoriesData } = await supabase
+        if (brandError) throw brandError;
+
+        // Fetch categories
+        const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
           .select('id, name')
           .order('name');
 
-        // Fetch ALL Active Products (Lightweight payload)
-        // We need this entire dataset to map relations client-side efficiently
-        const { data: productData, error } = await supabase
-          .from('products')
-          .select('id, brand_id, category_id, attributes, price')
-          .eq('in_stock', true); // Optional: only show filters for in-stock items
+        if (categoryError) throw categoryError;
 
-        if (error) throw error;
-
-        setAllBrands(brandsData?.map(b => ({ id: b.id.toString(), name: b.name })) || []);
-        setAllCategories(categoriesData?.map(c => ({ id: c.id, name: c.name })) || []);
         setProducts(productData || []);
-      } catch (err) {
-        console.error('Filter data fetch error:', err);
+        setBrands(brandData?.map(b => ({ id: b.id.toString(), name: b.name })) || []);
+        setCategories(categoryData?.map(c => ({ id: c.id, name: c.name })) || []);
+
+      } catch (error) {
+        console.error('Error fetching filter data:', error);
       } finally {
         setLoading(false);
       }
@@ -72,66 +79,81 @@ export function useFilterData(
     fetchData();
   }, []);
 
-  // 2. Helper: Extract attribute values (e.g. Skin Types)
-  const skinTypes = useMemo(() => {
-    const unique = new Set<string>();
-    products.forEach(p => {
-      const val = p.attributes?.['Тип шкіри'];
-      if (val) {
-        if (Array.isArray(val)) val.forEach(v => unique.add(v));
-        else unique.add(val as string);
-      }
-    });
-    return Array.from(unique).sort();
+  // Extract unique attribute values from all products
+  const extractAttributeValues = useMemo(() => {
+    return (attributeKey: string): string[] => {
+      const uniqueValues = new Set<string>();
+
+      products.forEach(product => {
+        const value = product.attributes?.[attributeKey];
+
+        if (value) {
+          if (Array.isArray(value)) {
+            // Handle array values
+            value.forEach(item => {
+              if (item && typeof item === 'string' && item.trim()) {
+                uniqueValues.add(item.trim());
+              }
+            });
+          } else if (typeof value === 'string') {
+            // Handle string values (including pipe-separated)
+            if (value.includes('|')) {
+              value.split('|').forEach(part => {
+                if (part.trim()) uniqueValues.add(part.trim());
+              });
+            } else {
+              uniqueValues.add(value.trim());
+            }
+          }
+        }
+      });
+
+      return Array.from(uniqueValues).sort();
+    };
   }, [products]);
 
-  // 3. Logic: Filter Brands based on selected Categories
-  const availableBrands = useMemo(() => {
-    // If no categories selected, show all brands
-    if (selectedCategoryIds.length === 0) return allBrands;
-
-    // Find products that match ANY of the selected categories
-    const matchingBrandIds = new Set<number>();
-    products.forEach(p => {
-      if (selectedCategoryIds.includes(p.category_id)) {
-        matchingBrandIds.add(p.brand_id);
+  // Get available categories based on selected brands
+  const getAvailableCategories = useMemo(() => {
+    return (selectedBrandIds: number[]): FilterOption[] => {
+      if (selectedBrandIds.length === 0) {
+        return categories;
       }
-    });
 
-    // Return only brands that have products in those categories
-    return allBrands.filter(b => matchingBrandIds.has(Number(b.id)));
-  }, [selectedCategoryIds, allBrands, products]);
+      const availableCategoryIds = new Set<string>();
 
-  // 4. Logic: Filter Categories based on selected Brands
-  const availableCategories = useMemo(() => {
-    // If no brands selected, show all categories
-    if (selectedBrandIdsStr.length === 0) return allCategories;
+      products.forEach(product => {
+        if (selectedBrandIds.includes(product.brand_id)) {
+          availableCategoryIds.add(product.category_id);
+        }
+      });
 
-    const selectedBrandIdsNum = selectedBrandIdsStr.map(Number);
-    const matchingCategoryIds = new Set<string>();
+      return categories.filter(cat => availableCategoryIds.has(cat.id));
+    };
+  }, [products, categories]);
 
-    products.forEach(p => {
-      if (selectedBrandIdsNum.includes(p.brand_id)) {
-        matchingCategoryIds.add(p.category_id);
+  // Get available brands based on selected categories
+  const getAvailableBrands = useMemo(() => {
+    return (selectedCategoryIds: string[]): FilterOption[] => {
+      if (selectedCategoryIds.length === 0) {
+        return brands;
       }
-    });
 
-    return allCategories.filter(c => matchingCategoryIds.has(c.id));
-  }, [selectedBrandIdsStr, allCategories, products]);
+      const availableBrandIds = new Set<number>();
 
-  // Compatibility helpers (in case component uses them directly, though useMemo above handles it automatically)
-  const getAvailableCategories = (brandIds: string[]) => {
-    if (brandIds.length === 0) return allCategories;
-    const nums = brandIds.map(Number);
-    const ids = new Set(products.filter(p => nums.includes(p.brand_id)).map(p => p.category_id));
-    return allCategories.filter(c => ids.has(c.id));
-  };
+      products.forEach(product => {
+        if (selectedCategoryIds.includes(product.category_id)) {
+          availableBrandIds.add(product.brand_id);
+        }
+      });
 
-  const getAvailableBrands = (catIds: string[]) => {
-    if (catIds.length === 0) return allBrands;
-    const ids = new Set(products.filter(p => catIds.includes(p.category_id)).map(p => p.brand_id));
-    return allBrands.filter(b => ids.has(Number(b.id)));
-  };
+      return brands.filter(brand => availableBrandIds.has(Number(brand.id)));
+    };
+  }, [products, brands]);
+
+  // Memoized available options
+  const availableBrands = useMemo(() => brands, [brands]);
+  const availableCategories = useMemo(() => categories, [categories]);
+  const skinTypes = useMemo(() => extractAttributeValues('Тип шкіри'), [extractAttributeValues]);
 
   return {
     availableBrands,
@@ -139,6 +161,7 @@ export function useFilterData(
     skinTypes,
     loading,
     getAvailableCategories,
-    getAvailableBrands
+    getAvailableBrands,
+    getAllAttributeValues: extractAttributeValues
   };
 }
