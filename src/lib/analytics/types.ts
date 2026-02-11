@@ -86,6 +86,7 @@ export interface GA4PurchaseParams {
   shipping?: number;
   items: AnalyticsProduct[];
   coupon?: string;
+  send_to?: string;
 }
 
 export interface GA4SearchParams {

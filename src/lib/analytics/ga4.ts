@@ -33,7 +33,7 @@ declare global {
  */
 export function initGA4(): void {
   if (typeof window === 'undefined') return;
-  
+
   const gaId = import.meta.env.VITE_GA_ID;
   if (!gaId) {
     if (import.meta.env.DEV) {
@@ -41,28 +41,28 @@ export function initGA4(): void {
     }
     return;
   }
-  
+
   // Initialize dataLayer if not exists
   window.dataLayer = window.dataLayer || [];
-  
+
   // Initialize gtag function
   function gtag(...args: any[]) {
     window.dataLayer.push(args);
   }
   window.gtag = gtag;
-  
+
   // Load GA4 script
   const script = document.createElement('script');
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
   document.head.appendChild(script);
-  
+
   // Configure GA4
   gtag('js', new Date());
   gtag('config', gaId, {
     send_page_view: false, // We'll send page views manually
   });
-  
+
   if (import.meta.env.DEV) {
     // Production logging removed
   }
@@ -73,13 +73,13 @@ export function initGA4(): void {
  */
 export function trackPageView(pagePath: string, pageTitle?: string): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'page_view', {
     page_path: pagePath,
     page_title: pageTitle || document.title,
     page_location: window.location.href,
   });
-  
+
   // Also push to GTM
   pushEvent('page_view', {
     page_path: pagePath,
@@ -92,13 +92,13 @@ export function trackPageView(pagePath: string, pageTitle?: string): void {
  */
 export function trackViewItem(params: GA4ViewItemParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'view_item', {
     currency: params.currency,
     value: params.value,
     items: params.items,
   });
-  
+
   pushEvent('view_item', {
     currency: params.currency,
     value: params.value,
@@ -111,13 +111,13 @@ export function trackViewItem(params: GA4ViewItemParams): void {
  */
 export function trackViewItemList(params: GA4ViewItemListParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'view_item_list', {
     item_list_id: params.item_list_id,
     item_list_name: params.item_list_name,
     items: params.items,
   });
-  
+
   pushEvent('view_item_list', {
     item_list_id: params.item_list_id,
     item_list_name: params.item_list_name,
@@ -130,13 +130,13 @@ export function trackViewItemList(params: GA4ViewItemListParams): void {
  */
 export function trackAddToCart(params: GA4AddToCartParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'add_to_cart', {
     currency: params.currency,
     value: params.value,
     items: params.items,
   });
-  
+
   pushEvent('add_to_cart', {
     currency: params.currency,
     value: params.value,
@@ -149,13 +149,13 @@ export function trackAddToCart(params: GA4AddToCartParams): void {
  */
 export function trackRemoveFromCart(params: GA4RemoveFromCartParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'remove_from_cart', {
     currency: params.currency,
     value: params.value,
     items: params.items,
   });
-  
+
   pushEvent('remove_from_cart', {
     currency: params.currency,
     value: params.value,
@@ -168,13 +168,13 @@ export function trackRemoveFromCart(params: GA4RemoveFromCartParams): void {
  */
 export function trackViewCart(params: GA4ViewCartParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'view_cart', {
     currency: params.currency,
     value: params.value,
     items: params.items,
   });
-  
+
   pushEvent('view_cart', {
     currency: params.currency,
     value: params.value,
@@ -187,14 +187,14 @@ export function trackViewCart(params: GA4ViewCartParams): void {
  */
 export function trackBeginCheckout(params: GA4BeginCheckoutParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'begin_checkout', {
     currency: params.currency,
     value: params.value,
     items: params.items,
     coupon: params.coupon,
   });
-  
+
   pushEvent('begin_checkout', {
     currency: params.currency,
     value: params.value,
@@ -208,14 +208,14 @@ export function trackBeginCheckout(params: GA4BeginCheckoutParams): void {
  */
 export function trackAddPaymentInfo(params: GA4AddPaymentInfoParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'add_payment_info', {
     currency: params.currency,
     value: params.value,
     payment_type: params.payment_type,
     items: params.items,
   });
-  
+
   pushEvent('add_payment_info', {
     currency: params.currency,
     value: params.value,
@@ -229,14 +229,14 @@ export function trackAddPaymentInfo(params: GA4AddPaymentInfoParams): void {
  */
 export function trackAddShippingInfo(params: GA4AddShippingInfoParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'add_shipping_info', {
     currency: params.currency,
     value: params.value,
     shipping_tier: params.shipping_tier,
     items: params.items,
   });
-  
+
   pushEvent('add_shipping_info', {
     currency: params.currency,
     value: params.value,
@@ -250,7 +250,7 @@ export function trackAddShippingInfo(params: GA4AddShippingInfoParams): void {
  */
 export function trackPurchase(params: GA4PurchaseParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'purchase', {
     transaction_id: params.transaction_id,
     value: params.value,
@@ -259,8 +259,9 @@ export function trackPurchase(params: GA4PurchaseParams): void {
     shipping: params.shipping,
     items: params.items,
     coupon: params.coupon,
+    send_to: params.send_to,
   });
-  
+
   pushEvent('purchase', {
     transaction_id: params.transaction_id,
     value: params.value,
@@ -277,11 +278,11 @@ export function trackPurchase(params: GA4PurchaseParams): void {
  */
 export function trackSearch(params: GA4SearchParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'search', {
     search_term: params.search_term,
   });
-  
+
   pushEvent('search', {
     search_term: params.search_term,
   });
@@ -292,13 +293,13 @@ export function trackSearch(params: GA4SearchParams): void {
  */
 export function trackSelectItem(params: GA4SelectItemParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'select_item', {
     item_list_id: params.item_list_id,
     item_list_name: params.item_list_name,
     items: params.items,
   });
-  
+
   pushEvent('select_item', {
     item_list_id: params.item_list_id,
     item_list_name: params.item_list_name,
@@ -311,7 +312,7 @@ export function trackSelectItem(params: GA4SelectItemParams): void {
  */
 export function trackSelectPromotion(params: GA4SelectPromotionParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'select_promotion', {
     promotion_id: params.promotion_id,
     promotion_name: params.promotion_name,
@@ -320,7 +321,7 @@ export function trackSelectPromotion(params: GA4SelectPromotionParams): void {
     location_id: params.location_id,
     items: params.items,
   });
-  
+
   pushEvent('select_promotion', {
     promotion_id: params.promotion_id,
     promotion_name: params.promotion_name,
@@ -336,7 +337,7 @@ export function trackSelectPromotion(params: GA4SelectPromotionParams): void {
  */
 export function trackViewPromotion(params: GA4ViewPromotionParams): void {
   if (!window.gtag) return;
-  
+
   window.gtag('event', 'view_promotion', {
     promotion_id: params.promotion_id,
     promotion_name: params.promotion_name,
@@ -345,7 +346,7 @@ export function trackViewPromotion(params: GA4ViewPromotionParams): void {
     location_id: params.location_id,
     items: params.items,
   });
-  
+
   pushEvent('view_promotion', {
     promotion_id: params.promotion_id,
     promotion_name: params.promotion_name,
