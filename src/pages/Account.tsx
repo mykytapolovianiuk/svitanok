@@ -22,7 +22,9 @@ import {
   CreditCard,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  ShieldCheck,
+  ChevronRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -158,12 +160,12 @@ export default function Account() {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'processing': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'shipped': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'delivered': return 'bg-gray-50 text-gray-700 border-gray-200';
-      case 'cancelled': return 'bg-red-50 text-red-700 border-red-200';
-      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'processing': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'shipped': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'delivered': return 'bg-green-100 text-green-800 border-green-200';
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -183,249 +185,175 @@ export default function Account() {
     pendingOrders: orders.filter(o => o.status === 'pending').length,
   };
 
-  // REMOVE any internal useEffect that calls Maps('/auth') or checks for !session
-  // The ProtectedRoute wrapper already handles security.
-  // HANDLE NULL PROFILE: If profile is null but user exists, do NOT redirect.
-  // Instead, render the <ProfileForm /> so the user can fill in their details.
-
   return (
-    <div className="min-h-screen bg-[#FFF2E1] py-6 sm:py-8">
+    <div className="min-h-screen bg-gray-50 py-8 lg:py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-8 lg:mb-12">
           <h1
-            className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-900 mb-2 uppercase tracking-[2px]"
+            className="text-3xl md:text-4xl font-light text-gray-900 mb-2 uppercase tracking-[2px]"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
-            Мій акаунт
+            Особистий кабінет
           </h1>
           <p
-            className="text-gray-600 text-sm md:text-base"
+            className="text-gray-500 font-light text-lg"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
-            Управління профілем та замовленнями
+            Вітаємо, {profile.full_name || session?.user?.email}
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
-          <div className="bg-white rounded-none border border-black p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p
-                  className="text-xs md:text-sm text-gray-600 uppercase tracking-[1px]"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Sidebar Navigation - Left Column */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-xl shadow-sm p-4 sticky top-24">
+              <nav className="space-y-1 flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 gap-2 lg:gap-0">
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap w-full text-left ${activeTab === 'profile'
+                      ? 'bg-black text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-100'
+                    }`}
                 >
-                  Всього замовлень
-                </p>
-                <p
-                  className="text-2xl md:text-3xl font-medium text-gray-900 mt-2"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {stats.totalOrders}
-                </p>
-              </div>
-              <ShoppingBag className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
-            </div>
-          </div>
-          <div className="bg-white rounded-none border border-black p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p
-                  className="text-xs md:text-sm text-gray-600 uppercase tracking-[1px]"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Витрачено
-                </p>
-                <p
-                  className="text-2xl md:text-3xl font-medium text-gray-900 mt-2"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {formatPrice(stats.totalSpent)}
-                </p>
-              </div>
-              <CreditCard className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
-            </div>
-          </div>
-          <div className="bg-white rounded-none border border-black p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p
-                  className="text-xs md:text-sm text-gray-600 uppercase tracking-[1px]"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  Очікують
-                </p>
-                <p
-                  className="text-2xl md:text-3xl font-medium text-yellow-600 mt-2"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {stats.pendingOrders}
-                </p>
-              </div>
-              <Clock className="h-6 w-6 md:h-8 md:w-8 text-yellow-400" />
-            </div>
-          </div>
-        </div>
+                  <User className="h-5 w-5" />
+                  Особисті дані
+                </button>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-none border border-black mb-6">
-          <div className="border-b border-black">
-            <nav className="flex -mb-px">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors uppercase tracking-[1px] ${activeTab === 'profile'
-                    ? 'border-black text-black'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span>Профіль</span>
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap w-full text-left ${activeTab === 'orders'
+                      ? 'bg-black text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                >
+                  <Package className="h-5 w-5" />
+                  Мої замовлення
+                  {orders.length > 0 && (
+                    <span className={`ml-auto text-xs py-0.5 px-2 rounded-full ${activeTab === 'orders' ? 'bg-white text-black' : 'bg-gray-200 text-gray-600'}`}>
+                      {orders.length}
+                    </span>
+                  )}
+                </button>
+
+                {session?.profile?.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors whitespace-nowrap"
+                  >
+                    <ShieldCheck className="h-5 w-5" />
+                    Адмін-панель
+                  </Link>
+                )}
+
+                <div className="pt-2 lg:mt-2 lg:border-t lg:border-gray-100">
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap w-full text-left"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Вийти
+                  </button>
                 </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors uppercase tracking-[1px] ${activeTab === 'orders'
-                    ? 'border-black text-black'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Package className="h-4 w-4" />
-                  <span>Замовлення ({orders.length})</span>
-                </div>
-              </button>
-            </nav>
+              </nav>
+            </div>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-6 md:p-8">
+          {/* Main Content - Right Column */}
+          <div className="lg:col-span-9">
             {activeTab === 'profile' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-                {/* Profile Section */}
-                <div className="lg:col-span-2 space-y-6 md:space-y-8">
+              <div className="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
                   <div>
                     <h2
-                      className="text-lg md:text-xl font-medium text-gray-900 mb-4 md:mb-6 uppercase tracking-[1px]"
+                      className="text-xl font-medium text-gray-900 mb-6 uppercase tracking-wide flex items-center gap-2"
                       style={{ fontFamily: 'Montserrat, sans-serif' }}
                     >
-                      Особиста інформація
+                      <User className="h-5 w-5" />
+                      Редагування профілю
                     </h2>
-                    {/* Pass the user.phone (from the store) as a default value to the ProfileForm */}
                     <ProfileForm
                       profile={profile}
                       onUpdate={handleProfileUpdate}
                     />
                   </div>
 
-                  {/* Account Info */}
-                  <div className="border-t border-black pt-6 md:pt-8">
-                    <h3
-                      className="text-base md:text-lg font-medium text-gray-900 mb-4 md:mb-6 uppercase tracking-[1px]"
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                    >
-                      Інформація про акаунт
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200">
-                        <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                        <div>
-                          <p
-                            className="text-xs text-gray-600 uppercase tracking-[1px]"
-                            style={{ fontFamily: 'Montserrat, sans-serif' }}
-                          >
-                            Email
-                          </p>
-                          <p
-                            className="text-sm md:text-base font-medium text-gray-900 mt-1"
-                            style={{ fontFamily: 'Montserrat, sans-serif' }}
-                          >
-                            {session?.user?.email}
-                          </p>
+                  <div className="space-y-8">
+                    {/* Account Stats */}
+                    <div>
+                      <h2
+                        className="text-xl font-medium text-gray-900 mb-6 uppercase tracking-wide flex items-center gap-2"
+                        style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      >
+                        <ShoppingBag className="h-5 w-5" />
+                        Статистика
+                      </h2>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                          <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Всього замовлень</p>
+                          <p className="text-2xl font-semibold text-gray-900">{stats.totalOrders}</p>
                         </div>
-                      </div>
-                      {/* Display phone from auth session if available */}
-                      {session?.user?.phone && (
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200">
-                          <Phone className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                          <div>
-                            <p
-                              className="text-xs text-gray-600 uppercase tracking-[1px]"
-                              style={{ fontFamily: 'Montserrat, sans-serif' }}
-                            >
-                              Телефон
-                            </p>
-                            <p
-                              className="text-sm md:text-base font-medium text-gray-900 mt-1"
-                              style={{ fontFamily: 'Montserrat, sans-serif' }}
-                            >
-                              {session.user.phone}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200">
-                        <Calendar className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                        <div>
-                          <p
-                            className="text-xs text-gray-600 uppercase tracking-[1px]"
-                            style={{ fontFamily: 'Montserrat, sans-serif' }}
-                          >
-                            Дата реєстрації
-                          </p>
-                          <p
-                            className="text-sm md:text-base font-medium text-gray-900 mt-1"
-                            style={{ fontFamily: 'Montserrat, sans-serif' }}
-                          >
-                            {profile.created_at ? formatDateTime(profile.created_at, false) : '—'}
-                          </p>
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                          <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Витрачено</p>
+                          <p className="text-2xl font-semibold text-gray-900">{formatPrice(stats.totalSpent)}</p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Actions Section */}
-                <div className="lg:col-span-1">
-                  <div className="bg-[#FAF4EB] rounded-none border border-black p-6">
-                    <h3
-                      className="text-base md:text-lg font-medium text-gray-900 mb-4 md:mb-6 uppercase tracking-[1px]"
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                    >
-                      Дії
-                    </h3>
-                    <div className="space-y-3">
-                      {session?.profile?.role === 'admin' && (
-                        <Link
-                          to="/admin"
-                          className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-black text-sm font-medium text-black bg-white hover:bg-black hover:text-white transition-colors uppercase tracking-[1px]"
-                          style={{ fontFamily: 'Montserrat, sans-serif' }}
-                        >
-                          <Settings className="h-4 w-4" />
-                          Адмін панель
-                        </Link>
-                      )}
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-red-600 text-sm font-medium text-red-600 bg-white hover:bg-red-600 hover:text-white transition-colors uppercase tracking-[1px]"
+                    {/* Account Info */}
+                    <div>
+                      <h2
+                        className="text-xl font-medium text-gray-900 mb-6 uppercase tracking-wide flex items-center gap-2"
                         style={{ fontFamily: 'Montserrat, sans-serif' }}
                       >
-                        <LogOut className="h-4 w-4" />
-                        Вийти з акаунту
-                      </button>
+                        <Settings className="h-5 w-5" />
+                        Інформація акаунту
+                      </h2>
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="p-2 bg-white rounded-full shadow-sm">
+                            <Mail className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wider">Email</p>
+                            <p className="text-sm font-medium text-gray-900 mt-0.5">{session?.user?.email}</p>
+                          </div>
+                        </div>
+
+                        {session?.user?.phone && (
+                          <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <div className="p-2 bg-white rounded-full shadow-sm">
+                              <Phone className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wider">Телефон (логін)</p>
+                              <p className="text-sm font-medium text-gray-900 mt-0.5">{session.user.phone}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="p-2 bg-white rounded-full shadow-sm">
+                            <Calendar className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wider">Дата реєстрації</p>
+                            <p className="text-sm font-medium text-gray-900 mt-0.5">
+                              {profile.created_at ? formatDateTime(profile.created_at, false) : '—'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
-              /* Orders Section */
-              <div>
-                <div className="flex items-center justify-between mb-6">
+              /* Orders View */
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
                   <h2
-                    className="text-lg md:text-xl font-medium text-gray-900 uppercase tracking-[1px]"
+                    className="text-xl font-medium text-gray-900 uppercase tracking-wide"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
                     Історія замовлень
@@ -433,213 +361,161 @@ export default function Account() {
                 </div>
 
                 {loading ? (
-                  <OrderListSkeleton count={5} />
+                  <OrderListSkeleton count={3} />
                 ) : orders.length === 0 ? (
-                  <div className="text-center py-12 md:py-16">
-                    <Package className="h-16 w-16 md:h-20 md:w-20 text-gray-400 mx-auto mb-4" />
-                    <p
-                      className="text-gray-600 mb-4 text-sm md:text-base"
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                    >
-                      У вас ще немає замовлень
+                  <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <ShoppingBag className="h-10 w-10 text-gray-300" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">У вас ще немає замовлень</h3>
+                    <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                      Почніть шопінг прямо зараз та насолоджуйтесь нашими кращими товарами.
                     </p>
                     <Link
                       to="/catalog"
-                      className="inline-flex items-center px-6 py-3 border border-black text-sm font-medium text-black bg-white hover:bg-black hover:text-white transition-colors uppercase tracking-[1px]"
-                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                      className="inline-flex items-center gap-2 px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
                     >
                       Перейти до каталогу
                     </Link>
                   </div>
                 ) : (
-                  <div className="space-y-4 md:space-y-6">
+                  <div className="space-y-4">
                     {orders.map((order) => (
-                      <div key={order.id.toString()} className="border border-black rounded-none overflow-hidden bg-white">
-                        {/* Order Summary */}
+                      <div
+                        key={order.id}
+                        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                      >
                         <div
-                          className="p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+                          className="p-6 cursor-pointer"
                           onClick={() => toggleOrderExpansion(order.id)}
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex flex-wrap items-center gap-3 mb-2">
-                                <Package className="h-5 w-5 text-gray-400" />
-                                <h3
-                                  className="font-medium text-gray-900 uppercase tracking-wide"
-                                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                >
-                                  Замовлення #{String(order.id).substring(0, 8).toUpperCase()}
-                                </h3>
-                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-none text-xs font-medium border uppercase tracking-wide ${getStatusClass(order.status)}`}>
-                                  {getStatusIcon(order.status)}
-                                  {getStatusText(order.status)}
-                                </span>
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex items-start gap-4">
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <Package className="h-6 w-6 text-gray-800" />
                               </div>
-                              <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-gray-600">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{formatDateTime(order.created_at, true)}</span>
+                              <div>
+                                <div className="flex items-center gap-3 mb-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    Замовлення #{String(order.id).slice(0, 8).toUpperCase()}
+                                  </h3>
+                                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusClass(order.status)}`}>
+                                    {getStatusIcon(order.status)}
+                                    {getStatusText(order.status)}
+                                  </span>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <ShoppingBag className="h-4 w-4" />
-                                  <span>{order.items.length} товарів</span>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {formatDateTime(order.created_at, true)}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <ShoppingBag className="h-4 w-4" />
+                                    {order.items.length} товарів
+                                  </span>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <p
-                                  className="text-lg md:text-xl font-medium text-gray-900"
-                                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                >
-                                  {formatPrice(Number(order.total_price || 0))}
-                                </p>
+
+                            <div className="flex items-center justify-between md:justify-end gap-6 ml-14 md:ml-0">
+                              <p className="text-xl font-bold text-gray-900">
+                                {formatPrice(Number(order.total_price))}
+                              </p>
+                              <div className={`transition-transform duration-300 ${expandedOrderId === order.id ? 'rotate-180' : ''}`}>
+                                <ChevronDown className="h-5 w-5 text-gray-400" />
                               </div>
-                              <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                                {expandedOrderId === order.id ? (
-                                  <ChevronUp className="h-5 w-5" />
-                                ) : (
-                                  <ChevronDown className="h-5 w-5" />
-                                )}
-                              </button>
                             </div>
                           </div>
                         </div>
 
-                        {/* Expanded Order Details */}
+                        {/* Expanded Details */}
                         {expandedOrderId === order.id && (
-                          <div className="border-t border-black bg-[#FAF4EB] p-4 md:p-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                              {/* Order Items */}
-                              <div className="lg:col-span-2">
-                                <h4
-                                  className="text-sm md:text-base font-medium text-gray-900 mb-4 uppercase tracking-[1px]"
-                                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                >
-                                  Товари в замовленні
+                          <div className="border-t border-gray-100 bg-gray-50/50 p-6 animate-in slide-in-from-top-2 duration-200">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                              <div className="lg:col-span-2 space-y-4">
+                                <h4 className="text-sm font-medium text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                                  <ShoppingBag className="h-4 w-4" />
+                                  Товари
                                 </h4>
                                 <div className="space-y-3">
-                                  {order.items.map((item) => {
-                                    const product = item.product as any;
-                                    return (
-                                      <div key={item.id} className="flex items-start gap-3 bg-white p-3 md:p-4 border border-black">
+                                  {order.items.map((item) => (
+                                    <div key={item.id} className="flex gap-4 bg-white p-3 rounded-lg border border-gray-100">
+                                      <Link to={`/product/${item.product?.slug}`}>
                                         <img
-                                          src={product?.images?.[0] || '/placeholder-product.jpg'}
-                                          alt={product?.name || 'Товар'}
-                                          className="w-16 h-16 md:w-20 md:h-20 object-cover flex-shrink-0 border border-black"
+                                          src={item.product?.images?.[0] || '/placeholder-product.jpg'}
+                                          alt={item.product?.name}
+                                          className="w-16 h-16 object-cover rounded-md border border-gray-100"
                                         />
-                                        <div className="flex-1 min-w-0">
-                                          <Link
-                                            to={`/product/${encodeURIComponent(product?.slug || '')}`}
-                                            className="text-sm md:text-base font-medium text-gray-900 hover:text-gray-700 transition-colors block truncate uppercase tracking-wide"
-                                            style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                          >
-                                            {product?.name || 'Товар'}
-                                          </Link>
-                                          <p
-                                            className="text-xs md:text-sm text-gray-500 mt-1"
-                                            style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                          >
-                                            Кількість: {item.quantity} × {formatPrice(item.price_at_purchase)}
+                                      </Link>
+                                      <div className="flex-1 min-w-0">
+                                        <Link
+                                          to={`/product/${item.product?.slug}`}
+                                          className="text-sm font-medium text-gray-900 truncate block hover:text-black hover:underline"
+                                        >
+                                          {item.product?.name}
+                                        </Link>
+                                        <div className="flex justify-between items-end mt-2">
+                                          <p className="text-xs text-gray-500">
+                                            {item.quantity} шт × {formatPrice(item.price_at_purchase)}
+                                          </p>
+                                          <p className="text-sm font-medium text-gray-900">
+                                            {formatPrice(item.quantity * item.price_at_purchase)}
                                           </p>
                                         </div>
-                                        <p
-                                          className="text-sm md:text-base font-medium text-gray-900 whitespace-nowrap"
-                                          style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                        >
-                                          {formatPrice(item.price_at_purchase * item.quantity)}
-                                        </p>
                                       </div>
-                                    );
-                                  })}
-                                </div>
-
-                                <div className="mt-4 pt-4 border-t border-black">
-                                  <div className="flex justify-between items-center">
-                                    <p
-                                      className="text-sm md:text-base font-medium text-gray-900 uppercase tracking-[1px]"
-                                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                    >
-                                      Загальна сума:
-                                    </p>
-                                    <p
-                                      className="text-lg md:text-xl font-medium text-gray-900"
-                                      style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                    >
-                                      {formatPrice(Number(order.total_price || 0))}
-                                    </p>
-                                  </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
 
-                              {/* Delivery Info */}
-                              <div>
-                                <h4
-                                  className="text-sm md:text-base font-medium text-gray-900 mb-4 uppercase tracking-[1px]"
-                                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                                >
-                                  Інформація про доставку
-                                </h4>
-                                <div className="space-y-3 text-sm bg-white p-4 border border-black">
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <Truck className="h-4 w-4 text-gray-400" />
-                                      <span className="font-medium text-gray-700">Тип доставки:</span>
+                              <div className="space-y-6">
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <Truck className="h-4 w-4" />
+                                    Доставка
+                                  </h4>
+                                  <div className="bg-white p-4 rounded-lg border border-gray-100 text-sm space-y-3">
+                                    <div>
+                                      <span className="text-gray-500 block text-xs uppercase mb-1">Спосіб доставки</span>
+                                      <span className="font-medium">{getDeliveryMethodText(order.delivery_method)}</span>
                                     </div>
-                                    <p className="text-gray-900 ml-6">{getDeliveryMethodText(order.delivery_method)}</p>
+
+                                    {(order.delivery_info as any)?.city && (
+                                      <div>
+                                        <span className="text-gray-500 block text-xs uppercase mb-1">Адреса</span>
+                                        <span className="font-medium">
+                                          {(order.delivery_info as any).city}
+                                          {(order.delivery_info as any)?.warehouse && `, ${(order.delivery_info as any).warehouse}`}
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {order.ttn && (
+                                      <div className="pt-2 border-t border-gray-100 mt-2">
+                                        <span className="text-gray-500 block text-xs uppercase mb-1">ТТН</span>
+                                        <a
+                                          href={`https://novaposhta.ua/tracking/?cargo_number=${order.ttn}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline flex items-center gap-1"
+                                        >
+                                          {order.ttn}
+                                          <ChevronRight className="h-3 w-3" />
+                                        </a>
+                                      </div>
+                                    )}
                                   </div>
-                                  {(order.delivery_info as any)?.full_name && (
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <User className="h-4 w-4 text-gray-400" />
-                                        <span className="font-medium text-gray-700">Отримувач:</span>
-                                      </div>
-                                      <p className="text-gray-900 ml-6">{(order.delivery_info as any).full_name}</p>
-                                    </div>
-                                  )}
-                                  {(order.delivery_info as any)?.phone && (
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <Phone className="h-4 w-4 text-gray-400" />
-                                        <span className="font-medium text-gray-700">Телефон:</span>
-                                      </div>
-                                      <p className="text-gray-900 ml-6">{(order.delivery_info as any).phone}</p>
-                                    </div>
-                                  )}
-                                  {(order.delivery_info as any)?.city && (
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <MapPin className="h-4 w-4 text-gray-400" />
-                                        <span className="font-medium text-gray-700">Адреса:</span>
-                                      </div>
-                                      <p className="text-gray-900 ml-6">
-                                        {(order.delivery_info as any).city}
-                                        {(order.delivery_info as any)?.warehouse && `, ${(order.delivery_info as any).warehouse}`}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {order.ttn && (
-                                    <div className="mt-3 pt-3 border-t border-gray-200">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <Package className="h-4 w-4 text-gray-400" />
-                                        <span className="font-medium text-gray-700">ТТН:</span>
-                                      </div>
-                                      <a
-                                        href={`https://novaposhta.ua/tracking/?cargo_number=${order.ttn}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-800 text-sm break-all block ml-6"
-                                      >
-                                        {order.ttn}
-                                      </a>
-                                    </div>
-                                  )}
-                                  {(order.delivery_info as any)?.comment && (
-                                    <div className="mt-3 pt-3 border-t border-gray-200">
-                                      <span className="font-medium text-gray-700">Коментар:</span>
-                                      <p className="text-gray-900 mt-1">{(order.delivery_info as any).comment}</p>
-                                    </div>
-                                  )}
+                                </div>
+
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <User className="h-4 w-4" />
+                                    Отримувач
+                                  </h4>
+                                  <div className="bg-white p-4 rounded-lg border border-gray-100 text-sm">
+                                    <p className="font-medium mb-1">{(order.delivery_info as any)?.full_name || 'Не вказано'}</p>
+                                    <p className="text-gray-500">{(order.delivery_info as any)?.phone || 'Не вказано'}</p>
+                                  </div>
                                 </div>
                               </div>
                             </div>

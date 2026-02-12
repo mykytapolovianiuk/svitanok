@@ -19,24 +19,24 @@ interface ProductCardProps {
   description?: string;
 }
 
-export default function ProductCard({ 
-  id, 
-  name, 
-  slug, 
-  price, 
-  oldPrice, 
-  image, 
+export default function ProductCard({
+  id,
+  name,
+  slug,
+  price,
+  oldPrice,
+  image,
   rating = 0,
   description
 }: ProductCardProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  
+
   // Керування обраним (вибране/не вибране)
   const { toggleFavorite, isFavorite } = useFavorites();
-  
+
   // Додавання товару в кошик
   const { addItem } = useCartStore();
-  
+
   // Analytics tracking
   const { trackAddToCart, trackFavorite, trackSelectItem } = useAnalytics();
 
@@ -44,11 +44,11 @@ export default function ProductCard({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isAddingToCart) return;
-    
+
     setIsAddingToCart(true);
-    
+
     try {
       // Створюємо об'єкт товару з необхідними властивостями
       const product = {
@@ -62,9 +62,9 @@ export default function ProductCard({
         description: '',
         in_stock: true
       };
-      
+
       addItem(product);
-      
+
       // Track add to cart
       trackAddToCart({
         id,
@@ -72,9 +72,10 @@ export default function ProductCard({
         price,
         quantity: 1,
       });
-      
-      // Show success message only for cart addition, not for favorites
-      toast.success('Товар додано до кошика!');
+
+      // Auto-open cart instead of toast
+      // toast.success('Товар додано до кошика!');
+      useCartStore.getState().openCart();
     } finally {
       // Small delay for better UX
       setTimeout(() => setIsAddingToCart(false), 300);
@@ -87,10 +88,10 @@ export default function ProductCard({
     e.stopPropagation();
     const wasFavorite = isFavorite(id);
     toggleFavorite(id);
-    
+
     // Track favorite action
     trackFavorite(wasFavorite ? 'remove' : 'add', id);
-    
+
     // Show appropriate message based on action
     if (wasFavorite) {
       toast.success('Товар видалено з обраних');
@@ -98,7 +99,7 @@ export default function ProductCard({
       toast.success('Товар додано в улюблені');
     }
   };
-  
+
   // Track product selection when clicking on product card
   const handleProductClick = () => {
     trackSelectItem({
@@ -171,8 +172,8 @@ export default function ProductCard({
           {/* Rating */}
           <div className="flex justify-center mb-4">
             {[...Array(5)].map((_, i) => (
-              <span 
-                key={i} 
+              <span
+                key={i}
                 className={`text-xs ${i < rating ? 'text-black' : 'text-gray-300'}`}
               >
                 ★

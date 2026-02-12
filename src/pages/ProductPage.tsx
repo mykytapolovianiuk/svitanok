@@ -52,12 +52,23 @@ export default function ProductPage() {
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const { trackViewItem, trackAddToCart, trackFavorite } = useAnalytics();
   const { favoriteIds, toggleFavorite } = useFavorites();
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
   // Get product reviews stats
   const { stats: reviewStats } = useProductReviews(product?.id || 0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show sticky bar when scrolled past 400px
+      setShowStickyBar(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!slug) {
@@ -170,6 +181,9 @@ export default function ProductPage() {
         category: product.attributes?.Назва_групи || product.attributes?.Category,
         brand: product.attributes?.Виробник || product.attributes?.Brand,
       });
+
+      // Auto-open cart
+      openCart();
     } finally {
       setTimeout(() => setIsAddingToCart(false), 300);
     }
@@ -570,6 +584,47 @@ export default function ProductPage() {
             productName={product.name}
           />
         )}
+
+        {/* Sticky Mobile Add to Cart Bar */}
+        <div
+          className={`fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-4 z-40 lg:hidden transform transition-transform duration-300 ${showStickyBar ? 'translate-y-0' : 'translate-y-full'
+            }`}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h3
+                className="text-xs font-medium uppercase truncate mb-1"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                {product.name}
+              </h3>
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-lg font-medium"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {product.price.toFixed(2)} ₴
+                </span>
+                {product.old_price && (
+                  <span
+                    className="text-sm text-gray-400 line-through"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {product.old_price.toFixed(2)} ₴
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={handleAddToCart}
+              disabled={!product.in_stock || isAddingToCart}
+              className="bg-black text-white px-6 py-3 text-sm font-medium uppercase tracking-wider hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] flex justify-center items-center"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              {isAddingToCart ? <Spinner size="sm" /> : 'В кошик'}
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );

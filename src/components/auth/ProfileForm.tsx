@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '../../types';
 import { useUserStore } from '@/features/auth/useUserStore';
+import toast from 'react-hot-toast';
+import Spinner from '../ui/Spinner';
 
 interface ProfileFormProps {
   profile: Profile;
@@ -12,7 +14,7 @@ export default function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
   const { session } = useUserStore();
   const [formData, setFormData] = useState({
     full_name: profile.full_name || '',
-    phone: profile.phone || session?.user?.phone || '', // Use phone from auth session as fallback
+    phone: profile.phone || session?.user?.phone || '',
     address: profile.address || ''
   });
   const [saving, setSaving] = useState(false);
@@ -24,10 +26,16 @@ export default function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Simple validation
+    if (!formData.phone) {
+      toast.error('Номер телефону є обовʼязковим');
+      return;
+    }
+
     try {
       setSaving(true);
-      
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -39,66 +47,93 @@ export default function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
         .eq('id', profile.id);
 
       if (error) throw error;
-      
-      // Update parent component state
+
       onUpdate({
         ...profile,
         full_name: formData.full_name,
         phone: formData.phone,
         address: formData.address
       });
-      
-      alert('Profile updated successfully!');
-    } catch (error) {
+
+      toast.success('Профіль успішно оновлено');
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile. Please try again.');
+      toast.error('Помилка оновлення профілю: ' + error.message);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+        <label
+          className="block text-xs font-medium text-gray-500 uppercase tracking-widest mb-2"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          ПІБ
+        </label>
         <input
           type="text"
           name="full_name"
           value={formData.full_name}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Введіть ваше ім'я та прізвище"
+          className="w-full px-4 py-3 border border-gray-200 rounded-none focus:outline-none focus:border-black transition-colors bg-gray-50 focus:bg-white"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
         />
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+        <label
+          className="block text-xs font-medium text-gray-500 uppercase tracking-widest mb-2"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Телефон
+        </label>
         <input
-          type="text"
+          type="tel"
           name="phone"
           value={formData.phone}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="+380..."
+          className="w-full px-4 py-3 border border-gray-200 rounded-none focus:outline-none focus:border-black transition-colors bg-gray-50 focus:bg-white"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
         />
+        <p className="mt-1 text-xs text-gray-400">
+          Використовується для звʼязку з менеджером
+        </p>
       </div>
-      
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+        <label
+          className="block text-xs font-medium text-gray-500 uppercase tracking-widest mb-2"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Адреса доставки (за замовчуванням)
+        </label>
         <textarea
           name="address"
           value={formData.address}
           onChange={handleChange}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Місто, відділення НП або адреса кур'єрської доставки"
+          className="w-full px-4 py-3 border border-gray-200 rounded-none focus:outline-none focus:border-black transition-colors bg-gray-50 focus:bg-white resize-none"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
         />
       </div>
-      
-      <button
-        type="submit"
-        disabled={saving}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-      >
-        {saving ? 'Saving...' : 'Save Changes'}
-      </button>
+
+      <div className="pt-4">
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full md:w-auto px-8 py-3 bg-black text-white text-sm font-medium uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          style={{ fontFamily: 'Montserrat, sans-serif' }}
+        >
+          {saving && <Spinner size="sm" className="text-white" />}
+          {saving ? 'Збереження...' : 'Зберегти зміни'}
+        </button>
+      </div>
     </form>
   );
 }
