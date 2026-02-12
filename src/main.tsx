@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import App from './App.tsx';
 import './index.css';
@@ -83,6 +83,9 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: true, // Keep true to fetch fresh data when user returns
       staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours - Keep data in memory
+      // @ts-ignore - Fallback for React Query v4 if needed, though we use v5
+      cacheTime: 1000 * 60 * 60 * 24,
       retry: (failureCount, error: any) => {
         // Retry up to 3 times. If it's an auth error, the onError cache handler 
         // will refresh the token between retries!

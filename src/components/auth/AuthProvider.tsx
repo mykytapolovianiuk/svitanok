@@ -17,15 +17,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     // Event Listener for Tab Focus (Fixes background throttling timeout issue)
     const handleFocus = async () => {
       if (document.visibilityState === 'visible') {
-        // getSession only gets local session, refreshSession forces a network check
-        const { data, error } = await supabase.auth.refreshSession();
-        if (data?.session) {
-          // We rely on the onAuthStateChange listener to update the store, 
-          // but sometimes explicit updates are safer if the listener is slow or missed.
-          // However, to avoid race conditions with the listener, we'll let the listener handle it via TOKEN_REFRESHED event.
-          // But if the store is empty and we got a session, we might want to set it? 
-          // Actually, refreshSession() triggers onAuthStateChange, so we are good.
-        }
+        // Force a network check to refresh the session if it's stale
+        await supabase.auth.refreshSession();
+        // We don't need to manually setSession here because refreshSession() 
+        // triggers onAuthStateChange with TOKEN_REFRESHED or SIGNED_IN
       }
     };
 
