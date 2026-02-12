@@ -64,7 +64,7 @@ export default function ImageLightbox({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black bg-opacity-95 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-95 flex items-center justify-center">
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors"
@@ -127,9 +127,8 @@ export default function ImageLightbox({
             <button
               key={index}
               onClick={() => onIndexChange(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentIndex ? 'bg-white' : 'bg-gray-500'
-              }`}
+              className={`w-2 h-2 rounded-full transition-colors ${index === currentIndex ? 'bg-white' : 'bg-gray-500'
+                }`}
               aria-label={`Зображення ${index + 1}`}
             />
           ))}

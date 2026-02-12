@@ -40,7 +40,7 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
  */
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, clearCart, removeItem, updateQuantity } = useCartStore();
+  const { items, removeItem, updateQuantity } = useCartStore();
   const baseTotalPrice = useCartTotalPrice();
   const { session } = useUserStore();
   const { trackBeginCheckout, trackAddPaymentInfo, trackAddShippingInfo, trackPurchase } = useAnalytics();
@@ -114,8 +114,13 @@ export default function Checkout() {
           clearInterval(interval);
           setIsWaitingForSignature(false);
           setCurrentOrderId(null);
-          clearCart();
-          navigate('/order-success', { state: { orderId: currentOrderId } });
+          // clearCart(); // Moved to success page
+          navigate('/order-success', {
+            state: {
+              orderId: currentOrderId,
+              shouldClearCart: true
+            }
+          });
         }
         // If payment failed, stop polling and show error
         else if (data.payment_status === 'failed') {
@@ -132,7 +137,7 @@ export default function Checkout() {
     return () => {
       clearInterval(interval);
     };
-  }, [isWaitingForSignature, currentOrderId, navigate, clearCart]);
+  }, [isWaitingForSignature, currentOrderId, navigate]);
 
   // Track begin checkout on mount
   const analyticsItems = useMemo(() => formatCartItemsForAnalytics(items), [items]);
@@ -514,10 +519,17 @@ export default function Checkout() {
         }
         return; // Stop execution here
       } else {
-        // For cash on delivery, proceed as before
+        // For cash on delivery and self-pickup (which uses cash logic), proceed to success
         setIsSuccess(true);
-        clearCart();
-        navigate('/order-success', { state: { orderId: orderResult.data.id } });
+
+        // Navigate to success page which will handle clearing the cart
+        navigate('/order-success', {
+          state: {
+            orderId: orderResult.data.id,
+            totalAmount: calculatedTotalPrice,
+            shouldClearCart: true
+          }
+        });
       }
 
     } catch (error: any) {

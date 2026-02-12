@@ -3,14 +3,23 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { sendOrderNotification } from '../services/notifications';
 import { supabase } from '../lib/supabase';
+import { useCartStore } from '../store/cartStore';
 
 export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { orderId, totalAmount } = location.state || {};
+  const { orderId, totalAmount, shouldClearCart } = location.state || {};
   const { trackPurchase } = useAnalytics();
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [notificationSent, setNotificationSent] = useState(false);
+  const { clearCart } = useCartStore();
+
+  // Clear cart if requested
+  useEffect(() => {
+    if (shouldClearCart) {
+      clearCart();
+    }
+  }, [shouldClearCart, clearCart]);
 
   // If no order data, redirect to home
   useEffect(() => {

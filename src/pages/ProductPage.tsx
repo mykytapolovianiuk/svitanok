@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Heart, ChevronLeft, Plus, Minus, ShoppingCart, Phone, Maximize2 } from 'lucide-react';
+import { Heart, Plus, Minus, Maximize2 } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { useAnalytics } from '../hooks/useAnalytics';
 import ProductReviews from '../components/reviews/ProductReviews';
@@ -51,14 +51,13 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'description' | 'attributes'>('description');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCartStore();
   const { trackViewItem, trackAddToCart, trackFavorite } = useAnalytics();
   const { favoriteIds, toggleFavorite } = useFavorites();
-  
+
   // Get product reviews stats
-  const { data: reviewStats } = useProductReviews(product?.id || 0);
+  const { stats: reviewStats } = useProductReviews(product?.id || 0);
 
   useEffect(() => {
     if (!slug) {
@@ -106,7 +105,7 @@ export default function ProductPage() {
           `)
           .eq('slug', slug)
           .single();
-        
+
         if (!fallbackError && fallbackData) {
           data = fallbackData;
           fetchError = null;
@@ -118,7 +117,7 @@ export default function ProductPage() {
 
       setProduct(data);
       setSelectedImage(0);
-      
+
       // Track product view
       trackViewItem({
         id: data.id,
@@ -127,7 +126,7 @@ export default function ProductPage() {
         category: data.attributes?.Назва_групи || data.attributes?.Category,
         brand: data.attributes?.Виробник || data.attributes?.Brand,
       });
-      
+
       // Note: We no longer fetch recommended products here since RecommendedProducts component handles it
     } catch (err: any) {
       setError(err.message || 'Failed to load product');
@@ -149,22 +148,19 @@ export default function ProductPage() {
 
   const isFavorite = product ? favoriteIds.has(product.id) : false;
 
-  const fetchRecommendedProducts = async (productId: number, productGroup: string) => {
-    // This function is no longer needed since RecommendedProducts component handles recommendations internally
-    return;
-  };
+
 
   const handleAddToCart = async () => {
     if (!product || isAddingToCart) return;
-    
+
     setIsAddingToCart(true);
-    
+
     try {
       // Add multiple items if quantity > 1
       for (let i = 0; i < quantity; i++) {
         addItem(product);
       }
-      
+
       // Track add to cart
       trackAddToCart({
         id: product.id,
@@ -225,16 +221,16 @@ export default function ProductPage() {
 
   // Filter attributes to show only important ones
   const filteredAttributes = Object.fromEntries(
-    Object.entries(product.attributes || {}).filter(([key]) => 
+    Object.entries(product.attributes || {}).filter(([key]) =>
       importantAttributes.includes(key)
     )
   );
 
   const siteUrl = import.meta.env.VITE_SITE_URL || 'https://svitanok.com';
-  const productImage = product.images && product.images.length > 0 
+  const productImage = product.images && product.images.length > 0
     ? (product.images[0].startsWith('http') ? product.images[0] : `${siteUrl}${product.images[0]}`)
     : `${siteUrl}/placeholder-product.jpg`;
-  
+
   return (
     <>
       <SEOHead
@@ -263,13 +259,13 @@ export default function ProductPage() {
       )}
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs />
-        
+
         {/* Product Detail - Restructured Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           {/* Main Image Column - Left */}
           <div className="lg:col-span-6">
             <div className="relative">
-              <div 
+              <div
                 className="aspect-square flex items-center justify-center relative group cursor-zoom-in"
                 onClick={() => setIsLightboxOpen(true)}
               >
@@ -301,7 +297,7 @@ export default function ProductPage() {
                   className={isFavorite ? 'fill-red-500 stroke-red-500' : 'stroke-gray-400'}
                 />
               </button>
-              
+
               {/* Mobile Image Thumbnails */}
               {product.images.length > 1 && (
                 <div className="lg:hidden flex gap-2 mt-4 justify-center">
@@ -309,9 +305,8 @@ export default function ProductPage() {
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`w-16 h-16 border-2 transition-colors ${
-                        selectedImage === index ? 'border-black' : 'border-gray-200'
-                      }`}
+                      className={`w-16 h-16 border-2 transition-colors ${selectedImage === index ? 'border-black' : 'border-gray-200'
+                        }`}
                     >
                       <img
                         src={image || '/placeholder-product.jpg'}
@@ -323,7 +318,7 @@ export default function ProductPage() {
                 </div>
               )}
             </div>
-            
+
             {/* Desktop Image Thumbnails */}
             {product.images.length > 1 && (
               <div className="hidden lg:grid grid-cols-5 gap-3 mt-4">
@@ -331,9 +326,8 @@ export default function ProductPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square border-2 transition-colors ${
-                      selectedImage === index ? 'border-black' : 'border-gray-200 hover:border-gray-400'
-                    }`}
+                    className={`aspect-square border-2 transition-colors ${selectedImage === index ? 'border-black' : 'border-gray-200 hover:border-gray-400'
+                      }`}
                   >
                     <img
                       src={image || '/placeholder-product.jpg'}
@@ -345,7 +339,7 @@ export default function ProductPage() {
               </div>
             )}
           </div>
-          
+
           {/* Product Info and Characteristics Column - Right */}
           <div className="lg:col-span-6">
             <div className="lg:sticky lg:top-4">
@@ -363,16 +357,15 @@ export default function ProductPage() {
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <svg 
-                          key={star} 
-                          className={`w-5 h-5 ${
-                            star <= Math.round(reviewStats.averageRating)
-                              ? 'fill-current text-yellow-400'
-                              : 'fill-none text-gray-300'
-                          }`} 
+                        <svg
+                          key={star}
+                          className={`w-5 h-5 ${star <= Math.round(reviewStats.averageRating)
+                            ? 'fill-current text-yellow-400'
+                            : 'fill-none text-gray-300'
+                            }`}
                           viewBox="0 0 24 24"
                         >
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                       ))}
                     </div>
@@ -421,8 +414,8 @@ export default function ProductPage() {
                       >
                         <Minus size={16} />
                       </button>
-                      <span 
-                        className="px-4 md:px-6 py-2 text-sm md:text-base font-medium min-w-[50px] text-center" 
+                      <span
+                        className="px-4 md:px-6 py-2 text-sm md:text-base font-medium min-w-[50px] text-center"
                         style={{ fontFamily: 'Montserrat, sans-serif' }}
                       >
                         {quantity}
@@ -456,11 +449,11 @@ export default function ProductPage() {
                     Купити в 1 клік
                   </button>
                 </div>
-                
+
                 {/* Characteristics moved here - below cart buttons */}
                 <div className="border border-[#FFF8F1] bg-[#FFF8F1]">
                   <div className="p-5">
-                    <h3 
+                    <h3
                       className="font-medium uppercase tracking-wider mb-3"
                       style={{ fontFamily: 'Montserrat, sans-serif' }}
                     >
@@ -469,7 +462,7 @@ export default function ProductPage() {
                     <div className="space-y-3">
                       {Object.entries(filteredAttributes).map(([key, value]) => (
                         <div key={key} className="flex flex-wrap gap-2">
-                          <span 
+                          <span
                             className="font-medium text-sm min-w-[120px]"
                             style={{ fontFamily: 'Montserrat, sans-serif' }}
                           >
@@ -478,7 +471,7 @@ export default function ProductPage() {
                           <div className="flex flex-wrap gap-1">
                             {Array.isArray(value) ? (
                               value.map((item, idx) => (
-                                <span 
+                                <span
                                   key={idx}
                                   className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
                                   style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -488,7 +481,7 @@ export default function ProductPage() {
                               ))
                             ) : typeof value === 'string' && value.includes('|') ? (
                               value.split('|').map((item, idx) => (
-                                <span 
+                                <span
                                   key={idx}
                                   className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
                                   style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -497,7 +490,7 @@ export default function ProductPage() {
                                 </span>
                               ))
                             ) : (
-                              <span 
+                              <span
                                 className="bg-white px-2 py-1 rounded text-xs border border-gray-200"
                                 style={{ fontFamily: 'Montserrat, sans-serif' }}
                               >
@@ -511,7 +504,7 @@ export default function ProductPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Removed characteristics section from here since it's moved above */}
             </div>
           </div>
@@ -522,7 +515,7 @@ export default function ProductPage() {
 
         {/* Recommendations Section */}
         {product && product.brand_id && product.category_id && (
-          <RecommendedProducts 
+          <RecommendedProducts
             currentProduct={{
               id: product.id,
               brand_id: product.brand_id,
@@ -534,7 +527,7 @@ export default function ProductPage() {
         {/* Full-width Description Section at Bottom */}
         <div className="mt-12 border border-[#FFF8F1] bg-[#FFF8F1]">
           <div className="p-8">
-            <h2 
+            <h2
               className="font-medium uppercase tracking-wider mb-4 text-center"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
@@ -550,7 +543,7 @@ export default function ProductPage() {
 
         {/* Product Reviews */}
         <div className="mt-12">
-          <ProductReviews productId={product.id.toString()} />
+          <ProductReviews productId={product.id} />
         </div>
 
         {/* Quick Order Modal */}

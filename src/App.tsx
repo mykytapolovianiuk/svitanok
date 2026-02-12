@@ -21,7 +21,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import PaymentPage from './pages/PaymentPage';
-import CheckoutSuccess from './pages/CheckoutSuccess';
+// CheckoutSuccess removed
 import Auth from './pages/Auth';
 import Account from './pages/Account';
 import Favorites from './pages/Favorites';
@@ -107,7 +107,6 @@ function App() {
                 <Route path="cart" element={<Cart />} />
                 <Route path="order-success" element={<OrderSuccess />} />
                 <Route path="payment/:orderId" element={<PaymentPage />} />
-                <Route path="checkout/success" element={<CheckoutSuccess />} />
                 <Route path="auth" element={<Auth />} />
                 <Route path="forgot-password" element={<ForgotPassword />} />
                 <Route path="update-password" element={<UpdatePassword />} />

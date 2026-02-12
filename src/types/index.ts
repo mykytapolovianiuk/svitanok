@@ -75,6 +75,9 @@ export interface Review {
   admin_reply: string | null;
   is_approved: boolean;
   created_at: string;
+  pros?: string | null;
+  cons?: string | null;
+  images?: string[] | null;
 }
 
 // UI Types
