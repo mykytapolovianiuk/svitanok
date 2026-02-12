@@ -13,6 +13,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 import AuthProvider from './components/auth/AuthProvider';
 import Spinner from './components/ui/Spinner';
+import CookieConsent from './components/common/CookieConsent';
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -78,6 +79,7 @@ function App() {
             <ScrollToTop />
             <CartDrawer />
             <Toaster position="top-right" />
+            <CookieConsent />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Checkout route without header/footer */}
