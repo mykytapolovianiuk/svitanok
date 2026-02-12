@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, memo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useFilterData } from '@/hooks/useFilterData';
 import { formatAttributeValue } from '@/lib/constants';
@@ -15,7 +15,38 @@ interface FilterSidebarProps {
   onPriceChange: (min: number, max: number) => void;
 }
 
-export default function FilterSidebar({
+// Optimization: Memoized Checkbox Component
+const CustomCheckbox = memo(({
+  checked,
+  onChange,
+  label
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}) => (
+  <label className="flex items-start cursor-pointer group">
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="sr-only"
+    />
+    <div className="w-4 h-4 border border-black mr-3 flex items-center justify-center shrink-0 mt-0.5 transition-colors group-hover:border-gray-500">
+      {checked && <div className="w-2 h-2 bg-black"></div>}
+    </div>
+    <span
+      className="text-xs tracking-wider select-none"
+      style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
+    >
+      {label}
+    </span>
+  </label>
+));
+
+CustomCheckbox.displayName = 'CustomCheckbox';
+
+function FilterSidebar({
   selectedBrands,
   selectedCategories,
   selectedSkinTypes,
@@ -34,23 +65,32 @@ export default function FilterSidebar({
   const [localMinPrice, setLocalMinPrice] = useState(minPrice);
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
 
-  // Передаємо вибрані значення у хук для "розумної" фільтрації
+  // Sync local price state when props change
+  useEffect(() => {
+    setLocalMinPrice(minPrice);
+    setLocalMaxPrice(maxPrice);
+  }, [minPrice, maxPrice]);
+
+  // Use the React Query hook for data
   const {
     availableBrands,
     availableCategories,
     skinTypes,
     loading,
-    getAvailableCategories,
-    getAvailableBrands
-  } = useFilterData(selectedBrands, selectedCategories);
+  } = useFilterData();
 
-  // Отримуємо відфільтровані списки з хуку
-  // Логіка: Якщо обрано Категорію -> Бренди фільтруються. Якщо обрано Бренд -> Категорії фільтруються.
+  // Optimization: Filter logic derived from props and data
+  // Logic: If Category selected -> Filter Brands. If Brand selected -> Filter Categories.
+
+  // Note: The previous logic in useFilterData hook was doing circular filtering.
+  // Ideally, available options should be handled by the server or complex client logic.
+  // For now, we'll keep it simple to avoid infinite loops or empty states.
+
   const filteredCategories = availableCategories;
   const filteredBrands = availableBrands;
 
-  // Обробка зміни Брендів
-  const handleBrandToggle = (brandId: string) => {
+  // Handlers wrapped in useCallback to prevent re-renders of child components
+  const handleBrandToggle = useCallback((brandId: string) => {
     let newBrands: string[];
     if (selectedBrands.includes(brandId)) {
       newBrands = selectedBrands.filter(id => id !== brandId);
@@ -60,70 +100,50 @@ export default function FilterSidebar({
 
     onBrandsChange(newBrands);
 
-    // Якщо користувач зняв усі бренди - очищаємо і категорії, і приховуємо блок
+    // If user cleared all brands, clear categories too (optional business logic)
     if (newBrands.length === 0) {
       onCategoriesChange([]);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [selectedBrands, onBrandsChange, onCategoriesChange]);
 
-  const handleCategoryToggle = (categoryId: string) => {
+  const handleCategoryToggle = useCallback((categoryId: string) => {
     if (selectedCategories.includes(categoryId)) {
       onCategoriesChange(selectedCategories.filter(id => id !== categoryId));
     } else {
       onCategoriesChange([...selectedCategories, categoryId]);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [selectedCategories, onCategoriesChange]);
 
-  const handleSkinTypeToggle = (skinType: string) => {
+  const handleSkinTypeToggle = useCallback((skinType: string) => {
     if (selectedSkinTypes.includes(skinType)) {
       onSkinTypesChange(selectedSkinTypes.filter(st => st !== skinType));
     } else {
       onSkinTypesChange([...selectedSkinTypes, skinType]);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [selectedSkinTypes, onSkinTypesChange]);
 
-  const handlePriceApply = () => {
+  const handlePriceApply = useCallback(() => {
     let min = localMinPrice;
     let max = localMaxPrice;
     if (min > max && max > 0) [min, max] = [max, min];
     onPriceChange(min, max);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [localMinPrice, localMaxPrice, onPriceChange]);
 
-  // Custom checkbox component
-  const CustomCheckbox = ({
-    checked,
-    onChange,
-    label
-  }: {
-    checked: boolean;
-    onChange: () => void;
-    label: string;
-  }) => (
-    <label className="flex items-start cursor-pointer group">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="sr-only"
-      />
-      <div className="w-4 h-4 border border-black mr-3 flex items-center justify-center shrink-0 mt-0.5 transition-colors group-hover:border-gray-500">
-        {checked && <div className="w-2 h-2 bg-black"></div>}
-      </div>
-      <span
-        className="text-xs tracking-wider select-none"
-        style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-      >
-        {label}
-      </span>
-    </label>
-  );
+  const handleClearFilters = useCallback(() => {
+    onBrandsChange([]);
+    onCategoriesChange([]);
+    onSkinTypesChange([]);
+    onPriceChange(0, 0);
+    setLocalMinPrice(0);
+    setLocalMaxPrice(0);
+  }, [onBrandsChange, onCategoriesChange, onSkinTypesChange, onPriceChange]);
 
-  // SKELETON LOADER (Щоб не стрибало)
+  // SKELETON LOADER
   if (loading) {
     return (
       <div className="space-y-8 min-h-[600px] animate-pulse">
@@ -149,7 +169,7 @@ export default function FilterSidebar({
     );
   }
 
-  // Показуємо категорії тільки якщо обрано хоча б один бренд
+  // Show categories only if at least one brand is selected
   const showCategories = selectedBrands.length > 0;
 
   return (
@@ -306,14 +326,7 @@ export default function FilterSidebar({
       ) && (
           <div className="pt-4">
             <button
-              onClick={() => {
-                onBrandsChange([]);
-                onCategoriesChange([]);
-                onSkinTypesChange([]);
-                onPriceChange(0, 0);
-                setLocalMinPrice(0);
-                setLocalMaxPrice(0);
-              }}
+              onClick={handleClearFilters}
               className="w-full py-3 text-xs uppercase tracking-wider text-white bg-black hover:bg-gray-800 transition-colors"
               style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 600 }}
             >
@@ -324,3 +337,6 @@ export default function FilterSidebar({
     </div>
   );
 }
+
+// Wrap main component in memo to prevent re-renders when parent changes but props are same
+export default memo(FilterSidebar);

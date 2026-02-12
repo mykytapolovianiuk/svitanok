@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useCartStore } from '../../store/cartStore';
 import { useAnalytics } from '../../hooks/useAnalytics';
@@ -19,7 +19,7 @@ interface ProductCardProps {
   description?: string;
 }
 
-export default function ProductCard({
+function ProductCard({
   id,
   name,
   slug,
@@ -196,3 +196,6 @@ export default function ProductCard({
     </div>
   );
 }
+
+// Optimization: Memoize to prevent unnecessary re-renders in large lists
+export default memo(ProductCard);

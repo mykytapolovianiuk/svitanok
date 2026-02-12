@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
 export interface Category {
+  id: string;
   name: string;
   slug: string;
+  image?: string;
   count?: number;
 }
 
@@ -11,46 +13,32 @@ export function useCategories() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      // Отримуємо всі продукти для витягування унікальних категорій
-      const { data: products, error: productsError } = await supabase
-        .from('products')
-        .select('attributes');
+      // Fetch categories directly from the table
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
 
-      if (productsError) throw productsError;
+      if (categoriesError) throw categoriesError;
 
-      // Витягуємо унікальні категорії з attributes
-      const categoriesMap = new Map<string, number>();
+      // Note: If you absolutely need product counts per category, you can:
+      // 1. Create a database view or RPC function
+      // 2. Fetch product counts in a separate lightweight query
+      // 3. Keep the old heavy logic (not recommended)
 
-      products?.forEach((product) => {
-        const categoryName = 
-          product.attributes?.Назва_групи || 
-          product.attributes?.Category ||
-          product.attributes?.category;
-        
-        if (categoryName) {
-          const count = categoriesMap.get(categoryName) || 0;
-          categoriesMap.set(categoryName, count + 1);
-        }
-      });
+      // For now, we return categories without dynamic counts to prioritize speed.
+      // Most e-commerce sites don't show dynamic counts in the main menu to perform better.
 
-      // Конвертуємо в масив та створюємо slug
-      const categories: Category[] = Array.from(categoriesMap.entries())
-        .map(([name, count]) => ({
-          name,
-          slug: name.toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^\w\-]+/g, '')
-            .replace(/\-\-+/g, '-')
-            .replace(/^-+/, '')
-            .replace(/-+$/, ''),
-          count,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name, 'uk'));
-
-      return categories;
+      return categoriesData?.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        image: cat.image,
+        count: 0 // Placeholder
+      })) as Category[];
     },
-    staleTime: 5 * 60 * 1000, // 5 хвилин
-    gcTime: 10 * 60 * 1000, // 10 хвилин (gcTime замість cacheTime в React Query v5)
+    staleTime: 60 * 60 * 1000, // 1 hour - categories rarely change
+    gcTime: 2 * 60 * 60 * 1000, // 2 hours
   });
 
   return {
@@ -59,4 +47,3 @@ export function useCategories() {
     error,
   };
 }
-

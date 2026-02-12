@@ -13,6 +13,7 @@ interface Product {
   description: string;
   in_stock: boolean;
   category_id?: string;
+  brand_id?: number;
 }
 
 interface UseProductsParams {
@@ -62,44 +63,48 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
     searchQuery,
     problemTags = [],
     ingredients = [],
-    skinTypes = [], // New parameter
-    cosmeticClasses = [], // New parameter
+    skinTypes = [],
+    cosmeticClasses = [],
   } = params;
 
-  // Create stable keys for arrays to prevent unnecessary re-renders
-  const brandsKey = useMemo(() => brands.sort().join(','), [brands]);
-  const problemsKey = useMemo(() => problems.sort().join(','), [problems]);
-  const problemTagsKey = useMemo(() => problemTags.sort().join(','), [problemTags]);
-  const ingredientsKey = useMemo(() => ingredients.sort().join(','), [ingredients]);
-  const skinTypesKey = useMemo(() => skinTypes.sort().join(','), [skinTypes]); // New stable key
-  const cosmeticClassesKey = useMemo(() => cosmeticClasses.sort().join(','), [cosmeticClasses]); // New stable key
+  // Create query key dependencies
+  // We sort arrays to ensure ['a', 'b'] and ['b', 'a'] produce the same cache key
+  const queryKey = useMemo(() => [
+    'products',
+    {
+      category,
+      minPrice,
+      maxPrice,
+      brands: brands.sort().join(','),
+      problems: problems.sort().join(','),
+      sortBy,
+      page,
+      pageSize,
+      searchQuery,
+      problemTags: problemTags.sort().join(','),
+      ingredients: ingredients.sort().join(','),
+      skinTypes: skinTypes.sort().join(','),
+      cosmeticClasses: cosmeticClasses.sort().join(',')
+    }
+  ], [
+    category, minPrice, maxPrice, brands, problems, sortBy, page, pageSize,
+    searchQuery, problemTags, ingredients, skinTypes, cosmeticClasses
+  ]);
 
-  // Stable arrays for use in query function
-  const stableBrands = useMemo(() => brands, [brandsKey]);
-  const stableProblems = useMemo(() => problems, [problemsKey]);
-  const stableProblemTags = useMemo(() => problemTags, [problemTagsKey]);
-  const stableIngredients = useMemo(() => ingredients, [ingredientsKey]);
-  const stableSkinTypes = useMemo(() => skinTypes, [skinTypesKey]); // New stable array
-  const stableCosmeticClasses = useMemo(() => cosmeticClasses, [cosmeticClassesKey]); // New stable array
-
-  // Використовуємо React Query для кешування та дедуплікації запитів
   const { data, isLoading, error } = useQuery({
-    queryKey: ['products', category, minPrice, maxPrice, brandsKey, problemsKey, sortBy, page, pageSize, searchQuery, problemTagsKey, ingredientsKey, skinTypesKey, cosmeticClassesKey],
+    queryKey,
     queryFn: async () => {
       // Build query
       let query = supabase
         .from('products')
         .select('*', { count: 'exact' });
 
-      // Search query filter - handled below with or() for better ingredient matching
-
-      // Category filter - Handle both slug mapping and direct category matching
+      // Category filter
       if (category) {
         // First check if it's a mapped slug
         const mappedCategory = CATEGORY_MAP[category];
         if (mappedCategory) {
           // Use JSONB containment for mapped categories
-          const jsonFilter = JSON.stringify({ "Препарати": mappedCategory });
           query = query.or(`attributes.cs.{"Препарати":"${mappedCategory}"}`);
         } else {
           // Fallback to direct category matching (check categories table)
@@ -112,8 +117,9 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
           if (categoryData) {
             query = query.eq('category_id', categoryData.id);
           } else {
-            // Last resort: try to match category name in attributes
-            query = query.or(`attributes->>Назва_групи.ilike.%${category}%,attributes->>Category.ilike.%${category}%`);
+            // Last resort: ensure we handle decoding if needed or partial match
+            const decodedCategory = decodeURIComponent(category);
+            query = query.or(`attributes->>Назва_групи.ilike.%${decodedCategory}%,attributes->>Category.ilike.%${decodedCategory}%`);
           }
         }
       }
@@ -126,80 +132,70 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         query = query.lte('price', maxPrice);
       }
 
-      // Database-level filtering for JSONB attributes
-      // Brand filter - convert string IDs to numbers and use foreign key
-      if (stableBrands.length > 0) {
-        // Convert string brand IDs to numbers
-        const brandIds = stableBrands
+      // Brand filter
+      if (brands.length > 0) {
+        const brandIds = brands
           .map(id => parseInt(id, 10))
           .filter(id => !isNaN(id));
-        
+
         if (brandIds.length > 0) {
           query = query.in('brand_id', brandIds);
         }
       }
 
-      // Categories filter (mapped from problems in Catalog.tsx) - now using foreign key
-      if (stableProblems.length > 0) {
-        // First try to match with category table
+      // Categories filter (mapped from problems in Catalog.tsx)
+      if (problems.length > 0) {
         const { data: categoryIds } = await supabase
           .from('categories')
           .select('id')
-          .in('name', stableProblems);
+          .in('name', problems);
 
         if (categoryIds && categoryIds.length > 0) {
           const ids = categoryIds.map(cat => cat.id);
           query = query.in('category_id', ids);
         }
-        // Note: Removed fallback to old method since we're using foreign keys now
       }
 
-      // Problems filter - check multiple keys with JSONB contains for arrays
-      if (stableProblemTags.length > 0) {
-        // Use JSON containment operator on root object for robust filtering
-        // Format: attributes.cs.{"Проблема шкіри": ["Value"]}
-        const conditions = stableProblemTags.map(problem => {
+      // Problems filter (Problem Tags)
+      if (problemTags.length > 0) {
+        const conditions = problemTags.map(problem => {
           const jsonFilter = JSON.stringify({ "Проблема шкіри": [problem] });
           return `attributes.cs.${jsonFilter}`;
         }).join(',');
         query = query.or(conditions);
       }
 
-      // Ingredients filter - check ingredients array or string fields
-      if (stableIngredients.length > 0) {
-        const ingredientConditions = stableIngredients.map(ingredient => 
+      // Ingredients filter
+      if (ingredients.length > 0) {
+        const ingredientConditions = ingredients.map(ingredient =>
           `attributes->>Інгредієнти.ilike.%${ingredient}%,attributes->>Ingredient.ilike.%${ingredient}%,attributes->>Ingredients.ilike.%${ingredient}%,attributes->>Ключові_інгредієнти.ilike.%${ingredient}%`
         ).join(',');
         query = query.or(ingredientConditions);
       }
-      
-      // Skin Types filter - check skin type attributes with JSON containment
-      if (stableSkinTypes.length > 0) {
-        // Use JSON containment operator on root object for robust filtering
-        const skinTypeConditions = stableSkinTypes.map(skinType => {
+
+      // Skin Types filter
+      if (skinTypes.length > 0) {
+        const skinTypeConditions = skinTypes.map(skinType => {
           const jsonFilter = JSON.stringify({ "Тип шкіри": [skinType] });
           return `attributes.cs.${jsonFilter}`;
         }).join(',');
         query = query.or(skinTypeConditions);
       }
-      
-      // Cosmetic Classes filter - check cosmetic class attributes with JSON containment
-      if (stableCosmeticClasses.length > 0) {
-        // Use JSON containment operator on root object for robust filtering
-        const classConditions = stableCosmeticClasses.map(cosmeticClass => {
+
+      // Cosmetic Classes filter
+      if (cosmeticClasses.length > 0) {
+        const classConditions = cosmeticClasses.map(cosmeticClass => {
           const jsonFilter = JSON.stringify({ "Клас косметики": [cosmeticClass] });
           return `attributes.cs.${jsonFilter}`;
         }).join(',');
         query = query.or(classConditions);
       }
-      
-      // Search query filter - search in name, description, and ingredients
+
+      // Search query filter
       if (searchQuery) {
         if (!searchQuery.includes(' ')) {
-          // Single word search - might be ingredient
           query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,attributes->>Інгредієнти.ilike.%${searchQuery}%,attributes->>Ingredient.ilike.%${searchQuery}%`);
         } else {
-          // Multi-word search - search in name and description
           query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
         }
       }
@@ -233,10 +229,9 @@ export function useProducts(params: UseProductsParams = {}): UseProductsResult {
         totalCount: result.count || 0,
       };
     },
-    staleTime: 5 * 60 * 1000, // Дані вважаються свіжими 5 хвилин
-    gcTime: 10 * 60 * 1000, // Кеш зберігається 10 хвилин
-    // Повертаємо порожні дані поки завантажується
-    placeholderData: { products: [], totalCount: 0 },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    placeholderData: (previousData) => previousData, // Keep previous data while fetching new page
   });
 
   const products = data?.products || [];

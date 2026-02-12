@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Layout from './components/layout/Layout';
@@ -12,42 +12,49 @@ import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 import AuthProvider from './components/auth/AuthProvider';
+import Spinner from './components/ui/Spinner';
 
-// Direct imports for all pages
-import Home from './pages/Home';
-import Catalog from './pages/Catalog';
-import ProductPage from './pages/ProductPage';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import OrderSuccess from './pages/OrderSuccess';
-import PaymentPage from './pages/PaymentPage';
-// CheckoutSuccess removed
-import Auth from './pages/Auth';
-import Account from './pages/Account';
-import Favorites from './pages/Favorites';
-import Admin from './pages/Admin';
-import About from './pages/About';
-import Contacts from './pages/Contacts';
-import FAQ from './pages/FAQ';
-import Delivery from './pages/Delivery';
-import Returns from './pages/Returns';
-import AutumnCare from './pages/AutumnCare';
-import SkincareRegimen from './pages/SkincareRegimen';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
-import NotFound from './pages/NotFound';
-import ForgotPassword from './pages/ForgotPassword';
-import UpdatePassword from './pages/UpdatePassword';
+// Lazy load pages for code splitting
+const Home = lazy(() => import('./pages/Home'));
+const Catalog = lazy(() => import('./pages/Catalog'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const PaymentPage = lazy(() => import('./pages/PaymentPage'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Account = lazy(() => import('./pages/Account'));
+const Favorites = lazy(() => import('./pages/Favorites'));
+const Admin = lazy(() => import('./pages/Admin'));
+const About = lazy(() => import('./pages/About'));
+const Contacts = lazy(() => import('./pages/Contacts'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Delivery = lazy(() => import('./pages/Delivery'));
+const Returns = lazy(() => import('./pages/Returns'));
+const AutumnCare = lazy(() => import('./pages/AutumnCare'));
+const SkincareRegimen = lazy(() => import('./pages/SkincareRegimen'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const UpdatePassword = lazy(() => import('./pages/UpdatePassword'));
 
-// Admin Components
-import AdminLayout from './components/admin/AdminLayout';
-import AdminOrders from './pages/admin/Orders';
-import AdminProducts from './pages/admin/Products';
-import AdminPromoCodes from './pages/admin/PromoCodes';
-import AdminReviews from './pages/admin/Reviews';
-import AdminCustomers from './pages/admin/Customers';
-import AdminSettings from './pages/admin/Settings';
-import Bestsellers from './pages/admin/Bestsellers';
+// Admin Components Lazy Loading
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
+const AdminOrders = lazy(() => import('./pages/admin/Orders'));
+const AdminProducts = lazy(() => import('./pages/admin/Products'));
+const AdminPromoCodes = lazy(() => import('./pages/admin/PromoCodes'));
+const AdminReviews = lazy(() => import('./pages/admin/Reviews'));
+const AdminCustomers = lazy(() => import('./pages/admin/Customers'));
+const AdminSettings = lazy(() => import('./pages/admin/Settings'));
+const Bestsellers = lazy(() => import('./pages/admin/Bestsellers'));
+
+// Loading Fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh] py-20">
+    <Spinner size="lg" />
+  </div>
+);
 
 // Simple layout without header/footer for checkout
 const CheckoutLayout = ({ children }: { children: React.ReactNode }) => (
@@ -71,70 +78,72 @@ function App() {
             <ScrollToTop />
             <CartDrawer />
             <Toaster position="top-right" />
-            <Routes>
-              {/* Checkout route without header/footer */}
-              <Route path="/checkout" element={
-                <CheckoutLayout>
-                  <Checkout />
-                </CheckoutLayout>
-              } />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Checkout route without header/footer */}
+                <Route path="/checkout" element={
+                  <CheckoutLayout>
+                    <Checkout />
+                  </CheckoutLayout>
+                } />
 
-              {/* Admin routes without header/footer */}
-              <Route
-                path="admin"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Admin />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="promocodes" element={<AdminPromoCodes />} />
-                <Route path="reviews" element={<AdminReviews />} />
-                <Route path="customers" element={<AdminCustomers />} />
-                <Route path="settings" element={<AdminSettings />} />
-                <Route path="bestsellers" element={<Bestsellers />} />
-              </Route>
-
-              {/* All other routes with normal layout */}
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="catalog" element={<Catalog />} />
-                <Route path="catalog/:category" element={<Catalog />} />
-                <Route path="product/:slug" element={<ProductPage />} />
-                <Route path="cart" element={<Cart />} />
-                <Route path="order-success" element={<OrderSuccess />} />
-                <Route path="payment/:orderId" element={<PaymentPage />} />
-                <Route path="auth" element={<Auth />} />
-                <Route path="forgot-password" element={<ForgotPassword />} />
-                <Route path="update-password" element={<UpdatePassword />} />
-                <Route path="favorites" element={<Favorites />} />
-                <Route path="about" element={<About />} />
-                <Route path="contacts" element={<Contacts />} />
-                <Route path="faq" element={<FAQ />} />
-                <Route path="delivery" element={<Delivery />} />
-                <Route path="returns" element={<Returns />} />
-                <Route path="autumn-care" element={<AutumnCare />} />
-                <Route path="skincare-regimen" element={<SkincareRegimen />} />
-                <Route path="privacy" element={<Privacy />} />
-                <Route path="terms" element={<Terms />} />
-
-                {/* Protected Routes */}
+                {/* Admin routes without header/footer */}
                 <Route
-                  path="account"
+                  path="admin"
                   element={
-                    <ProtectedRoute>
-                      <Account />
+                    <ProtectedRoute requireAdmin>
+                      <AdminLayout />
                     </ProtectedRoute>
                   }
-                />
+                >
+                  <Route index element={<Admin />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="promocodes" element={<AdminPromoCodes />} />
+                  <Route path="reviews" element={<AdminReviews />} />
+                  <Route path="customers" element={<AdminCustomers />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                  <Route path="bestsellers" element={<Bestsellers />} />
+                </Route>
 
-                {/* 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
+                {/* All other routes with normal layout */}
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="catalog" element={<Catalog />} />
+                  <Route path="catalog/:category" element={<Catalog />} />
+                  <Route path="product/:slug" element={<ProductPage />} />
+                  <Route path="cart" element={<Cart />} />
+                  <Route path="order-success" element={<OrderSuccess />} />
+                  <Route path="payment/:orderId" element={<PaymentPage />} />
+                  <Route path="auth" element={<Auth />} />
+                  <Route path="forgot-password" element={<ForgotPassword />} />
+                  <Route path="update-password" element={<UpdatePassword />} />
+                  <Route path="favorites" element={<Favorites />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="contacts" element={<Contacts />} />
+                  <Route path="faq" element={<FAQ />} />
+                  <Route path="delivery" element={<Delivery />} />
+                  <Route path="returns" element={<Returns />} />
+                  <Route path="autumn-care" element={<AutumnCare />} />
+                  <Route path="skincare-regimen" element={<SkincareRegimen />} />
+                  <Route path="privacy" element={<Privacy />} />
+                  <Route path="terms" element={<Terms />} />
+
+                  {/* Protected Routes */}
+                  <Route
+                    path="account"
+                    element={
+                      <ProtectedRoute>
+                        <Account />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </Suspense>
           </HelmetProvider>
         </AuthProvider>
       </QueryClientProvider>
