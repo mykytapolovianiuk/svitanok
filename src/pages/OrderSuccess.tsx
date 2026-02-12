@@ -188,23 +188,6 @@ export default function OrderSuccess() {
           Сума до оплати: {totalAmount?.toFixed(2)} ₴
         </p>
 
-        <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-          <h2
-            className="font-semibold mb-3"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            Що далі?
-          </h2>
-          <ul
-            className="space-y-2 text-sm text-gray-600"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            <li>• Ми зв'яжемося з вами для підтвердження замовлення</li>
-            <li>• Очікуйте SMS з інформацією про доставку</li>
-            <li>• Оплату можна здійснити при отриманні</li>
-          </ul>
-        </div>
-
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             to="/"
