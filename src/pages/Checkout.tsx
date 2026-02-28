@@ -11,6 +11,7 @@ import { useAnalytics, formatCartItemsForAnalytics } from '@/hooks/useAnalytics'
 import { usePromoCode } from '@/hooks/usePromoCode';
 import AsyncSelect from '@/components/ui/AsyncSelect';
 import { searchSettlements, getWarehouses, CityOption, WarehouseOption } from '@/services/novaPoshta';
+import { sendOrderNotification } from '@/services/notifications';
 import LiqPayRedirect from '@/components/checkout/LiqPayRedirect';
 import { X, Plus, Minus, Check, Tag } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
@@ -451,7 +452,7 @@ export default function Checkout() {
           .eq('id', appliedCode.id);
       }
 
-      // 8. Track purchase
+      // 8. Track purchase (Internal logic)
       trackPurchase(
         orderResult.data.id.toString(),
         analyticsItems,
@@ -460,6 +461,53 @@ export default function Checkout() {
         undefined, // shipping
         appliedCode?.code || undefined  // coupon
       );
+
+      // 8.1 Track purchase (Specific GA4 stream for Google Ads/Analytics)
+      if (typeof window !== 'undefined' && window.gtag) {
+        const ga4Items = items.map(item => ({
+          item_id: item.product.id?.toString() || "",
+          item_name: item.product.name || "",
+          price: Number(item.product.price) || 0,
+          quantity: Number(item.quantity) || 1,
+          item_category: item.product.attributes?.Category || "",
+          item_brand: "", // Required as empty string if missing
+          discount: 0,
+          currency: "UAH"
+        }));
+
+        window.gtag('event', 'purchase', {
+          send_to: "G-KMSCH1JTVB",
+          transaction_id: orderResult.data.id.toString(),
+          value: calculatedTotalPrice,
+          currency: "UAH",
+          tax: 0,
+          shipping: 0,
+          items: ga4Items
+        });
+        console.log('✅ GA4 Purchase event sent for order:', orderResult.data.id);
+      }
+
+      // 8.2 Send Telegram Notification
+      try {
+        // Construct complete order payload including items for Telegram
+        const completeOrderData = {
+          ...orderResult.data,
+          ...orderData,
+          order_items: orderItems.map((item, index) => ({
+            ...item,
+            products: {
+              name: items[index].product.name,
+              price: items[index].product.price,
+              attributes: items[index].product.attributes
+            }
+          }))
+        };
+
+        await sendOrderNotification(orderResult.data.id, completeOrderData);
+        console.log('✅ Telegram notification triggered via edge function');
+      } catch (tgError) {
+        console.error('⚠️ Failed to send Telegram notification:', tgError);
+      }
 
 
 

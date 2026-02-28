@@ -1,17 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { useAnalytics } from '../hooks/useAnalytics';
-import { sendOrderNotification } from '../services/notifications';
-import { supabase } from '../lib/supabase';
 import { useCartStore } from '../store/cartStore';
 
 export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
   const { orderId, totalAmount, shouldClearCart } = location.state || {};
-  const { trackPurchase } = useAnalytics();
-  const [orderDetails, setOrderDetails] = useState<any>(null);
-  const [notificationSent, setNotificationSent] = useState(false);
   const { clearCart } = useCartStore();
 
   // Clear cart if requested
@@ -27,121 +21,6 @@ export default function OrderSuccess() {
       navigate('/');
     }
   }, [orderId, navigate]);
-
-  // Fetch order details for notification and analytics
-  useEffect(() => {
-    const fetchOrderDetails = async () => {
-      if (!orderId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select(`
-            *,
-            order_items(
-              *,
-              products(
-                name,
-                price,
-                attributes
-              )
-            )
-          `)
-          .eq('id', orderId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching order details:', error);
-          return;
-        }
-
-        setOrderDetails(data);
-      } catch (error) {
-        console.error('Error fetching order details:', error);
-      }
-    };
-
-    fetchOrderDetails();
-  }, [orderId]);
-
-  // Send Telegram notification
-  useEffect(() => {
-    const sendNotification = async () => {
-      if (orderDetails && !notificationSent) {
-        // ... existing notification logic ...
-        try {
-          const result = await sendOrderNotification(
-            orderDetails.id,
-            {
-              customer_name: orderDetails.customer_name,
-              customer_phone: orderDetails.customer_phone,
-              customer_email: orderDetails.customer_email,
-              delivery_method: orderDetails.delivery_method,
-              delivery_info: orderDetails.delivery_info,
-              total_price: orderDetails.total_price,
-              items: orderDetails.order_items || []
-            }
-          );
-
-          if (result.success) {
-            setNotificationSent(true);
-            console.log('Telegram notification sent successfully');
-          } else {
-            console.error('Failed to send Telegram notification:', result.error);
-          }
-        } catch (error) {
-          console.error('Error sending Telegram notification:', error);
-        }
-      }
-    };
-
-    sendNotification();
-  }, [orderDetails, notificationSent]);
-
-  // Track purchase event (GA4)
-  useEffect(() => {
-    if (!orderDetails || !window.gtag) return;
-
-    const storageKey = `ga4_purchase_sent_${orderDetails.id}`;
-    if (localStorage.getItem(storageKey)) {
-      console.log('Purchase event already sent for order:', orderDetails.id);
-      return;
-    }
-
-    const items = orderDetails.order_items?.map((item: any) => ({
-      item_id: item.product_id?.toString() || "",
-      item_name: item.products?.name || "",
-      price: Number(item.price) || 0,
-      quantity: Number(item.quantity) || 1,
-      item_category: item.products?.attributes?.Category || "",
-      item_brand: "", // Required as empty string if missing
-      discount: 0,
-      currency: "UAH"
-    })) || [];
-
-    // Send to specific GA4 stream as requested
-    window.gtag('event', 'purchase', {
-      send_to: "G-KMSCH1JTVB",
-      transaction_id: orderDetails.id?.toString() || "",
-      value: Number(orderDetails.total_price) || 0,
-      currency: "UAH",
-      tax: 0,
-      shipping: 0, // Assuming shipping is included or 0 if not separate
-      items: items
-    });
-
-    // Mark as sent
-    localStorage.setItem(storageKey, 'true');
-    console.log('GA4 Purchase event sent for order:', orderDetails.id);
-
-    // Also track with standard hook for other analytics (optional, keeping for consistency if needed, 
-    // but the requirement specifically asked for the above custom implementation)
-    // We can keep the hook usage but maybe without the specific send_to validation if it's general purpose.
-    // However, since we did a manual implementation above to satisfy specific requirements, 
-    // we might skip calling trackPurchase from the hook to avoid double counting if the hook doesn't support the exact same payload.
-    // The requirement said "use window.gtag", so the direct call above is correct.
-
-  }, [orderDetails]);
 
   if (!orderId) {
     return null;

@@ -21,7 +21,7 @@ serve(async (req) => {
 
     // Fetch Categories
     const { data: categories } = await supabase.from('categories').select('*');
-    
+
     // Fetch Products (Active only)
     const { data: products, error } = await supabase
       .from('products')
@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // --- CSV FORMAT ---
     if (format === 'csv') {
-       const productRows = products?.map((p: any) => {
+      const productRows = products?.map((p: any) => {
         const attrString = Object.entries(p.attributes || {}).map(([k, v]) => `${k}: ${v}`).join('; ');
         return {
           ID: p.id, Name: p.name, Price: p.price, OldPrice: p.old_price || '',
@@ -75,8 +75,56 @@ serve(async (req) => {
       return new Response('\uFEFF' + csv, { headers: { ...corsHeaders, "Content-Type": "text/csv; charset=utf-8" } });
     }
 
-    // --- XML FORMAT ---
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+    // --- GOOGLE MERCHANT CENTER FEED (RSS 2.0) ---
+    if (format === 'google') {
+      const xml = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+  <channel>
+    <title>Svitanok Product Feed</title>
+    <link>${HOST}</link>
+    <description>Svitanok - Premium Cosmetics Store</description>
+    ${products?.map((p: any) => {
+        const categoryName = categories?.find((c: any) => c.id === p.category_id)?.name || 'General';
+        const cleanDescription = stripHtml(p.description || p.name);
+
+        // Calculate Price & Sale Price
+        // Google requires ISO 4217 Currency (e.g. "150.00 UAH")
+        const currentPrice = Number(p.price);
+        const oldPrice = p.old_price ? Number(p.old_price) : null;
+
+        let priceTag = `<g:price>${currentPrice.toFixed(2)} UAH</g:price>`;
+        let salePriceTag = '';
+
+        // If item is on sale (oldPrice > currentPrice)
+        if (oldPrice && oldPrice > currentPrice) {
+          priceTag = `<g:price>${oldPrice.toFixed(2)} UAH</g:price>`;
+          salePriceTag = `<g:sale_price>${currentPrice.toFixed(2)} UAH</g:sale_price>`;
+        }
+
+        return `
+    <item>
+      <g:id>${p.id}</g:id>
+      <g:title>${escapeXml(p.name)}</g:title>
+      <g:description>${escapeXml(cleanDescription)}</g:description>
+      <g:link>${HOST}/product/${p.slug}</g:link>
+      <g:image_link>${p.images?.[0] || ''}</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>${p.in_stock ? 'in_stock' : 'out_of_stock'}</g:availability>
+      ${priceTag}
+      ${salePriceTag}
+      <g:brand>${escapeXml(p.brands?.name || 'Svitanok')}</g:brand>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:custom_label_0>${escapeXml(categoryName)}</g:custom_label_0>
+    </item>`;
+      }).join('')}
+  </channel>
+</rss>`;
+
+      return new Response(xml, { headers: { ...corsHeaders, "Content-Type": "application/xml" } });
+    }
+
+    // --- XML FORMAT (Default YML) ---
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <yml_catalog date="${new Date().toISOString().split('T')[0]}">
   <shop>
     <name>Svitanok</name>
@@ -115,6 +163,18 @@ serve(async (req) => {
 function escapeXml(unsafe: string): string {
   if (!unsafe) return '';
   return unsafe.replace(/[<>&'"]/g, (c) => {
-    switch (c) { case '<': return '&lt;'; case '>': return '&gt;'; case '&': return '&amp;'; case '\'': return '&apos;'; case '"': return '&quot;'; default: return c; }
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
   });
+}
+
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>?/gm, '');
 }
