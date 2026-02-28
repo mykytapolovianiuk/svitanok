@@ -20,10 +20,29 @@ serve(async (req) => {
     console.log(`Processing order #${order.id}`);
 
     // 1. Fetch Order Items
-    const { data: items, error: itemsError } = await supabase
-      .from("order_items")
-      .select("*, products(name)")
-      .eq("order_id", order.id);
+    let items = order.order_items || [];
+    let itemsError = null;
+
+    // If not provided in payload, try fetching from the database
+    if (items.length === 0) {
+      const dbResponse = await supabase
+        .from("order_items")
+        .select("*, products(name)")
+        .eq("order_id", order.id);
+
+      items = dbResponse.data || [];
+      itemsError = dbResponse.error;
+    }
+
+    if (itemsError) {
+      console.error("Error fetching items:", itemsError);
+    }
+
+    // Skip sending empty orders triggered by the database before order_items insert
+    if (!items || items.length === 0) {
+      console.log(`Skipping notification for #${order.id} - cart is still empty (likely DB trigger firing prior to item insertion)`);
+      return new Response("Skipped empty order", { status: 200 });
+    }
 
     if (itemsError) {
       console.error("Error fetching items:", itemsError);
@@ -37,7 +56,7 @@ serve(async (req) => {
         if (typeof deliveryInfo === 'string') {
           deliveryInfo = JSON.parse(deliveryInfo);
         }
-        
+
         // Handle Nova Poshta / General format
         const city = deliveryInfo.city || deliveryInfo.CityDescription || "";
         const warehouse = deliveryInfo.warehouse || deliveryInfo.Description || "";
@@ -45,7 +64,7 @@ serve(async (req) => {
         const fullName = deliveryInfo.full_name || "";
         const phone = deliveryInfo.phone || "";
         const comment = deliveryInfo.comment || "";
-        
+
         deliveryText += `\n📍 ${city} ${warehouse} ${address}`;
         if (fullName) deliveryText += `\n👤 ${fullName}`;
         if (phone) deliveryText += `\n📞 ${phone}`;
