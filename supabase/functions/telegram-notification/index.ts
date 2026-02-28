@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") || "8060080341:AAF3nyXynucUNQhHVm8qYznQ-GnubgPrtNQ";
-const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID") || "-5077968587";
+const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID") || "-1003603427870";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://zoezuvdsebnnbrwziosb.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZXp1dmRzZWJubmJyd3ppb3NiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgyNDAzMiwiZXhwIjoyMDc5NDAwMDMyfQ.eIjZPnm-Pwdrki-44cI7NXxuu8oamCjH13Wqqi3zVxY";
 
