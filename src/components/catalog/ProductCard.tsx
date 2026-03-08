@@ -146,7 +146,7 @@ function ProductCard({
         <div className="pt-4">
           {/* Title */}
           <h3
-            className="text-xs font-medium uppercase text-center underline underline-offset-4 mb-2 line-clamp-2 min-h-[40px]"
+            className="text-xs font-medium text-center underline underline-offset-4 mb-2 line-clamp-2 min-h-[45px]"
             style={{ fontFamily: 'Montserrat, sans-serif' }}
           >
             {name}

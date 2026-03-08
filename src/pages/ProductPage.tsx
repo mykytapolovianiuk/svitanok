@@ -360,7 +360,7 @@ export default function ProductPage() {
               {/* Product Info */}
               <div className="mb-8">
                 <h1
-                  className="text-2xl font-light mb-4 uppercase tracking-[2px]"
+                  className="text-2xl font-light mb-4 tracking-[2px]"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   {product.name}

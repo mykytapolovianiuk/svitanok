@@ -463,29 +463,7 @@ export default function Checkout() {
       );
 
       // 8.1 Track purchase (Specific GA4 stream for Google Ads/Analytics)
-      if (typeof window !== 'undefined' && window.gtag) {
-        const ga4Items = items.map(item => ({
-          item_id: item.product.id?.toString() || "",
-          item_name: item.product.name || "",
-          price: Number(item.product.price) || 0,
-          quantity: Number(item.quantity) || 1,
-          item_category: item.product.attributes?.Category || "",
-          item_brand: "", // Required as empty string if missing
-          discount: 0,
-          currency: "UAH"
-        }));
-
-        window.gtag('event', 'purchase', {
-          send_to: "G-KMSCH1JTVB",
-          transaction_id: orderResult.data.id.toString(),
-          value: calculatedTotalPrice,
-          currency: "UAH",
-          tax: 0,
-          shipping: 0,
-          items: ga4Items
-        });
-        console.log('✅ GA4 Purchase event sent for order:', orderResult.data.id);
-      }
+      // Removed inline mapping: GA4 formatting and logic moved to OrderSuccess.tsx safely using useRef
 
       // 8.2 Send Telegram Notification
       try {
@@ -575,7 +553,10 @@ export default function Checkout() {
           state: {
             orderId: orderResult.data.id,
             totalAmount: calculatedTotalPrice,
-            shouldClearCart: true
+            shouldClearCart: true,
+            order: orderResult.data,
+            // Pass the original cart items so GA4 has access to attributes, IDs, category, etc.
+            items: items
           }
         });
       }

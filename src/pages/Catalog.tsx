@@ -28,7 +28,7 @@ export default function Catalog() {
   const urlSearchQuery = searchParams.get('q') || undefined;
   const problem = searchParams.get('problem') || undefined;
   const ingredient = searchParams.get('ingredient') || undefined;
-  
+
   // Combine search query with ingredient if present
   const searchQuery = ingredient ? ingredient : urlSearchQuery;
 
@@ -188,199 +188,198 @@ export default function Catalog() {
     <>
       <Breadcrumbs />
       <div className="container mx-auto px-4 pt-8 pb-4">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 
-          className="text-3xl font-medium uppercase mb-2"
-          style={{ fontFamily: 'Montserrat, sans-serif' }}
-        >
-          Товари
-        </h1>
-        <p 
-          className="text-sm text-gray-600"
-          style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-        >
-          Оберіть ідеальний догляд для вашої шкіри
-        </p>
-      </div>
-
-      {/* Mobile Filters Button */}
-      <div className="lg:hidden mb-6">
-        <button
-          onClick={() => setShowMobileFilters(true)}
-          className="flex items-center gap-2 px-4 py-2 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
-          style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}
-        >
-          <Filter size={16} />
-          Фільтри
-        </button>
-      </div>
-
-          {/* Mobile Filters Drawer */}
-      {showMobileFilters && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMobileFilters(false)}
-          />
-          <div className="absolute left-0 top-0 bottom-0 w-full max-w-[320px] sm:w-80 bg-white p-4 sm:p-6 overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2
-                className="text-xl font-semibold"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                Фільтри
-              </h2>
-              <button onClick={() => setShowMobileFilters(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            <FilterSidebar
-              selectedBrands={selectedBrands}
-              selectedCategories={selectedCategories}
-              selectedSkinTypes={selectedSkinTypes}
-              onBrandsChange={handleBrandsChange}
-              onCategoriesChange={handleCategoriesChange}
-              onSkinTypesChange={handleSkinTypesChange}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              onPriceChange={handlePriceChange}
-            />
-          </div>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1
+            className="text-3xl font-medium uppercase mb-2"
+            style={{ fontFamily: 'Montserrat, sans-serif' }}
+          >
+            Товари
+          </h1>
+          <p
+            className="text-sm text-gray-600"
+            style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
+          >
+            Оберіть ідеальний догляд для вашої шкіри
+          </p>
         </div>
-      )}
 
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 flex-shrink-0">
-          <div className="sticky top-4">
-            <FilterSidebar
-              selectedBrands={selectedBrands}
-              selectedCategories={selectedCategories}
-              selectedSkinTypes={selectedSkinTypes}
-              onBrandsChange={handleBrandsChange}
-              onCategoriesChange={handleCategoriesChange}
-              onSkinTypesChange={handleSkinTypesChange}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              onPriceChange={handlePriceChange}
+        {/* Mobile Filters Button */}
+        <div className="lg:hidden mb-6">
+          <button
+            onClick={() => setShowMobileFilters(true)}
+            className="flex items-center gap-2 px-4 py-2 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+            style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}
+          >
+            <Filter size={16} />
+            Фільтри
+          </button>
+        </div>
+
+        {/* Mobile Filters Drawer */}
+        {showMobileFilters && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black bg-opacity-50"
+              onClick={() => setShowMobileFilters(false)}
             />
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          {/* Header with Sort */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
-            <p
-              className="text-xs sm:text-sm text-gray-600"
-              style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-            >
-              Знайдено {totalCount} товарів
-            </p>
-
-            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-              <label
-                className="text-xs text-gray-600 tracking-wider whitespace-nowrap"
-                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-              >
-                Сортувати за:
-              </label>
-              <select
-                value={sortBy}
-                onChange={handleSortChange}
-                className="flex-1 sm:flex-none px-3 py-1.5 border border-gray-300 text-xs focus:outline-none focus:border-black uppercase tracking-wider min-w-[180px]"
-                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-              >
-                <option value="newest">Рекомендовані</option>
-                <option value="price_asc">Ціна: від низької до високої</option>
-                <option value="price_desc">Ціна: від високої до низької</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Loading State */}
-          {loading ? (
-            <ProductGridSkeleton count={12} />
-          ) : error ? (
-            /* Error State */
-            <div className="text-center py-12">
-              <p className="text-red-600" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                {error}
-              </p>
-            </div>
-          ) : (
-            /* Products Grid */
-            <>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    slug={product.slug}
-                    price={product.price}
-                    oldPrice={product.old_price}
-                    image={product.images && product.images.length > 0 ? product.images[0] : '/placeholder-product.jpg'}
-                    rating={4}
-                    description={product.description}
-                  />
-                ))}
+            <div className="absolute left-0 top-0 bottom-0 w-full max-w-[320px] sm:w-80 bg-white p-4 sm:p-6 overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2
+                  className="text-xl font-semibold"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  Фільтри
+                </h2>
+                <button onClick={() => setShowMobileFilters(false)}>
+                  <X size={24} />
+                </button>
               </div>
+              <FilterSidebar
+                selectedBrands={selectedBrands}
+                selectedCategories={selectedCategories}
+                selectedSkinTypes={selectedSkinTypes}
+                onBrandsChange={handleBrandsChange}
+                onCategoriesChange={handleCategoriesChange}
+                onSkinTypesChange={handleSkinTypesChange}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onPriceChange={handlePriceChange}
+              />
+            </div>
+          </div>
+        )}
 
-              {/* Empty State */}
-              {products.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                    Товарів не знайдено. Спробуйте змінити фільтри.
-                  </p>
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block w-64 flex-shrink-0">
+            <div className="sticky top-4">
+              <FilterSidebar
+                selectedBrands={selectedBrands}
+                selectedCategories={selectedCategories}
+                selectedSkinTypes={selectedSkinTypes}
+                onBrandsChange={handleBrandsChange}
+                onCategoriesChange={handleCategoriesChange}
+                onSkinTypesChange={handleSkinTypesChange}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onPriceChange={handlePriceChange}
+              />
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Header with Sort */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6">
+              <p
+                className="text-xs sm:text-sm text-gray-600"
+                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
+              >
+                Знайдено {totalCount} товарів
+              </p>
+
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                <label
+                  className="text-xs text-gray-600 tracking-wider whitespace-nowrap"
+                  style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
+                >
+                  Сортувати за:
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  className="flex-1 sm:flex-none px-3 py-1.5 border border-gray-300 text-xs focus:outline-none focus:border-black tracking-wider min-w-[180px]"
+                  style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
+                >
+                  <option value="newest">Рекомендовані</option>
+                  <option value="price_asc">Ціна: від низької до високої</option>
+                  <option value="price_desc">Ціна: від високої до низької</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Loading State */}
+            {loading ? (
+              <ProductGridSkeleton count={12} />
+            ) : error ? (
+              /* Error State */
+              <div className="text-center py-12">
+                <p className="text-red-600" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  {error}
+                </p>
+              </div>
+            ) : (
+              /* Products Grid */
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      slug={product.slug}
+                      price={product.price}
+                      oldPrice={product.old_price}
+                      image={product.images && product.images.length > 0 ? product.images[0] : '/placeholder-product.jpg'}
+                      rating={4}
+                      description={product.description}
+                    />
+                  ))}
                 </div>
-              )}
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-                  {/* Previous */}
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-2 border border-black hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
+                {/* Empty State */}
+                {products.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                      Товарів не знайдено. Спробуйте змінити фільтри.
+                    </p>
+                  </div>
+                )}
 
-                  {/* Page Numbers */}
-                  {getPaginationRange().map((page, index) => (
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+                    {/* Previous */}
                     <button
-                      key={index}
-                      onClick={() => typeof page === 'number' && handlePageChange(page)}
-                      disabled={page === '...'}
-                      className={`px-3 py-1.5 border ${
-                        page === currentPage
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2 border border-black hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    {/* Page Numbers */}
+                    {getPaginationRange().map((page, index) => (
+                      <button
+                        key={index}
+                        onClick={() => typeof page === 'number' && handlePageChange(page)}
+                        disabled={page === '...'}
+                        className={`px-3 py-1.5 border ${page === currentPage
                           ? 'bg-black text-white border-black'
                           : 'border-black hover:bg-black hover:text-white'
-                      } ${page === '...' ? 'cursor-default' : ''} transition-colors`}
-                      style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                          } ${page === '...' ? 'cursor-default' : ''} transition-colors`}
+                        style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 300 }}
+                      >
+                        {page}
+                      </button>
+                    ))}
 
-                  {/* Next */}
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 border border-black hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+                    {/* Next */}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-2 border border-black hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

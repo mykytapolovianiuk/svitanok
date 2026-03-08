@@ -1,6 +1,6 @@
 /**
  * Google Analytics 4 Integration
- * Реалізація всіх рекомендованих e-commerce подій
+ * Реалізація всіх рекомендованих e-commerce подій (Тільки чистий gtag.js, без GTM)
  */
 
 import type {
@@ -19,7 +19,6 @@ import type {
   GA4ViewPromotionParams,
   AnalyticsProduct,
 } from './types';
-import { pushEvent } from './gtm';
 
 declare global {
   interface Window {
@@ -37,19 +36,20 @@ export function initGA4(): void {
   const gaId = import.meta.env.VITE_GA_ID;
   if (!gaId) {
     if (import.meta.env.DEV) {
-      // Production logging removed
+      console.warn('[GA4] VITE_GA_ID is missing');
     }
     return;
   }
 
-  // Initialize dataLayer if not exists
+  // Initialize dataLayer (необхідно для внутрішньої роботи gtag.js)
   window.dataLayer = window.dataLayer || [];
 
-  // Initialize gtag function
-  function gtag(...args: any[]) {
-    window.dataLayer.push(args);
-  }
-  window.gtag = gtag;
+  // Офіційний ініціалізатор функції gtag
+  window.gtag = function gtag() {
+    window.dataLayer = window.dataLayer || [];
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
+  };
 
   // Load GA4 script
   const script = document.createElement('script');
@@ -58,14 +58,10 @@ export function initGA4(): void {
   document.head.appendChild(script);
 
   // Configure GA4
-  gtag('js', new Date());
-  gtag('config', gaId, {
-    send_page_view: false, // We'll send page views manually
+  window.gtag('js', new Date());
+  window.gtag('config', gaId, {
+    send_page_view: false, // Відправляємо перегляди сторінок вручну
   });
-
-  if (import.meta.env.DEV) {
-    // Production logging removed
-  }
 }
 
 /**
@@ -79,12 +75,6 @@ export function trackPageView(pagePath: string, pageTitle?: string): void {
     page_title: pageTitle || document.title,
     page_location: window.location.href,
   });
-
-  // Also push to GTM
-  pushEvent('page_view', {
-    page_path: pagePath,
-    page_title: pageTitle || document.title,
-  });
 }
 
 /**
@@ -94,12 +84,6 @@ export function trackViewItem(params: GA4ViewItemParams): void {
   if (!window.gtag) return;
 
   window.gtag('event', 'view_item', {
-    currency: params.currency,
-    value: params.value,
-    items: params.items,
-  });
-
-  pushEvent('view_item', {
     currency: params.currency,
     value: params.value,
     items: params.items,
@@ -117,12 +101,6 @@ export function trackViewItemList(params: GA4ViewItemListParams): void {
     item_list_name: params.item_list_name,
     items: params.items,
   });
-
-  pushEvent('view_item_list', {
-    item_list_id: params.item_list_id,
-    item_list_name: params.item_list_name,
-    items: params.items,
-  });
 }
 
 /**
@@ -132,12 +110,6 @@ export function trackAddToCart(params: GA4AddToCartParams): void {
   if (!window.gtag) return;
 
   window.gtag('event', 'add_to_cart', {
-    currency: params.currency,
-    value: params.value,
-    items: params.items,
-  });
-
-  pushEvent('add_to_cart', {
     currency: params.currency,
     value: params.value,
     items: params.items,
@@ -155,12 +127,6 @@ export function trackRemoveFromCart(params: GA4RemoveFromCartParams): void {
     value: params.value,
     items: params.items,
   });
-
-  pushEvent('remove_from_cart', {
-    currency: params.currency,
-    value: params.value,
-    items: params.items,
-  });
 }
 
 /**
@@ -174,12 +140,6 @@ export function trackViewCart(params: GA4ViewCartParams): void {
     value: params.value,
     items: params.items,
   });
-
-  pushEvent('view_cart', {
-    currency: params.currency,
-    value: params.value,
-    items: params.items,
-  });
 }
 
 /**
@@ -189,13 +149,6 @@ export function trackBeginCheckout(params: GA4BeginCheckoutParams): void {
   if (!window.gtag) return;
 
   window.gtag('event', 'begin_checkout', {
-    currency: params.currency,
-    value: params.value,
-    items: params.items,
-    coupon: params.coupon,
-  });
-
-  pushEvent('begin_checkout', {
     currency: params.currency,
     value: params.value,
     items: params.items,
@@ -215,13 +168,6 @@ export function trackAddPaymentInfo(params: GA4AddPaymentInfoParams): void {
     payment_type: params.payment_type,
     items: params.items,
   });
-
-  pushEvent('add_payment_info', {
-    currency: params.currency,
-    value: params.value,
-    payment_type: params.payment_type,
-    items: params.items,
-  });
 }
 
 /**
@@ -231,13 +177,6 @@ export function trackAddShippingInfo(params: GA4AddShippingInfoParams): void {
   if (!window.gtag) return;
 
   window.gtag('event', 'add_shipping_info', {
-    currency: params.currency,
-    value: params.value,
-    shipping_tier: params.shipping_tier,
-    items: params.items,
-  });
-
-  pushEvent('add_shipping_info', {
     currency: params.currency,
     value: params.value,
     shipping_tier: params.shipping_tier,
@@ -261,16 +200,6 @@ export function trackPurchase(params: GA4PurchaseParams): void {
     coupon: params.coupon,
     send_to: params.send_to,
   });
-
-  pushEvent('purchase', {
-    transaction_id: params.transaction_id,
-    value: params.value,
-    currency: params.currency,
-    tax: params.tax,
-    shipping: params.shipping,
-    items: params.items,
-    coupon: params.coupon,
-  });
 }
 
 /**
@@ -282,10 +211,6 @@ export function trackSearch(params: GA4SearchParams): void {
   window.gtag('event', 'search', {
     search_term: params.search_term,
   });
-
-  pushEvent('search', {
-    search_term: params.search_term,
-  });
 }
 
 /**
@@ -295,12 +220,6 @@ export function trackSelectItem(params: GA4SelectItemParams): void {
   if (!window.gtag) return;
 
   window.gtag('event', 'select_item', {
-    item_list_id: params.item_list_id,
-    item_list_name: params.item_list_name,
-    items: params.items,
-  });
-
-  pushEvent('select_item', {
     item_list_id: params.item_list_id,
     item_list_name: params.item_list_name,
     items: params.items,
@@ -321,15 +240,6 @@ export function trackSelectPromotion(params: GA4SelectPromotionParams): void {
     location_id: params.location_id,
     items: params.items,
   });
-
-  pushEvent('select_promotion', {
-    promotion_id: params.promotion_id,
-    promotion_name: params.promotion_name,
-    creative_name: params.creative_name,
-    creative_slot: params.creative_slot,
-    location_id: params.location_id,
-    items: params.items,
-  });
 }
 
 /**
@@ -339,15 +249,6 @@ export function trackViewPromotion(params: GA4ViewPromotionParams): void {
   if (!window.gtag) return;
 
   window.gtag('event', 'view_promotion', {
-    promotion_id: params.promotion_id,
-    promotion_name: params.promotion_name,
-    creative_name: params.creative_name,
-    creative_slot: params.creative_slot,
-    location_id: params.location_id,
-    items: params.items,
-  });
-
-  pushEvent('view_promotion', {
     promotion_id: params.promotion_id,
     promotion_name: params.promotion_name,
     creative_name: params.creative_name,
@@ -387,3 +288,72 @@ export function formatProductForGA4(product: {
   };
 }
 
+/**
+ * Strict GA4 Object specifically built for E-Commerce tracking
+ * Ensures data always conforms to Google's strict keys.
+ */
+class GA4Analytics {
+  purchase(orderData: { order: any; items: any[] }) {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const { order, items } = orderData;
+    const GA_ID = import.meta.env.VITE_GA_ID || '';
+
+    if (!GA_ID) {
+      if (import.meta.env.DEV) {
+        console.warn('[GA4] GA_ID is missing');
+      }
+      return;
+    }
+
+    try {
+      const ga4Items = items.map((item: any, index: number) => {
+        // Handle nesting whether it comes from Checkout state or Supabase join
+        const product = item.product || item.products || item;
+        const attrs = product.attributes || {};
+
+        return {
+          item_id: String(product.id || item.product_id || ''),
+          item_name: String(product.name || item.product_name || 'Товар'),
+          price: Number(product.price || item.price_at_purchase || 0),
+          quantity: Number(item.quantity || 1),
+          item_category: String(attrs['Category'] || attrs['Назва_групи'] || ''),
+          item_brand: String(attrs['Brand'] || attrs['Виробник'] || ''),
+          index: index,
+          currency: 'UAH'
+        };
+      });
+
+      const formattedData = {
+        transaction_id: String(order.id),
+        value: Number(order.total_price || order.total || 0),
+        currency: 'UAH',
+        tax: 0,
+        shipping: 0,
+        items: ga4Items,
+        send_to: GA_ID
+      };
+
+      if (import.meta.env.DEV) {
+        console.log('%c [GA4] PURE PURCHASE EVENT FIRED 🛒', 'color: #16a34a; font-size: 14px; font-weight: bold;', formattedData);
+      }
+
+      if (window.gtag) {
+        window.gtag('event', 'purchase', formattedData);
+      } else {
+        if (import.meta.env.DEV) {
+          console.warn('[GA4] window.gtag is not defined. Event dropped.');
+        }
+      }
+
+    } catch (e) {
+      if (import.meta.env.DEV) {
+        console.error('[GA4 Purchase Event Error]: Failed to format data', e);
+      }
+    }
+  }
+}
+
+export const ga4 = new GA4Analytics();

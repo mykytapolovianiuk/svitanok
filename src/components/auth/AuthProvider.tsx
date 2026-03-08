@@ -11,86 +11,96 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   // Set up persistent auth state listener
   useEffect(() => {
-    // Set initial loading state
-    setIsLoading(true);
+    let mounted = true;
 
-    // Event Listener for Tab Focus (Fixes background throttling timeout issue)
+    async function initializeAuth() {
+      try {
+        // 1. Get initial session immediately
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) throw error;
+
+        await handleSessionUpdate(session);
+      } catch (err) {
+        console.error('Error getting initial session:', err);
+        if (mounted) setSession(null);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
+        }
+      }
+    }
+
+    async function handleSessionUpdate(session: any) {
+      if (!session) {
+        if (mounted) setSession(null);
+        return;
+      }
+
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (mounted) {
+          setSession({
+            user: {
+              id: session.user.id,
+              email: session.user.email || '',
+              phone: session.user.phone || '',
+            },
+            profile: profileData || null,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching profile on auth state change:', err);
+        if (mounted) {
+          setSession({
+            user: {
+              id: session.user.id,
+              email: session.user.email || '',
+              phone: session.user.phone || '',
+            },
+            profile: null,
+          });
+        }
+      }
+    }
+
+    // Run initialization
+    initializeAuth();
+
+    // 2. Listen for future auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ignore initial event to prevent double firing, or handle dynamically
+      if (event === 'INITIAL_SESSION') return;
+
+      if (event === 'PASSWORD_RECOVERY') {
+        navigate('/update-password');
+      }
+
+      if (event === 'SIGNED_OUT') {
+        if (mounted) setSession(null);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        handleSessionUpdate(session);
+      }
+    });
+
+    // 3. Tab visibility check
     const handleFocus = async () => {
       if (document.visibilityState === 'visible') {
-        // Force a network check to refresh the session if it's stale
         await supabase.auth.refreshSession();
-        // We don't need to manually setSession here because refreshSession() 
-        // triggers onAuthStateChange with TOKEN_REFRESHED or SIGNED_IN
       }
     };
 
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          navigate('/update-password');
-        }
-
-        // Handle Token Refresh explicitly to ensure UI stays in sync
-        if (event === 'TOKEN_REFRESHED') {
-          // just let it fall through to update session
-        }
-
-        try {
-          if (session) {
-            // Fetch user profile
-            try {
-              const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-
-              if (error) throw error;
-
-              // Update Zustand store with user and profile
-              // CRITICAL FIX: Get phone from Auth, not just Profile
-              setSession({
-                user: {
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  phone: session.user.phone || '', // <-- CRITICAL FIX: Get phone from Auth
-                },
-                profile: data || null,
-              });
-            } catch (profileError) {
-              console.error('Error fetching user profile:', profileError);
-              // Update Zustand store with user only
-              // CRITICAL FIX: Get phone from Auth, not just Profile
-              setSession({
-                user: {
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  phone: session.user.phone || '', // <-- CRITICAL FIX: Get phone from Auth
-                },
-                profile: null,
-              });
-            }
-          } else {
-            // Clear session in store
-            setSession(null);
-          }
-        } catch (error) {
-          console.error('Error handling auth state change:', error);
-          setSession(null);
-        } finally {
-          // ALWAYS unblock the UI
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
-      }
-    );
-
-    // Clean up listener on unmount
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);

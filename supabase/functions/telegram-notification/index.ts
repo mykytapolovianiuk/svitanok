@@ -2,19 +2,44 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") || "8060080341:AAF3nyXynucUNQhHVm8qYznQ-GnubgPrtNQ";
-const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID") || "-1003603427870";
+// Hardcoded to override the outdated Supabase Secret
+const TELEGRAM_CHAT_ID = "-1003603427870";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "https://zoezuvdsebnnbrwziosb.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZXp1dmRzZWJubmJyd3ppb3NiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgyNDAzMiwiZXhwIjoyMDc5NDAwMDMyfQ.eIjZPnm-Pwdrki-44cI7NXxuu8oamCjH13Wqqi3zVxY";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   try {
     const payload = await req.json();
+
+    // Ignore direct database row INSERT triggers to prevent duplicate messages.
+    // We rely exclusively on the frontend (Checkout.tsx) to send the complete payload.
+    if (payload.type === 'INSERT' || payload.type === 'UPDATE') {
+      console.log(`Ignoring database trigger event to prevent duplicate messages.`);
+      return new Response("Skipped DB trigger event", {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "text/plain" }
+      });
+    }
+
     const order = payload.record; // The row from 'orders' table
 
     if (!order) {
-      return new Response("No record found", { status: 400 });
+      return new Response("No record found", {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     console.log(`Processing order #${order.id}`);
@@ -38,10 +63,12 @@ serve(async (req) => {
       console.error("Error fetching items:", itemsError);
     }
 
-    // Skip sending empty orders triggered by the database before order_items insert
     if (!items || items.length === 0) {
       console.log(`Skipping notification for #${order.id} - cart is still empty (likely DB trigger firing prior to item insertion)`);
-      return new Response("Skipped empty order", { status: 200 });
+      return new Response("Skipped empty order", {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "text/plain" }
+      });
     }
 
     if (itemsError) {
@@ -102,7 +129,7 @@ serve(async (req) => {
 ${itemsList}
 
 <b>💵 СУМА: ${order.total_price || order.total} ₴</b>
-<i>📅 ${new Date(order.created_at || new Date()).toLocaleString('uk-UA')}</i>
+<i>📅 ${new Date(order.created_at || new Date()).toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' })}</i>
     `.trim();
 
     // 6. Send to Telegram
@@ -122,13 +149,22 @@ ${itemsList}
     const result = await res.json();
     if (!result.ok) {
       console.error("Telegram API Error:", result);
-      return new Response(JSON.stringify(result), { status: 500 });
+      return new Response(JSON.stringify(result), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
-    return new Response("Notification sent", { status: 200 });
+    return new Response("Notification sent", {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "text/plain" }
+    });
 
   } catch (error) {
     console.error("Function Error:", error);
-    return new Response(error.message, { status: 500 });
+    return new Response(error.message, {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "text/plain" }
+    });
   }
 });

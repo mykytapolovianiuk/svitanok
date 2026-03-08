@@ -23,7 +23,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: window.localStorage,
   },
   global: {
     headers: {
@@ -31,3 +30,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
   }
 })
+
+// Optional service key for admin bypassing RLS if provided in specific environments
+const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || ''
+export const supabaseAdmin = supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false
+    }
+  })
+  : supabase
