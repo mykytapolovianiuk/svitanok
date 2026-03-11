@@ -253,7 +253,7 @@ export default function Catalog() {
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-4">
+            <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-4 pb-4">
               <FilterSidebar
                 selectedBrands={selectedBrands}
                 selectedCategories={selectedCategories}
