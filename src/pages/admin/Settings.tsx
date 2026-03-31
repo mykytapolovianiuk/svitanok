@@ -1,224 +1,1 @@
-import { useState } from 'react';
-import { FileDown, Copy, Check, Share2, ShoppingBag } from 'lucide-react';
-import toast from 'react-hot-toast';
-
-export default function Settings() {
-  const [downloading, setDownloading] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
-
-  // Use the "pretty" Vercel rewrite URL to avoid CORS and look professional
-  const FEED_URL = "https://www.svtnk.com.ua/feed";
-
-  // Display URLs for users (visual only)
-  const GOOGLE_FEED_URL = `${FEED_URL}?format=google`; // OR `${FEED_URL}/google` if your rewrite supports it
-  const YML_FEED_URL = `${FEED_URL}?format=xml`;
-
-  const handleCopyUrl = (url: string, id: string) => {
-    navigator.clipboard.writeText(url);
-    setCopied(id);
-    toast.success('Посилання скопійовано');
-    setTimeout(() => setCopied(null), 2000);
-  };
-
-  const handleDownloadFeed = async (format: 'xml' | 'xlsx' | 'txt' | 'csv' | 'google') => {
-    setDownloading(true);
-    const urlWithParams = `${FEED_URL}?format=${format}`;
-
-    try {
-      const response = await fetch(urlWithParams);
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      let blob;
-
-      if (format === 'xlsx') {
-        const base64Data = await response.text();
-        // Check for error response masked as text
-        if (base64Data.trim().startsWith('{') || base64Data.includes('"error"')) {
-          throw new Error('Server Error');
-        }
-
-        try {
-          const binaryString = window.atob(base64Data.replace(/\s/g, ''));
-          const len = binaryString.length;
-          const bytes = new Uint8Array(len);
-          for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-          blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        } catch (e) {
-          throw new Error('Encoding Error');
-        }
-      } else if (format === 'csv') {
-        const textData = await response.text();
-        blob = new Blob([textData], { type: "text/csv; charset=utf-8;" });
-      } else {
-        blob = await response.blob();
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-
-      let filename = `svitanok-feed.${format}`;
-      if (format === 'google') filename = 'svitanok-google-feed.xml';
-
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      toast.success(`Файл успішно завантажено`);
-
-    } catch (error) {
-      console.warn("Fetch failed (likely CORS), falling back to direct open:", error);
-      // Fallback: Open in new tab if inline download fails (CORS, etc)
-      window.open(urlWithParams, '_blank');
-      toast('Відкрито в новій вкладці', { icon: '🔗' });
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-          Експорт товарів
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Управління товарними фідами для Google Merchant, Rozetka, Prom.ua
-        </p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Google Shopping Feed Section */}
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <ShoppingBag className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900 font-montserrat">Google Shopping</h2>
-              <p className="text-sm text-gray-500">
-                RSS 2.0 фід для Merchant Center
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={GOOGLE_FEED_URL}
-                readOnly
-                className="block w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-500 rounded-lg focus:ring-black focus:border-black sm:text-xs font-mono truncate"
-              />
-              <button
-                onClick={() => handleCopyUrl(GOOGLE_FEED_URL, 'google')}
-                className="flex items-center justify-center p-2.5 border border-gray-300 shadow-sm rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-                title="Копіювати посилання"
-              >
-                {copied === 'google' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
-              </button>
-            </div>
-
-            <button
-              onClick={() => handleDownloadFeed('google')}
-              disabled={downloading}
-              className="w-full flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <FileDown className="h-4 w-4 mr-2" /> Завантажити XML
-            </button>
-          </div>
-        </div>
-
-        {/* Standard Export Section */}
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-50 rounded-lg">
-              <Share2 className="h-6 w-6 text-purple-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900 font-montserrat">Стандартний Експорт</h2>
-              <p className="text-sm text-gray-500">
-                Prom.ua, Rozetka (YML/Excel)
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={YML_FEED_URL}
-                readOnly
-                className="block w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-500 rounded-lg focus:ring-black focus:border-black sm:text-xs font-mono truncate"
-              />
-              <button
-                onClick={() => handleCopyUrl(YML_FEED_URL, 'yml')}
-                className="flex items-center justify-center p-2.5 border border-gray-300 shadow-sm rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-                title="Копіювати посилання"
-              >
-                {copied === 'yml' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleDownloadFeed('xml')}
-                disabled={downloading}
-                className="flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50"
-              >
-                <FileDown className="h-4 w-4 mr-2" /> YML
-              </button>
-              <button
-                onClick={() => handleDownloadFeed('xlsx')}
-                disabled={downloading}
-                className="flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700"
-              >
-                <FileDown className="h-4 w-4 mr-2" /> Excel
-              </button>
-              <button
-                onClick={() => handleDownloadFeed('csv')}
-                disabled={downloading}
-                className="flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700"
-              >
-                <FileDown className="h-4 w-4 mr-2" /> CSV
-              </button>
-              <button
-                onClick={() => handleDownloadFeed('txt')}
-                disabled={downloading}
-                className="flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50"
-              >
-                <FileDown className="h-4 w-4 mr-2" /> TXT
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 p-4 bg-yellow-50 rounded-md border border-yellow-100">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-yellow-800">Важливо</h3>
-            <div className="mt-2 text-sm text-yellow-700">
-              <p>
-                Ці посилання використовують проксі-шлях <code>/feed</code> для уникнення блокувань і забезпечення стабільності.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { useState } from 'react';import { FileDown, Copy, Check, Share2, ShoppingBag } from 'lucide-react';import toast from 'react-hot-toast';export default function Settings() {  const [downloading, setDownloading] = useState(false);  const [copied, setCopied] = useState<string | null>(null);  const FEED_URL = "https://www.svtnk.com.ua/feed";  const GOOGLE_FEED_URL = `${FEED_URL}?format=google`;   const YML_FEED_URL = `${FEED_URL}?format=xml`;  const handleCopyUrl = (url: string, id: string) => {    navigator.clipboard.writeText(url);    setCopied(id);    toast.success('Посилання скопійовано');    setTimeout(() => setCopied(null), 2000);  };  const handleDownloadFeed = async (format: 'xml' | 'xlsx' | 'txt' | 'csv' | 'google') => {    setDownloading(true);    const urlWithParams = `${FEED_URL}?format=${format}`;    try {      const response = await fetch(urlWithParams);      if (!response.ok) {        throw new Error('Network response was not ok');      }      let blob;      if (format === 'xlsx') {        const base64Data = await response.text();        if (base64Data.trim().startsWith('{') || base64Data.includes('"error"')) {          throw new Error('Server Error');        }        try {          const binaryString = window.atob(base64Data.replace(/\s/g, ''));          const len = binaryString.length;          const bytes = new Uint8Array(len);          for (let i = 0; i < len; i++) {            bytes[i] = binaryString.charCodeAt(i);          }          blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });        } catch (e) {          throw new Error('Encoding Error');        }      } else if (format === 'csv') {        const textData = await response.text();        blob = new Blob([textData], { type: "text/csv; charset=utf-8;" });      } else {        blob = await response.blob();      }      const url = window.URL.createObjectURL(blob);      const a = document.createElement('a');      a.href = url;      let filename = `svitanok-feed.${format}`;      if (format === 'google') filename = 'svitanok-google-feed.xml';      a.download = filename;      document.body.appendChild(a);      a.click();      window.URL.revokeObjectURL(url);      document.body.removeChild(a);      toast.success(`Файл успішно завантажено`);    } catch (error) {      console.warn("Fetch failed (likely CORS), falling back to direct open:", error);      window.open(urlWithParams, '_blank');      toast('Відкрито в новій вкладці', { icon: '🔗' });    } finally {      setDownloading(false);    }  };  return (    <div className="space-y-6">      {}      <div>        <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif' }}>          Експорт товарів        </h1>        <p className="mt-1 text-sm text-gray-500">          Управління товарними фідами для Google Merchant, Rozetka, Prom.ua        </p>      </div>      <div className="grid gap-6 md:grid-cols-2">        {}        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">          <div className="flex items-center gap-3 mb-4">            <div className="p-2 bg-blue-50 rounded-lg">              <ShoppingBag className="h-6 w-6 text-blue-600" />            </div>            <div>              <h2 className="text-lg font-medium text-gray-900 font-montserrat">Google Shopping</h2>              <p className="text-sm text-gray-500">                RSS 2.0 фід для Merchant Center              </p>            </div>          </div>          <div className="space-y-4">            <div className="flex gap-2">              <input                type="text"                value={GOOGLE_FEED_URL}                readOnly                className="block w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-500 rounded-lg focus:ring-black focus:border-black sm:text-xs font-mono truncate"              />              <button                onClick={() => handleCopyUrl(GOOGLE_FEED_URL, 'google')}                className="flex items-center justify-center p-2.5 border border-gray-300 shadow-sm rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"                title="Копіювати посилання"              >                {copied === 'google' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}              </button>            </div>            <button              onClick={() => handleDownloadFeed('google')}              disabled={downloading}              className="w-full flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"            >              <FileDown className="h-4 w-4 mr-2" /> Завантажити XML            </button>          </div>        </div>        {}        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">          <div className="flex items-center gap-3 mb-4">            <div className="p-2 bg-purple-50 rounded-lg">              <Share2 className="h-6 w-6 text-purple-600" />            </div>            <div>              <h2 className="text-lg font-medium text-gray-900 font-montserrat">Стандартний Експорт</h2>              <p className="text-sm text-gray-500">                Prom.ua, Rozetka (YML/Excel)              </p>            </div>          </div>          <div className="space-y-4">            <div className="flex gap-2">              <input                type="text"                value={YML_FEED_URL}                readOnly                className="block w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-300 text-gray-500 rounded-lg focus:ring-black focus:border-black sm:text-xs font-mono truncate"              />              <button                onClick={() => handleCopyUrl(YML_FEED_URL, 'yml')}                className="flex items-center justify-center p-2.5 border border-gray-300 shadow-sm rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"                title="Копіювати посилання"              >                {copied === 'yml' ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}              </button>            </div>            <div className="grid grid-cols-2 gap-2">              <button                onClick={() => handleDownloadFeed('xml')}                disabled={downloading}                className="flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50"              >                <FileDown className="h-4 w-4 mr-2" /> YML              </button>              <button                onClick={() => handleDownloadFeed('xlsx')}                disabled={downloading}                className="flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700"              >                <FileDown className="h-4 w-4 mr-2" /> Excel              </button>              <button                onClick={() => handleDownloadFeed('csv')}                disabled={downloading}                className="flex items-center justify-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700"              >                <FileDown className="h-4 w-4 mr-2" /> CSV              </button>              <button                onClick={() => handleDownloadFeed('txt')}                disabled={downloading}                className="flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50"              >                <FileDown className="h-4 w-4 mr-2" /> TXT              </button>            </div>          </div>        </div>      </div>      <div className="mt-4 p-4 bg-yellow-50 rounded-md border border-yellow-100">        <div className="flex">          <div className="flex-shrink-0">            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />            </svg>          </div>          <div className="ml-3">            <h3 className="text-sm font-medium text-yellow-800">Важливо</h3>            <div className="mt-2 text-sm text-yellow-700">              <p>                Ці посилання використовують проксі-шлях <code>/feed</code> для уникнення блокувань і забезпечення стабільності.              </p>            </div>          </div>        </div>      </div>    </div>  );}

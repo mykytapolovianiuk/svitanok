@@ -1,17 +1,1 @@
-import { Outlet } from 'react-router-dom';
-import Header from './Header';
-import Footer from './Footer';
-
-export default function Layout() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <Outlet />
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
-}
+import { Outlet } from 'react-router-dom';import Header from './Header';import Footer from './Footer';export default function Layout() {  return (    <div className="flex flex-col min-h-screen">      <Header />      <main className="flex-1 overflow-hidden">        <div className="h-full overflow-y-auto">          <Outlet />        </div>      </main>      <Footer />    </div>  );}
